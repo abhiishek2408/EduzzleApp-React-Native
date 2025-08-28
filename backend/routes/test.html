@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PDF Generator</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+  <h1>PDF Generator</h1>
+  <img id="sampleImage" src="https://via.placeholder.com/150" alt="Sample Image" width="150" height="150" />
+  <pre id="codeSnippet">
+function fibonacci(n) {
+  if (n <= 1) return n;
+  return fibonacci(n - 1) + fibonacci(n - 2);
+}
+console.log(fibonacci(6)); // Output: 8
+  </pre>
+  <button onclick="generatePDF()">Download PDF</button>
+
+  <script>
+    async function generatePDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      // Add title and intro text
+      doc.setFontSize(16);
+      doc.text("📘 JavaScript PDF Example", 10, 20);
+      doc.setFontSize(12);
+      doc.text("This PDF contains a short intro, an image, and a code snippet.", 10, 30);
+
+      // Load image safely
+      const img = document.getElementById("sampleImage");
+      await new Promise((resolve, reject) => {
+        if (img.complete && img.naturalHeight !== 0) {
+          resolve();
+        } else {
+          img.onload = resolve;
+          img.onerror = reject;
+        }
+      });
+
+      // Convert image to base64
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0);
+      const imgData = canvas.toDataURL("image/png");
+
+      // Add image to PDF
+      doc.addImage(imgData, "PNG", 10, 40, 50, 50);
+
+      // Add code snippet
+      doc.setFont("Courier", "normal");
+      doc.setFontSize(10);
+      const code = document.getElementById("codeSnippet").innerText;
+      const lines = doc.splitTextToSize(code, 180);
+      doc.text("💻 Code Snippet:", 10, 100);
+      doc.text(lines, 10, 110);
+
+      // Save PDF
+      doc.save("JavaScript_PDF_Example.pdf");
+    }
+  </script>
+</body>
+</html>
