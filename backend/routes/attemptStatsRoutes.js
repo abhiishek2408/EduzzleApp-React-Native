@@ -1,25 +1,19 @@
-// routes/attemptRoutes.js
 import express from "express";
 import UserAttempt from "../models/UserAttempt.js";
-import { authenticate } from "../middlewares/auth.js";
 
 const router = express.Router();
 
-// ✅ Get user stats
-router.get("/my-stats", authenticate, async (req, res) => {
+// ✅ Get stats for any user by ID (frontend sends the ID)
+router.get("/stats/:id", async (req, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.params.id;
 
-    // Fetch all attempts for this user
+    // Find all attempts of this user
     const attempts = await UserAttempt.find({ userId });
 
-    // Count attempts
     const attemptCount = attempts.length;
-
-    // Sum scores
     const totalPoints = attempts.reduce((sum, att) => sum + (att.score || 0), 0);
 
-    // Find highest level passed (if you want rank logic)
     let highestLevel = "None";
     attempts.forEach((att) => {
       att.levelWise?.forEach((lvl) => {
@@ -27,12 +21,7 @@ router.get("/my-stats", authenticate, async (req, res) => {
       });
     });
 
-    res.json({
-      success: true,
-      attemptCount,
-      totalPoints,
-      highestLevel,
-    });
+    res.json({ success: true, attemptCount, totalPoints, highestLevel });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error", error });
   }

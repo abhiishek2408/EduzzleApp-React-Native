@@ -19,6 +19,8 @@ export default function ProfileScreen() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const API_URL = "https://eduzzleapp-react-native.onrender.com"; // your backend base URL
+
   const handleLogout = () => {
     logout();
     navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
@@ -27,10 +29,13 @@ export default function ProfileScreen() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await axios.get(
-          "https://eduzzleapp-react-native.onrender.com/api/attempts/my-stats",
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        if (!user?._id) return;
+
+        // Fetch stats by user ID
+        const res = await axios.get(`${API_URL}/api/attempts/stats/${user._id}`, {
+          headers: { Authorization: `Bearer ${token}` }, // optional, can remove if backend doesn't require
+        });
+
         setStats(res.data);
       } catch (err) {
         console.error("Error fetching stats:", err);
@@ -40,7 +45,7 @@ export default function ProfileScreen() {
     };
 
     fetchStats();
-  }, [token]);
+  }, [user, token]);
 
   return (
     <ScrollView style={styles.container}>
@@ -73,9 +78,7 @@ export default function ProfileScreen() {
           {loading ? (
             <ActivityIndicator size="small" color="#6a21a8" />
           ) : (
-            <Text style={styles.statNumber}>
-              {stats?.highestLevel || "N/A"}
-            </Text>
+            <Text style={styles.statNumber}>{stats?.highestLevel || "N/A"}</Text>
           )}
           <Text style={styles.statLabel}>Rank</Text>
         </View>
@@ -144,4 +147,3 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 });
-
