@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || "http://10.124.194.56:3000/api",
+  baseURL: process.env.REACT_APP_API_URL || "https://eduzzleapp-react-native.onrender.com/api",
   withCredentials: false
 });
 

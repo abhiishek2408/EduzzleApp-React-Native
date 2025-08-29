@@ -18,7 +18,7 @@ export default function VerifyOTP() {
     }
 
     try {
-      const res = await axios.post("http://10.124.194.56:3000/api/auth/verify-otp", {
+      const res = await axios.post("https://eduzzleapp-react-native.onrender.com/api/auth/verify-otp", {
         userId,
         otp,
       });
@@ -35,7 +35,7 @@ export default function VerifyOTP() {
 
   const resend = async () => {
     try {
-      await axios.post("http://10.124.194.56:3000/api/auth/resend-otp", { email });
+      await axios.post("https://eduzzleapp-react-native.onrender.com/api/auth/resend-otp", { email });
       Alert.alert("Success", "OTP resent if email matches");
     } catch (err) {
       Alert.alert("Error", err?.response?.data?.message || "Error resending OTP");

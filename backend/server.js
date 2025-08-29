@@ -9,6 +9,7 @@ import userRoutes from "./routes/user.js";
 import puzzleRoutes from "./routes/puzzle.js";
 import fetchPuzzleRoutes from "./routes/fetchPuzzles.js";
 import puzzleAttemptRoutes from "./routes/puzzleAttemptRoutes.js";
+import attemptCountRoutes from "./routes/attemptStatsRoutes.js";
 import { connectDB } from "./config/db.js";
 
 dotenv.config();
@@ -43,6 +44,7 @@ app.use("/api/user", userRoutes);
 app.use("/api/puzzles", puzzleRoutes);
 app.use("/api/fetch-puzzles", fetchPuzzleRoutes);
 app.use("/api/puzzle-attempts", puzzleAttemptRoutes);
+app.use("/api/attempts", attemptCountRoutes);
 
 // ---- Test endpoint ----
 app.get("/", (req, res) => res.json({ message: "Educational Puzzle App API is running" }));

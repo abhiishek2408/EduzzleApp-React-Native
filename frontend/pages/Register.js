@@ -31,7 +31,7 @@ export default function Register() {
     setLoading(true);
     try {
       const { data } = await axios.post(
-        "http://10.124.194.56:3000/api/auth/register",
+        "https://eduzzleapp-react-native.onrender.com/api/auth/register",
         form,
         { headers: { "Content-Type": "application/json" } }
       );

@@ -37,7 +37,7 @@
 
 //   const fetchCreatedPuzzles = async () => {
 //     try {
-//       const res = await axios.get('http://10.124.194.56:3000/api/puzzles');
+//       const res = await axios.get('https://eduzzleapp-react-native.onrender.com/api/puzzles');
 //       setCreatedPuzzles(res.data);
 //     } catch (err) {
 //       console.error(err);
@@ -73,7 +73,7 @@
 //         author: "Admin"
 //       };
 
-//       await axios.post('http://10.124.194.56:3000/api/puzzles/create', payload);
+//       await axios.post('https://eduzzleapp-react-native.onrender.com/api/puzzles/create', payload);
 //       Alert.alert('Success', 'Puzzle created!');
 //       setPuzzleName('');
 //       fetchCreatedPuzzles();
@@ -98,7 +98,7 @@
 //         points: parseInt(points)
 //       };
 
-//       await axios.post(`http://10.124.194.56:3000/api/puzzles/${selectedPuzzleId}/levels/${selectedLevelName}/add-question`, payload);
+//       await axios.post(`https://eduzzleapp-react-native.onrender.com/api/puzzles/${selectedPuzzleId}/levels/${selectedLevelName}/add-question`, payload);
 //       Alert.alert('Success', 'Question added');
 //       setNewQuestion('');
 //       setNewOptions(['', '', '', '']);
@@ -319,7 +319,7 @@
 
 //   const fetchCreatedPuzzles = async () => {
 //     try {
-//       const res = await axios.get('http://10.124.194.56:3000/api/puzzles');
+//       const res = await axios.get('https://eduzzleapp-react-native.onrender.com/api/puzzles');
 //       setCreatedPuzzles(res.data);
 //     } catch (err) {
 //       console.error(err);
@@ -349,7 +349,7 @@
 //         author: "Admin"
 //       };
 
-//       await axios.post('http://10.124.194.56:3000/api/puzzles/create', payload);
+//       await axios.post('https://eduzzleapp-react-native.onrender.com/api/puzzles/create', payload);
 //       Alert.alert('Success', 'Puzzle created!');
 //       setPuzzleName('');
 //       setSelectedLevelName('');
@@ -375,7 +375,7 @@
 //         points: parseInt(points)
 //       };
 
-//       await axios.post(`http://10.124.194.56:3000/api/puzzles/${selectedPuzzleId}/levels/${selectedLevelName}/add-question`, payload);
+//       await axios.post(`https://eduzzleapp-react-native.onrender.com/api/puzzles/${selectedPuzzleId}/levels/${selectedLevelName}/add-question`, payload);
 //       Alert.alert('Success', 'Question added');
 //       setNewQuestion('');
 //       setNewOptions(['', '', '', '']);
@@ -665,7 +665,7 @@ export default function CreateHomeScreen() {
 
   const fetchCreatedPuzzles = async () => {
     try {
-      const res = await axios.get('http://10.124.194.56:3000/api/puzzles');
+      const res = await axios.get('https://eduzzleapp-react-native.onrender.com/api/puzzles');
       setCreatedPuzzles(res.data);
     } catch (err) {
       console.error(err);
@@ -695,7 +695,7 @@ export default function CreateHomeScreen() {
         author: "Admin"
       };
 
-      await axios.post('http://10.124.194.56:3000/api/puzzles/create', payload);
+      await axios.post('https://eduzzleapp-react-native.onrender.com/api/puzzles/create', payload);
       Alert.alert('Success', 'Puzzle created!');
       setPuzzleName('');
       setSelectedLevelName('');
@@ -721,7 +721,7 @@ export default function CreateHomeScreen() {
         points: parseInt(points)
       };
 
-      await axios.post(`http://10.124.194.56:3000/api/puzzles/${selectedPuzzleId}/levels/${selectedLevelName}/add-question`, payload);
+      await axios.post(`https://eduzzleapp-react-native.onrender.com/api/puzzles/${selectedPuzzleId}/levels/${selectedLevelName}/add-question`, payload);
       Alert.alert('Success', 'Question added');
       setNewQuestion('');
       setNewOptions(['', '', '', '']);

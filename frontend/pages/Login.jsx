@@ -13,7 +13,7 @@ export default function Login() {
 
   const submit = async () => {
     try {
-      const res = await fetch("http://10.124.194.56:3000/api/auth/login", {
+      const res = await fetch("https://eduzzleapp-react-native.onrender.com/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -66,7 +66,7 @@ export default function Login() {
         onPress={() => {
           // open forgot password API in browser
           Alert.alert("Redirect", "Open forgot password link in browser.");
-          // You can use Linking.openURL("http://10.124.194.56:3000/api/auth/forgot-password");
+          // You can use Linking.openURL("https://eduzzleapp-react-native.onrender.com/api/auth/forgot-password");
         }}
       >
         <Text style={styles.linkText}>Forgot password?</Text>

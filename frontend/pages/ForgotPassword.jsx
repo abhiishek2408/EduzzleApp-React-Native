@@ -9,7 +9,7 @@ export default function ForgotPassword() {
 
   const submit = async () => {
     try {
-      await axios.post("http://10.124.194.56:3000/api/auth/forgot-password", { email });
+      await axios.post("https://eduzzleapp-react-native.onrender.com/api/auth/forgot-password", { email });
       Alert.alert("Success", "If account exists, a reset email has been sent.");
       navigation.navigate("Login"); // <- make sure you have Login in your navigator
     } catch (err) {

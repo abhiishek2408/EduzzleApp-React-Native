@@ -18,7 +18,7 @@
 //     }
 
 //     try {
-//       await axios.post("http://10.124.194.56:3000/api/auth/reset-password", {
+//       await axios.post("https://eduzzleapp-react-native.onrender.com/api/auth/reset-password", {
 //         userId,
 //         token,
 //         newPassword: password,

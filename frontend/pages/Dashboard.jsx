@@ -17,7 +17,7 @@ export default function Dashboard() {
         return;
       }
 
-      const res = await axios.get("http://10.124.194.56:3000/api/user/profile", {
+      const res = await axios.get("https://eduzzleapp-react-native.onrender.com/api/user/profile", {
         headers: { Authorization: `Bearer ${token}` },
       });
 

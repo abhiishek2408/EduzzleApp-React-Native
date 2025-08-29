@@ -34,7 +34,7 @@ export default function HomeScreen({ navigation }) {
   const fetchPuzzles = async () => {
     try {
       const res = await axios.get(
-        `http://10.124.194.56:3000/api/fetch-puzzles/all?userId=${user._id}`
+        `https://eduzzleapp-react-native.onrender.com/api/fetch-puzzles/all?userId=${user._id}`
       );
       setPuzzles(res.data);
     } catch (err) {

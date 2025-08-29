@@ -1,28 +1,46 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity
+  TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigation } from '@react-navigation/native';
+import axios from 'axios';
 
 export default function ProfileScreen() {
-  const { logout, user} = useContext(AuthContext);
-
-
+  const { logout, user, token } = useContext(AuthContext);
   const navigation = useNavigation();
+
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const handleLogout = () => {
     logout();
-    navigation.reset({
-      index: 0,
-      routes: [{ name: 'Login' }],  // ✅ matches the name in your Stack.Navigator
-    });
+    navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
   };
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await axios.get(
+          "https://eduzzleapp-react-native.onrender.com/api/attempts/my-stats",
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setStats(res.data);
+      } catch (err) {
+        console.error("Error fetching stats:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, [token]);
 
   return (
     <ScrollView style={styles.container}>
@@ -34,15 +52,31 @@ export default function ProfileScreen() {
 
       <View style={styles.statsContainer}>
         <View style={styles.statBox}>
-          <Text style={styles.statNumber}>38</Text>
+          {loading ? (
+            <ActivityIndicator size="small" color="#6a21a8" />
+          ) : (
+            <Text style={styles.statNumber}>{stats?.attemptCount ?? 0}</Text>
+          )}
           <Text style={styles.statLabel}>Puzzles Solved</Text>
         </View>
+
         <View style={styles.statBox}>
-          <Text style={styles.statNumber}>4,500</Text>
+          {loading ? (
+            <ActivityIndicator size="small" color="#6a21a8" />
+          ) : (
+            <Text style={styles.statNumber}>{stats?.totalPoints ?? 0}</Text>
+          )}
           <Text style={styles.statLabel}>Total Points</Text>
         </View>
+
         <View style={styles.statBox}>
-          <Text style={styles.statNumber}>Level 5</Text>
+          {loading ? (
+            <ActivityIndicator size="small" color="#6a21a8" />
+          ) : (
+            <Text style={styles.statNumber}>
+              {stats?.highestLevel || "N/A"}
+            </Text>
+          )}
           <Text style={styles.statLabel}>Rank</Text>
         </View>
       </View>
@@ -68,10 +102,7 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fef9ff',
-  },
+  container: { flex: 1, backgroundColor: '#fef9ff' },
   header: {
     alignItems: 'center',
     paddingTop: 40,
@@ -81,17 +112,8 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 30,
     elevation: 2,
   },
-  name: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#4b0082',
-    marginTop: 10,
-  },
-  email: {
-    fontSize: 14,
-    color: '#555',
-    marginTop: 4,
-  },
+  name: { fontSize: 22, fontWeight: '700', color: '#4b0082', marginTop: 10 },
+  email: { fontSize: 14, color: '#555', marginTop: 4 },
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -105,21 +127,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '30%',
   },
-  statNumber: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#6a21a8',
-  },
-  statLabel: {
-    fontSize: 12,
-    color: '#444',
-    marginTop: 4,
-    textAlign: 'center',
-  },
-  section: {
-    marginTop: 40,
-    paddingHorizontal: 30,
-  },
+  statNumber: { fontSize: 20, fontWeight: '600', color: '#6a21a8' },
+  statLabel: { fontSize: 12, color: '#444', marginTop: 4, textAlign: 'center' },
+  section: { marginTop: 40, paddingHorizontal: 30 },
   option: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -134,3 +144,4 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 });
+

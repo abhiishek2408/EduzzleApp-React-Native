@@ -27,7 +27,7 @@
 
 //     try {
 //       console.log("Submitting OTP:", { userId, otp });
-//       const { data } = await axios.post("http://10.124.194.56:3000/api/auth/verify-otp", {
+//       const { data } = await axios.post("https://eduzzleapp-react-native.onrender.com/api/auth/verify-otp", {
 //         userId,
 //         otp,
 //       });
@@ -55,7 +55,7 @@
 
 //     try {
 //       console.log("Resending OTP to:", email);
-//       const { data } = await axios.post("http://10.124.194.56:3000/api/auth/resend-otp", { email });
+//       const { data } = await axios.post("https://eduzzleapp-react-native.onrender.com/api/auth/resend-otp", { email });
 //       console.log("Resend OTP response:", data);
 //       Alert.alert("Success", "OTP resent if email matches");
 //     } catch (err) {

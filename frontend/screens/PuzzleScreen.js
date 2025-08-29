@@ -69,7 +69,7 @@ export default function PuzzleScreen() {
 
     try {
       const { data } = await axios.get(
-        `http://10.124.194.56:3000/api/fetch-puzzles/by-id/${id}`
+        `https://eduzzleapp-react-native.onrender.com/api/fetch-puzzles/by-id/${id}`
       );
 
       setQuizData(data);
@@ -254,7 +254,7 @@ export default function PuzzleScreen() {
 
     try {
       setSubmitted(true);
-      await axios.post("http://10.124.194.56:3000/api/puzzle-attempts", payload);
+      await axios.post("https://eduzzleapp-react-native.onrender.com/api/puzzle-attempts", payload);
       Alert.alert("Success", "Results submitted successfully");
     } catch {
       Alert.alert("Error", "Submission failed");

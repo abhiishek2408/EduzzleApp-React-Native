@@ -38,15 +38,15 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (form) => {
     const { data } = await axios.post(
-      "http://10.124.194.56:3000/api/auth/register",
+      "https://eduzzleapp-react-native.onrender.com/api/auth/register",
       form
     );
-    return data; // will contain userId for VerifyOtp
+    return data; // will contain userId for VerifyOtpw
   };
 
   const verifyOtp = async (userId, otp) => {
     const { data } = await axios.post(
-      "http://10.124.194.56:3000/api/auth/verify-otp",
+      "https://eduzzleapp-react-native.onrender.com/api/auth/verify-otp",
       {
         userId,
         otp,
@@ -67,7 +67,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     const { data } = await axios.post(
-      "http://10.124.194.56:3000/api/auth/login",
+      "https://eduzzleapp-react-native.onrender.com/api/auth/login",
       {
         email,
         password,
@@ -96,7 +96,7 @@ export const AuthProvider = ({ children }) => {
   // inside AuthProvider
   const forgotPassword = async (email) => {
     const { data } = await axios.post(
-      "http://10.124.194.56:3000/api/auth/forgot-password",
+      "https://eduzzleapp-react-native.onrender.com/api/auth/forgot-password",
       {
         email,
       }
@@ -106,7 +106,7 @@ export const AuthProvider = ({ children }) => {
 
   const resetPassword = async (userId, otp, newPassword) => {
     const { data } = await axios.post(
-      "http://10.124.194.56:3000/api/auth/reset-password",
+      "https://eduzzleapp-react-native.onrender.com/api/auth/reset-password",
       {
         userId,
         otp,
