@@ -4,26 +4,26 @@
     "slug": "Eduzzle",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/adaptive-icon2.png",
+    "icon": "./assets/adaptive-icon1.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon-light.png",
+      "image": "./assets/splash-icon1.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#a21caf"
     },
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon2.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/adaptive-icon1.png",
+        "backgroundColor": "#a21caf"
       },
       "edgeToEdgeEnabled": true
     },
     "web": {
-      "favicon": "./assets/adaptive-icon2.png"
+      "favicon": "./assets/adaptive-icon1.png"
     },
     "plugins": [
       "expo-font"
