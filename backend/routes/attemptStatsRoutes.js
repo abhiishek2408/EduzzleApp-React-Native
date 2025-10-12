@@ -39,4 +39,24 @@ router.get("/stats/:id", async (req, res) => {
   }
 });
 
+
+
+// Get all puzzle IDs attempted by a user
+router.get("/attempted-puzzles/:userId", async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    // Fetch only puzzle IDs for this user
+    const attempts = await PuzzleAttempt.find({ user: userId }).select("puzzle -_id");
+
+    const attemptedPuzzleIds = attempts.map((att) => att.puzzle.toString());
+
+    res.json({ success: true, attemptedPuzzleIds });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Server error", error });
+  }
+});
+
+
 export default router;
