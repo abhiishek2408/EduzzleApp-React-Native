@@ -23,15 +23,15 @@ export default function ProfileScreen() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
 
-  const API_URL = "https://eduzzleapp-react-native.onrender.com"; // your backend URL
+  const API_URL = "https://eduzzleapp-react-native.onrender.com"; // ✅ your backend URL
 
-  // Logout
+  // ✅ Logout handler
   const handleLogout = () => {
     logout();
     navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
   };
 
-  // Fetch user stats
+  // ✅ Fetch user stats
   useEffect(() => {
     const fetchStats = async () => {
       try {
@@ -49,7 +49,7 @@ export default function ProfileScreen() {
     fetchStats();
   }, [user, token]);
 
-  // Pick image using Expo DocumentPicker and upload
+  // ✅ Pick and upload profile image
   const handleImagePick = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
@@ -72,6 +72,7 @@ export default function ProfileScreen() {
       });
 
       setUploading(true);
+
       const response = await axios.put(`${API_URL}/api/user/profile-pic`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -79,11 +80,24 @@ export default function ProfileScreen() {
         },
       });
 
-      setUser(response.data.user);
-      Alert.alert('Success', 'Profile picture updated successfully!');
+      // ✅ Backend responds with updated user data
+      if (response.status === 200) {
+        setUser(response.data.user);
+        Alert.alert('✅ Success', 'Profile picture updated successfully!');
+      } else {
+        Alert.alert('Error', response.data?.message || 'Unexpected response.');
+      }
     } catch (err) {
-      console.error('Upload error:', err);
-      Alert.alert('Error', 'Failed to upload profile picture.');
+      console.error('Upload error:', err.response?.data || err.message);
+
+      // Handle 500 errors gracefully
+      if (err.response?.status === 500) {
+        Alert.alert('Server Error', 'Something went wrong on the server.');
+      } else if (err.response?.status === 400) {
+        Alert.alert('Upload Failed', 'No file selected or invalid file type.');
+      } else {
+        Alert.alert('Error', 'Failed to upload profile picture.');
+      }
     } finally {
       setUploading(false);
     }
@@ -91,6 +105,7 @@ export default function ProfileScreen() {
 
   return (
     <ScrollView style={styles.container}>
+      {/* Header Section */}
       <View style={styles.header}>
         <TouchableOpacity onPress={handleImagePick}>
           {uploading ? (
@@ -98,7 +113,8 @@ export default function ProfileScreen() {
           ) : (
             <Image
               source={{
-                uri: user?.profilePic ||
+                uri:
+                  user?.profilePic ||
                   "https://res.cloudinary.com/demo/image/upload/v1710000000/default-profile.png",
               }}
               style={styles.profileImage}
@@ -110,29 +126,37 @@ export default function ProfileScreen() {
         <Text style={styles.email}>{user?.email || "guest@example.com"}</Text>
       </View>
 
+      {/* Stats Section */}
       <View style={styles.statsContainer}>
         <View style={styles.statBox}>
-          {loading ? <ActivityIndicator size="small" color="#6a21a8" /> : (
+          {loading ? (
+            <ActivityIndicator size="small" color="#6a21a8" />
+          ) : (
             <Text style={styles.statNumber}>{stats?.attemptCount ?? 0}</Text>
           )}
           <Text style={styles.statLabel}>Puzzles Solved</Text>
         </View>
 
         <View style={styles.statBox}>
-          {loading ? <ActivityIndicator size="small" color="#6a21a8" /> : (
+          {loading ? (
+            <ActivityIndicator size="small" color="#6a21a8" />
+          ) : (
             <Text style={styles.statNumber}>{stats?.totalPoints ?? 0}</Text>
           )}
           <Text style={styles.statLabel}>Total Points</Text>
         </View>
 
         <View style={styles.statBox}>
-          {loading ? <ActivityIndicator size="small" color="#6a21a8" /> : (
+          {loading ? (
+            <ActivityIndicator size="small" color="#6a21a8" />
+          ) : (
             <Text style={styles.statNumber}>{stats?.highestLevel ?? "N/A"}</Text>
           )}
           <Text style={styles.statLabel}>Rank</Text>
         </View>
       </View>
 
+      {/* Options Section */}
       <View style={styles.section}>
         <TouchableOpacity style={styles.option}>
           <Ionicons name="settings-outline" size={24} color="#6b21a8" />
