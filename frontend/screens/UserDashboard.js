@@ -1,7 +1,10 @@
 import React, { useContext } from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
 import { Ionicons, FontAwesome } from "@expo/vector-icons";
-import { createDrawerNavigator, DrawerContentScrollView } from "@react-navigation/drawer";
+import {
+  createDrawerNavigator,
+  DrawerContentScrollView,
+} from "@react-navigation/drawer";
 import { createStackNavigator } from "@react-navigation/stack";
 import { AuthContext } from "../context/AuthContext";
 
@@ -28,7 +31,10 @@ const StackScreens = ({ route, navigation }) => {
         headerStyle: { backgroundColor: "#a21caf" },
         headerTitleStyle: { color: "#fff", fontSize: 20, fontWeight: "500" },
         headerLeft: () => (
-          <TouchableOpacity style={{ marginLeft: 15 }} onPress={() => navigation.openDrawer()}>
+          <TouchableOpacity
+            style={{ marginLeft: 15 }}
+            onPress={() => navigation.openDrawer()}
+          >
             <Ionicons name="filter-outline" size={24} color="black" />
           </TouchableOpacity>
         ),
@@ -48,7 +54,7 @@ const StackScreens = ({ route, navigation }) => {
 
 // ------------------- Custom Drawer -------------------
 function CustomDrawerContent(props) {
-  const { logout } = useContext(AuthContext);
+  const { logout, user } = useContext(AuthContext); // ✅ include user
 
   const handleLogout = () => {
     logout();
@@ -59,15 +65,35 @@ function CustomDrawerContent(props) {
   };
 
   return (
-    <DrawerContentScrollView {...props} contentContainerStyle={styles.drawerContainer}>
+    <DrawerContentScrollView
+      {...props}
+      contentContainerStyle={styles.drawerContainer}
+    >
       <View style={styles.drawerHeader}>
-        <FontAwesome name="user-circle" size={80} color="#a21caf" />
-        <Text style={styles.drawerHeaderText}>Welcome!</Text>
+        {user?.profilePic ? (
+          <Image
+            source={{ uri: user.profilePic }}
+            style={{
+              width: 80,
+              height: 80,
+              borderRadius: 40,
+              borderWidth: 2,
+              borderColor: "#a21caf",
+            }}
+          />
+        ) : (
+          <FontAwesome name="user-circle" size={80} color="#a21caf" />
+        )}
+        <Text style={styles.drawerHeaderText}>
+          {user?.name || "Welcome!"}
+        </Text>
       </View>
 
       <TouchableOpacity
         style={styles.drawerItem}
-        onPress={() => props.navigation.navigate("Home", { screen: "StackHome" })}
+        onPress={() =>
+          props.navigation.navigate("Home", { screen: "StackHome" })
+        }
       >
         <Ionicons name="book-outline" size={22} color="#a21caf" />
         <Text style={styles.drawerItemText}>Quiz</Text>
@@ -75,7 +101,9 @@ function CustomDrawerContent(props) {
 
       <TouchableOpacity
         style={styles.drawerItem}
-        onPress={() => props.navigation.navigate("Play", { screen: "StackPlay" })}
+        onPress={() =>
+          props.navigation.navigate("Play", { screen: "StackPlay" })
+        }
       >
         <Ionicons name="game-controller-outline" size={22} color="#a21caf" />
         <Text style={styles.drawerItemText}>Play</Text>
@@ -83,7 +111,9 @@ function CustomDrawerContent(props) {
 
       <TouchableOpacity
         style={styles.drawerItem}
-        onPress={() => props.navigation.navigate("Profile", { screen: "StackProfile" })}
+        onPress={() =>
+          props.navigation.navigate("Profile", { screen: "StackProfile" })
+        }
       >
         <Ionicons name="person-outline" size={22} color="#a21caf" />
         <Text style={styles.drawerItemText}>Profile</Text>
@@ -92,7 +122,9 @@ function CustomDrawerContent(props) {
       <View style={styles.logoutContainer}>
         <TouchableOpacity style={styles.drawerItem} onPress={handleLogout}>
           <Ionicons name="log-out-outline" size={22} color="#ff4444" />
-          <Text style={[styles.drawerItemText, { color: "#ff4444" }]}>Logout</Text>
+          <Text style={[styles.drawerItemText, { color: "#ff4444" }]}>
+            Logout
+          </Text>
         </TouchableOpacity>
       </View>
     </DrawerContentScrollView>
@@ -110,9 +142,21 @@ export default function UserDashboard() {
         drawerStyle: { backgroundColor: "#fff8fc", width: 250 },
       }}
     >
-      <Drawer.Screen name="Home" component={StackScreens} initialParams={{ screen: "StackHome" }} />
-      <Drawer.Screen name="Play" component={StackScreens} initialParams={{ screen: "StackPlay" }} />
-      <Drawer.Screen name="Profile" component={StackScreens} initialParams={{ screen: "StackProfile" }} />
+      <Drawer.Screen
+        name="Home"
+        component={StackScreens}
+        initialParams={{ screen: "StackHome" }}
+      />
+      <Drawer.Screen
+        name="Play"
+        component={StackScreens}
+        initialParams={{ screen: "StackPlay" }}
+      />
+      <Drawer.Screen
+        name="Profile"
+        component={StackScreens}
+        initialParams={{ screen: "StackProfile" }}
+      />
     </Drawer.Navigator>
   );
 }
@@ -121,7 +165,12 @@ export default function UserDashboard() {
 const styles = StyleSheet.create({
   drawerContainer: { flex: 1, paddingVertical: 20, backgroundColor: "#fff8fc" },
   drawerHeader: { alignItems: "center", marginBottom: 30 },
-  drawerHeaderText: { marginTop: 10, fontSize: 20, fontWeight: "bold", color: "#a21caf" },
+  drawerHeaderText: {
+    marginTop: 10,
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#a21caf",
+  },
   drawerItem: {
     flexDirection: "row",
     alignItems: "center",
@@ -132,6 +181,16 @@ const styles = StyleSheet.create({
     marginVertical: 5,
     backgroundColor: "#fde8ff",
   },
-  drawerItemText: { fontSize: 16, marginLeft: 15, color: "#4c1d95", fontWeight: "600" },
-  logoutContainer: { flex: 1, justifyContent: "flex-end", marginTop: 50, paddingHorizontal: 10 },
+  drawerItemText: {
+    fontSize: 16,
+    marginLeft: 15,
+    color: "#4c1d95",
+    fontWeight: "600",
+  },
+  logoutContainer: {
+    flex: 1,
+    justifyContent: "flex-end",
+    marginTop: 50,
+    paddingHorizontal: 10,
+  },
 });

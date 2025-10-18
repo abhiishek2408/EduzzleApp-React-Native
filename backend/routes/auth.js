@@ -57,7 +57,7 @@ router.post("/register", createRateLimiter({ max: 6 }), async (req, res) => {
     // Save user ONLY if email sent successfully
     await user.save();
 
-    return res.status(201).json({ message: "Registered. Check email for OTP.", userId: user._id });
+    return res.status(201).json({ message: "Registered. Check email for OTP.", userId: user._id, email: user.email });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Server error" });
@@ -111,7 +111,7 @@ router.post("/login", createRateLimiter({ max: 20 }), async (req, res) => {
     const token = signToken(user);
 
     // --- RETURN USER OBJECT HERE ---
-    return res.json({ message: "Logged in successfully", token, role: user.role, user: {_id: user._id, name: user.name, email: user.email, role: user.role }});
+    return res.json({ message: "Logged in successfully", token, role: user.role, user: {_id: user._id, name: user.name, email: user.email, role: user.role, profilePic: user.profilePic || null }});
 
   } catch (err) {
     console.error("Login error:", err);
@@ -146,7 +146,7 @@ router.post("/verify-otp", createRateLimiter({ max: 12 }), async (req, res) => {
 
     // send back a token
     const token = signToken(user);
-    return res.json({ message: "Email verified", token });
+    return res.json({ message: "Email verified", token, role: user.role, user: {_id: user._id, name: user.name, email: user.email, role: user.role, profilePic: user.profilePic || null } });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Server error" });
