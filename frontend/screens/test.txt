@@ -1,0 +1,271 @@
+import React, { useEffect, useState, useContext } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  ActivityIndicator,
+  TouchableOpacity,
+  Alert,
+  StyleSheet,
+  StatusBar,
+  Platform,
+  Dimensions,
+} from "react-native";
+import axios from "axios";
+import Svg, { Rect, Defs, LinearGradient, Stop, Circle, Path } from "react-native-svg";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+
+import { AuthContext } from "../context/AuthContext";
+
+const THEME_COLOR = "#a21caf";
+const PRIMARY_TEXT_COLOR = "#2d0c57";
+const SECONDARY_TEXT_COLOR = "#4a4a6a";
+
+const PADDING_HORIZONTAL = 20;
+const CARD_MARGIN = 10;
+const { width: screenWidth } = Dimensions.get("window");
+const CARD_WIDTH = (screenWidth - 2 * PADDING_HORIZONTAL - CARD_MARGIN) / 2;
+
+// ------------------- COMPONENTS -------------------
+
+const ContinuePlayingCard = ({ lastPuzzle, navigation }) => {
+  const hasActivePuzzle = lastPuzzle && lastPuzzle._id;
+
+  const handlePress = () => {
+    if (hasActivePuzzle) {
+      navigation.navigate("StackQuizScreen", { puzzleId: lastPuzzle._id });
+    } else {
+      Alert.alert(
+        "Success!",
+        "You have completed all available puzzles. Check back later for new challenges!"
+      );
+    }
+  };
+
+  return (
+    <TouchableOpacity
+      style={continueStyles.card}
+      onPress={handlePress}
+      activeOpacity={hasActivePuzzle ? 0.7 : 1}
+    >
+      <View style={continueStyles.textContainer}>
+        <Text style={continueStyles.statusText}>
+          {hasActivePuzzle ? "Your Current Challenge" : "All Puzzles Complete"}
+        </Text>
+        <Text style={continueStyles.puzzleName} numberOfLines={2}>
+          {hasActivePuzzle ? lastPuzzle.name : "Start a New Challenge Below!"}
+        </Text>
+      </View>
+      <View style={continueStyles.progressIndicator}>
+        <Text style={continueStyles.progressText}>{hasActivePuzzle ? "Resume" : "Browse"}</Text>
+        <View
+          style={[continueStyles.progressDot, { backgroundColor: hasActivePuzzle ? THEME_COLOR : "#4caf50" }]}
+        />
+      </View>
+    </TouchableOpacity>
+  );
+};
+
+const DailyPuzzleCard = ({ navigation }) => {
+  const handlePress = () => {
+    navigation.navigate("StackQuizScreen", { puzzleId: "daily" });
+  };
+
+  return (
+    <TouchableOpacity
+      style={continueStyles.card}
+      onPress={handlePress}
+      activeOpacity={0.7}
+    >
+      <View style={continueStyles.textContainer}>
+        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
+          <MaterialCommunityIcons name="bullseye-arrow" size={18} color={THEME_COLOR} />
+          <Text style={[continueStyles.statusText, { marginLeft: 6 }]}>Today's Puzzle</Text>
+        </View>
+        <Text style={continueStyles.puzzleName} numberOfLines={2}>
+          Stack Quiz
+        </Text>
+      </View>
+      <View style={continueStyles.progressIndicator}>
+        <Text style={continueStyles.progressText}>Start</Text>
+        <View style={[continueStyles.progressDot, { backgroundColor: THEME_COLOR }]} />
+      </View>
+    </TouchableOpacity>
+  );
+};
+
+const PuzzleGridList = ({ puzzles, navigation, title }) => {
+  if (puzzles.length === 0) return null;
+
+  return (
+    <View style={{ marginBottom: 25, zIndex: 1 }}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      <View style={verticalListStyles.grid}>
+        {puzzles.map((puzzle, index) => (
+          <TouchableOpacity
+            key={puzzle._id}
+            style={[
+              verticalListStyles.cardWrapper,
+              index % 2 === 0 ? { marginRight: CARD_MARGIN } : null,
+            ]}
+            onPress={() => navigation.navigate("PuzzleScreen", { puzzleId: puzzle._id })}
+          >
+            <View style={StyleSheet.absoluteFill}>
+              <Svg height="100%" width="100%">
+                <Defs>
+                  <LinearGradient id={`cardGradient-${puzzle._id}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                    <Stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
+                    <Stop offset="100%" stopColor="#f7f7f7" stopOpacity="1" />
+                  </LinearGradient>
+                </Defs>
+                <Rect
+                  x="0"
+                  y="0"
+                  width="100%"
+                  height="100%"
+                  fill={`url(#cardGradient-${puzzle._id})`}
+                  rx="12"
+                  ry="12"
+                />
+              </Svg>
+            </View>
+
+            <View style={verticalListStyles.cardContent}>
+              <MaterialCommunityIcons name="lightbulb-on-outline" size={20} color={PRIMARY_TEXT_COLOR} />
+              <Text style={verticalListStyles.puzzleName} numberOfLines={2} ellipsizeMode="tail">
+                {puzzle.name}
+              </Text>
+              <View style={verticalListStyles.tagRow}>
+                <Text style={verticalListStyles.categoryText}>{puzzle.category}</Text>
+              </View>
+              <View style={verticalListStyles.separator} />
+              <View style={verticalListStyles.button}>
+                <Text style={verticalListStyles.buttonText}>Start Challenge</Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+        ))}
+      </View>
+    </View>
+  );
+};
+
+// ------------------- MAIN SCREEN -------------------
+export default function HomeScreen({ navigation }) {
+  const { user } = useContext(AuthContext);
+  const [puzzles, setPuzzles] = useState([]);
+  const [lastUnsubmittedPuzzle, setLastUnsubmittedPuzzle] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetchPuzzles = async () => {
+    try {
+      const res = await axios.get(
+        `https://eduzzleapp-react-native.onrender.com/api/fetch-puzzles/all?userId=${user._id}`
+      );
+      const allPuzzles = res.data;
+      setPuzzles(allPuzzles);
+
+      const unsubmittedPuzzles = allPuzzles.filter((p) => !p.isSubmitted);
+      setLastUnsubmittedPuzzle(unsubmittedPuzzles.length > 0 ? unsubmittedPuzzles[0] : null);
+    } catch (err) {
+      console.error(err);
+      Alert.alert("Error", "Could not load puzzles");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (user?._id) fetchPuzzles();
+  }, [user]);
+
+  if (loading)
+    return <ActivityIndicator size="large" color={THEME_COLOR} style={styles.loadingIndicator} />;
+
+  const featuredPuzzles = puzzles.slice(0, 5);
+
+  return (
+    <View style={{ flex: 1, backgroundColor: "#ffffff" }}>
+      <StatusBar barStyle="light-content" backgroundColor={THEME_COLOR} />
+
+      <View style={StyleSheet.absoluteFillObject}>
+        <Svg height="100%" width="100%">
+          <Defs>
+            <LinearGradient id="backgroundGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <Stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
+              <Stop offset="100%" stopColor="#f8f4fb" stopOpacity="1" />
+            </LinearGradient>
+          </Defs>
+          <Rect x="0" y="0" width="100%" height="100%" fill="url(#backgroundGradient)" />
+          <Circle cx="10%" cy="5%" r="50" fill={THEME_COLOR} fillOpacity="0.15" />
+          <Circle cx="95%" cy="30%" r="60" fill={THEME_COLOR} fillOpacity="0.1" />
+          <Rect x="5%" y="60%" width="100" height="60" fill={THEME_COLOR} fillOpacity="0.08" rx="15" ry="15" />
+          <Path d="M 0 400 Q 150 350 300 400 L 300 500 L 0 500 Z" fill={THEME_COLOR} fillOpacity="0.1" />
+        </Svg>
+      </View>
+
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <Text style={styles.sectionTitle}>Today's Puzzle</Text>
+        <DailyPuzzleCard navigation={navigation} />
+
+        <Text style={styles.sectionTitle}>Continue Playing</Text>
+        <ContinuePlayingCard lastPuzzle={lastUnsubmittedPuzzle} navigation={navigation} />
+
+        <PuzzleGridList puzzles={featuredPuzzles} navigation={navigation} title="Featured & Trending" />
+        <PuzzleGridList puzzles={puzzles} navigation={navigation} title="All Puzzles" />
+      </ScrollView>
+    </View>
+  );
+}
+
+// ------------------- STYLES -------------------
+
+const styles = StyleSheet.create({
+  loadingIndicator: { flex: 1, justifyContent: "center" },
+  scrollContent: {
+    paddingHorizontal: PADDING_HORIZONTAL,
+    paddingTop: 20,
+    paddingBottom: 40,
+    flexGrow: 1,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: PRIMARY_TEXT_COLOR,
+    marginTop: 20,
+    marginBottom: 15,
+    zIndex: 1,
+    paddingHorizontal: 5,
+  },
+});
+
+const verticalListStyles = StyleSheet.create({
+  grid: { flexDirection: "row", flexWrap: "wrap", width: "100%" },
+  cardWrapper: {
+    width: CARD_WIDTH,
+    height: 190,
+    borderRadius: 12,
+    marginBottom: CARD_MARGIN * 1.5,
+    ...Platform.select({
+      ios: { shadowColor: PRIMARY_TEXT_COLOR, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 8 },
+      android: { elevation: 6 },
+    }),
+  },
+  cardContent: { flex: 1, padding: 15, borderRadius: 12, justifyContent: "space-between", zIndex: 10 },
+  puzzleName: { fontSize: 16, fontWeight: "800", color: PRIMARY_TEXT_COLOR },
+  tagRow: { flexDirection: "row", alignItems: "center", marginTop: 5, marginBottom: 10 },
+  categoryText: { fontSize: 11, fontWeight: "600", color: SECONDARY_TEXT_COLOR, marginRight: 10 },
+  separator: { height: 1, backgroundColor: "rgba(0,0,0,0.05)", marginVertical: 10 },
+  button: { backgroundColor: THEME_COLOR, paddingVertical: 10, borderRadius: 8, alignItems: "center", justifyContent: "center" },
+  buttonText: { color: "#fff", fontSize: 13, fontWeight: "700" },
+});
+
+const continueStyles = StyleSheet.create({
+  card: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", backgroundColor: "rgba(162, 28, 175, 0.1)", borderRadius: 12, padding: 20, borderLeftWidth: 5, borderLeftColor: THEME_COLOR, marginBottom: 15 },
+  textContainer: { flex: 1, marginRight: 10 },
+  statusText: { fontSize: 14, fontWeight: "700", color: THEME_COLOR, marginBottom: 4 },
+  puzzleName: { fontSize: 18, fontWeight: "600", color: PRIMARY_TEXT_COLOR },
+  progressIndicator: { flexDirection: "row", alignItems: "center" },
+  progressText: { fontSize: 14, fontWeight: "600", color: THEME_COLOR, marginRight: 8 },
+  progressDot: { width: 10, height: 10, borderRadius: 5 },
+});

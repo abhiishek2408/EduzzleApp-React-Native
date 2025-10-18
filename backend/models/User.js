@@ -8,16 +8,22 @@ const userSchema = new mongoose.Schema({
   role: { type: String, enum: ["user", "librarian", "admin"], default: "user" },
   isVerified: { type: Boolean, default: false },
   otp: {
-    code: String,        // hashed OTP
+    code: String,
     expiresAt: Date
   },
-  resetPasswordToken: String, // hashed
+  resetPasswordToken: String,
   resetPasswordExpires: Date,
   failedLoginAttempts: { type: Number, default: 0 },
-  lockUntil: Date
+  lockUntil: Date,
+
+  // ✅ new field for profile picture
+  profilePic: {
+    type: String,
+    default: "https://res.cloudinary.com/demo/image/upload/v1710000000/default-profile.png"
+  }
 }, { timestamps: true });
 
-// password hashing
+// Hash password before saving
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
   const salt = await bcrypt.genSalt(10);
@@ -25,12 +31,15 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
+// Compare password
 userSchema.methods.comparePassword = async function (candidate) {
   return bcrypt.compare(candidate, this.password);
 };
 
+// Account lock check
 userSchema.methods.isLocked = function () {
   return this.lockUntil && this.lockUntil > Date.now();
 };
 
 export default mongoose.model("User", userSchema);
+

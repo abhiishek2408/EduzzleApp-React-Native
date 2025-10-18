@@ -20,7 +20,7 @@ const app = express();
 app.use(helmet());
 
 // ---- CORS ----
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://10.159.191.56:8081";
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://10.159.191.56:8081" ;
 app.use(cors({
   origin: FRONTEND_URL,
   credentials: true,

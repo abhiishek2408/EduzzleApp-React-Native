@@ -13,15 +13,7 @@ const RESET_TOKEN_EXPIRES_MIN = Number(process.env.RESET_TOKEN_EXPIRES_MIN || 60
 // helper to create jwt
 const signToken = (user) => jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || "7d" });
 
-// simple protected route to test
-router.get("/me", async (req, res) => {
-  res.json({ ok: true });
-});
 
-/**
- * Register: create user, generate OTP, send email
- * blocks duplicate / invalid emails using validator
- */
 router.post("/register", createRateLimiter({ max: 6 }), async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
@@ -69,6 +61,61 @@ router.post("/register", createRateLimiter({ max: 6 }), async (req, res) => {
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Server error" });
+  }
+});
+
+
+router.post("/login", createRateLimiter({ max: 20 }), async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password required" });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    // check if account is locked
+    if (user.isLocked()) {
+      return res.status(403).json({ message: "Account locked. Try again later." });
+    }
+
+    // check password
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      user.failedLoginAttempts += 1;
+
+      if (user.failedLoginAttempts >= 5) {
+        // lock account for 15 minutes
+        user.lockUntil = new Date(Date.now() + 15 * 60 * 1000);
+        user.failedLoginAttempts = 0;
+      }
+
+      await user.save();
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    // require verified email
+    if (!user.isVerified) {
+      return res.status(403).json({ message: "Email not verified. Please check your email for OTP." });
+    }
+
+    // reset failed attempts on successful login
+    user.failedLoginAttempts = 0;
+    user.lockUntil = undefined;
+    await user.save();
+
+    // issue JWT token
+    const token = signToken(user);
+
+    // --- RETURN USER OBJECT HERE ---
+    return res.json({ message: "Logged in successfully", token, role: user.role, user: {_id: user._id, name: user.name, email: user.email, role: user.role }});
+
+  } catch (err) {
+    console.error("Login error:", err);
+    return res.status(500).json({ message: "Server error during login" });
   }
 });
 
@@ -133,175 +180,9 @@ router.post("/resend-otp", createRateLimiter({ max: 6 }), async (req, res) => {
   }
 });
 
-/**
- * Login with lockout on multiple failed attempts
- */
-// router.post("/login", createRateLimiter({ max: 20 }), async (req, res) => {
-//   try {
-//     const { email, password } = req.body;
-//     if (!email || !password) return res.status(400).json({ message: "Email and password required" });
-
-//     const user = await User.findOne({ email: email.toLowerCase() });
-//     if (!user) return res.status(400).json({ message: "Invalid credentials" });
-
-//     // check lock
-//     if (user.isLocked && user.lockUntil > Date.now()) {
-//       return res.status(403).json({ message: "Account locked. Try later." });
-//     }
-
-//     const isMatch = await user.comparePassword(password);
-//     if (!isMatch) {
-//       user.failedLoginAttempts += 1;
-//       if (user.failedLoginAttempts >= 5) {
-//         // lock for 15 minutes
-//         user.lockUntil = new Date(Date.now() + 15 * 60 * 1000);
-//         user.failedLoginAttempts = 0;
-//       }
-//       await user.save();
-//       return res.status(400).json({ message: "Invalid credentials" });
-//     }
-
-//     // require verified email
-//     if (!user.isVerified) return res.status(403).json({ message: "Email not verified. Check your email for OTP." });
-
-//     // reset failed attempts
-//     user.failedLoginAttempts = 0;
-//     user.lockUntil = undefined;
-//     await user.save();
-
-//     const token = signToken(user);
-//     return res.json({ message: "Logged in", token, role: user.role });
-//   } catch (err) {
-//     console.error(err);
-//     return res.status(500).json({ message: "Server error" });
-//   }
-// });
 
 
-/**
- * Login with lockout on multiple failed attempts
- */
-// router.post("/login", createRateLimiter({ max: 20 }), async (req, res) => {
-//   try {
-//     const { email, password } = req.body;
-//     if (!email || !password) {
-//       return res.status(400).json({ message: "Email and password required" });
-//     }
 
-//     const user = await User.findOne({ email: email.toLowerCase() });
-//     if (!user) {
-//       return res.status(400).json({ message: "Invalid credentials" });
-//     }
-
-//     // check if account is locked
-//     if (user.isLocked()) {
-//       return res.status(403).json({ message: "Account locked. Try again later." });
-//     }
-
-//     // check password
-//     const isMatch = await user.comparePassword(password);
-//     if (!isMatch) {
-//       user.failedLoginAttempts += 1;
-
-//       if (user.failedLoginAttempts >= 5) {
-//         // lock account for 15 minutes
-//         user.lockUntil = new Date(Date.now() + 15 * 60 * 1000);
-//         user.failedLoginAttempts = 0;
-//       }
-
-//       await user.save();
-//       return res.status(400).json({ message: "Invalid credentials" });
-//     }
-
-//     // require verified email
-//     if (!user.isVerified) {
-//       return res.status(403).json({ message: "Email not verified. Please check your email for OTP." });
-//     }
-
-//     // reset failed attempts on successful login
-//     user.failedLoginAttempts = 0;
-//     user.lockUntil = undefined;
-//     await user.save();
-
-//     // issue JWT token
-//     const token = signToken(user);
-
-//     return res.json({
-//       message: "Logged in successfully",
-//       token,
-//       role: user.role
-//     });
-
-//   } catch (err) {
-//     console.error("Login error:", err); // <-- will show exact error in backend logs
-//     return res.status(500).json({ message: "Server error during login" });
-//   }
-// });
-
-
-router.post("/login", createRateLimiter({ max: 20 }), async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    if (!email || !password) {
-      return res.status(400).json({ message: "Email and password required" });
-    }
-
-    const user = await User.findOne({ email: email.toLowerCase() });
-    if (!user) {
-      return res.status(400).json({ message: "Invalid credentials" });
-    }
-
-    // check if account is locked
-    if (user.isLocked()) {
-      return res.status(403).json({ message: "Account locked. Try again later." });
-    }
-
-    // check password
-    const isMatch = await user.comparePassword(password);
-    if (!isMatch) {
-      user.failedLoginAttempts += 1;
-
-      if (user.failedLoginAttempts >= 5) {
-        // lock account for 15 minutes
-        user.lockUntil = new Date(Date.now() + 15 * 60 * 1000);
-        user.failedLoginAttempts = 0;
-      }
-
-      await user.save();
-      return res.status(400).json({ message: "Invalid credentials" });
-    }
-
-    // require verified email
-    if (!user.isVerified) {
-      return res.status(403).json({ message: "Email not verified. Please check your email for OTP." });
-    }
-
-    // reset failed attempts on successful login
-    user.failedLoginAttempts = 0;
-    user.lockUntil = undefined;
-    await user.save();
-
-    // issue JWT token
-    const token = signToken(user);
-
-    // --- RETURN USER OBJECT HERE ---
-    return res.json({
-      message: "Logged in successfully",
-      token,
-      role: user.role,
-      user: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role
-      }
-    });
-
-  } catch (err) {
-    console.error("Login error:", err);
-    return res.status(500).json({ message: "Server error during login" });
-  }
-});
 
 
 /**

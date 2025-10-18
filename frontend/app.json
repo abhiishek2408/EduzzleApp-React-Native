@@ -5,6 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/adaptive-icon1.png",
+    "runtimeVersion": "1.0.0",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
@@ -16,6 +17,7 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.abhiishek2408.Eduzzle",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon1.png",
         "backgroundColor": "#a21caf"
@@ -27,6 +29,17 @@
     },
     "plugins": [
       "expo-font"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "984667f1-544e-4c7a-8a49-0242d0165874"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/984667f1-544e-4c7a-8a49-0242d0165874"
+    }
   }
 }

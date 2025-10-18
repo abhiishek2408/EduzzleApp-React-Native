@@ -24,7 +24,10 @@ const SECONDARY_TEXT_COLOR = "#4a4a6a";
 const PADDING_HORIZONTAL = 20;
 const CARD_MARGIN = 10;
 const { width: screenWidth } = Dimensions.get("window");
+// Reduced CARD_WIDTH to make cards slightly smaller overall
 const CARD_WIDTH = (screenWidth - 2 * PADDING_HORIZONTAL - CARD_MARGIN) / 2;
+// CARD HEIGHT remains 140
+const CARD_HEIGHT = 140; 
 
 // ------------------- REUSABLE PUZZLE CARD -------------------
 const PuzzleCard = ({
@@ -41,16 +44,18 @@ const PuzzleCard = ({
   category,
   isGrid = false,
   index = 0,
-  attempted = false, // NEW: highlight attempted
+  attempted = false,
+  gradientKey,
 }) => {
-  // Card styling based on attempt
+  // Only apply attempted styling/different background logic for grid cards.
   const cardBackground = isGrid
-    ? "#fff"
-    : attempted
-    ? "rgba(162, 28, 175, 0.2)"
-    : backgroundColor;
+    ? attempted // Check attempted status only if it's a grid card
+      ? "rgba(162, 28, 175, 0.2)"
+      : "#fff" // Grid cards always have a white/gradient background if not attempted
+    : backgroundColor; // Use default background for non-grid cards
 
-  const cardBorder = attempted ? "#ff9900" : borderColor;
+  // Only change border for attempted grid cards.
+  const cardBorder = isGrid && attempted ? "#ff9900" : borderColor;
 
   return (
     <TouchableOpacity
@@ -64,52 +69,90 @@ const PuzzleCard = ({
     >
       {/* Grid card background */}
       {isGrid && (
-        <View style={StyleSheet.absoluteFill}>
+        <View style={[StyleSheet.absoluteFill, { borderRadius: 12, overflow: 'hidden' }]}>
           <Svg height="100%" width="100%">
             <Defs>
-              <LinearGradient id={`cardGradient-${subtitle}`} x1="0%" y1="0%" x2="100%" y2="100%">
+              <LinearGradient id={`cardGradient-${gradientKey}`} x1="0%" y1="0%" x2="100%" y2="100%">
                 <Stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
                 <Stop offset="100%" stopColor="#f7f7f7" stopOpacity="1" />
               </LinearGradient>
             </Defs>
-            <Rect x="0" y="0" width="100%" height="100%" fill={`url(#cardGradient-${subtitle})`} rx="12" ry="12" />
+            <Rect
+              x="0"
+              y="0"
+              width="100%"
+              height="100%"
+              fill={`url(#cardGradient-${gradientKey})`}
+              rx="12"
+              ry="12"
+            />
           </Svg>
         </View>
       )}
 
       <View style={isGrid ? verticalListStyles.cardContent : continueStyles.textContainer}>
-        {/* Icon & Title */}
-        {iconName && (
-          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
-            <MaterialCommunityIcons name={iconName} size={18} color={iconColor} />
-            <Text style={[continueStyles.statusText, { marginLeft: 6 }]}>{title}</Text>
-          </View>
+        {/* Icon & Title (Only shown for non-grid if it's the main status, for grid it's icon only) */}
+        {!isGrid && ( // Show Title/Icon/Subtitle for non-grid cards
+            <>
+                {iconName && (
+                <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
+                    <MaterialCommunityIcons name={iconName} size={20} color={iconColor} /> 
+                    <Text style={[continueStyles.statusText, { marginLeft: 6 }]}>{title}</Text>
+                </View>
+                )}
+                {!iconName && title && <Text style={continueStyles.statusText}>{title}</Text>}
+                <Text style={continueStyles.subtitleText} numberOfLines={2}>
+                    {subtitle}
+                </Text>
+            </>
         )}
-        {!iconName && title && <Text style={continueStyles.statusText}>{title}</Text>}
+        
+        {/* Grid Card Content (Icon/Title/Category/Start Button) */}
+        {isGrid && (
+            <>
+                {/* Icon & Title */}
+                {iconName && (
+                <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
+                    <MaterialCommunityIcons name={iconName} size={20} color={iconColor} /> 
+                    <Text style={[continueStyles.statusText, { marginLeft: 6, color: PRIMARY_TEXT_COLOR }]}>{title}</Text>
+                </View>
+                )}
+                {!iconName && title && <Text style={verticalListStyles.puzzleName}>{title}</Text>}
 
-        {/* Subtitle */}
-        <Text style={verticalListStyles.puzzleName} numberOfLines={2}>
-          {subtitle}
-        </Text>
+                {/* Subtitle */}
+                <Text style={[verticalListStyles.puzzleName, { marginBottom: 4 }]} numberOfLines={2}>
+                    {subtitle}
+                </Text>
 
-        {/* Category for Grid cards */}
-        {category && <Text style={verticalListStyles.categoryText}>{category}</Text>}
+                {/* Category for Grid cards */}
+                {category && <Text style={verticalListStyles.categoryText}>{category}</Text>}
 
-        {/* Attempted badge */}
-        {attempted && (
-          <View style={verticalListStyles.attemptedBadge}>
-            <Text style={verticalListStyles.attemptedBadgeText}>Attempted</Text>
-          </View>
+                {/* Attempted badge (Only visible for Grid cards) */}
+                {attempted && (
+                <View style={verticalListStyles.attemptedBadge}>
+                    <Text style={verticalListStyles.attemptedBadgeText}>Attempted</Text>
+                </View>
+                )}
+                
+                {/* "Start Quiz" button for Grid cards */}
+                <View style={verticalListStyles.startQuizButton}>
+                    <Text style={verticalListStyles.startQuizButtonText}>
+                        Start Quiz
+                    </Text>
+                </View>
+            </>
         )}
 
-        {/* Indicator for non-grid cards */}
-        {showIndicator && !isGrid && (
-          <View style={continueStyles.progressIndicator}>
-            <Text style={continueStyles.progressText}>{indicatorText}</Text>
-            <View style={[continueStyles.progressDot, { backgroundColor: iconColor }]} />
-          </View>
-        )}
       </View>
+      
+      {/* Indicator for non-grid cards (Moved outside text container for right alignment) */}
+      {showIndicator && !isGrid && (
+        <View style={continueStyles.progressIndicator}>
+          <Text style={continueStyles.progressText}>{indicatorText}</Text>
+          {/* Removed progressDot */}
+        </View>
+      )}
+
     </TouchableOpacity>
   );
 };
@@ -167,6 +210,7 @@ export default function HomeScreen({ navigation }) {
     <View style={{ flex: 1, backgroundColor: "#ffffff" }}>
       <StatusBar barStyle="light-content" backgroundColor={THEME_COLOR} />
 
+      {/* Background SVG */}
       <View style={StyleSheet.absoluteFillObject}>
         <Svg height="100%" width="100%">
           <Defs>
@@ -200,12 +244,11 @@ export default function HomeScreen({ navigation }) {
           subtitle={lastUnsubmittedPuzzle ? lastUnsubmittedPuzzle.name : "Start a New Challenge Below!"}
           onPress={() =>
             lastUnsubmittedPuzzle
-              ? navigation.navigate("StackQuizScreen", { puzzleId: lastUnsubmittedPuzzle._id })
+              ? navigation.navigate("PuzzleScreen", { puzzleId: lastUnsubmittedPuzzle._id })
               : Alert.alert("Success!", "You have completed all available puzzles.")
           }
           isActionable={!!lastUnsubmittedPuzzle}
           indicatorText={lastUnsubmittedPuzzle ? "Resume" : "Browse"}
-          attempted={lastUnsubmittedPuzzle && attemptedPuzzleIds.includes(lastUnsubmittedPuzzle._id)}
         />
 
         {/* Grid Puzzles */}
@@ -220,8 +263,12 @@ export default function HomeScreen({ navigation }) {
                   category={puzzle.category}
                   isGrid={true}
                   index={index}
+                  // Retained: attempted check for grid cards
                   attempted={attemptedPuzzleIds.includes(puzzle._id)}
-                  onPress={() => navigation.navigate("StackQuizScreen", { puzzleId: puzzle._id })}
+                  onPress={() => navigation.navigate("PuzzleScreen", { puzzleId: puzzle._id })}
+                  gradientKey={puzzle._id} // Unique for each gradient
+                  iconName="lightbulb-on-outline"
+                  iconColor={PRIMARY_TEXT_COLOR}
                 />
               ))}
             </View>
@@ -253,20 +300,22 @@ const styles = StyleSheet.create({
 });
 
 const verticalListStyles = StyleSheet.create({
-  grid: { flexDirection: "row", flexWrap: "wrap", width: "100%" },
+  grid: { flexDirection: "row", flexWrap: "wrap", width: "100%", alignItems: "flex-start" },
   cardWrapper: {
     width: CARD_WIDTH,
-    height: 190,
+    height: CARD_HEIGHT, 
     borderRadius: 12,
-    marginBottom: CARD_MARGIN * 1.5,
-    ...Platform.select({
-      ios: { shadowColor: PRIMARY_TEXT_COLOR, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 8 },
-      android: { elevation: 6 },
-    }),
+    marginBottom: CARD_MARGIN, 
   },
-  cardContent: { flex: 1, padding: 15, borderRadius: 12, justifyContent: "space-between", zIndex: 10 },
-  puzzleName: { fontSize: 16, fontWeight: "800", color: PRIMARY_TEXT_COLOR },
-  categoryText: { fontSize: 12, fontWeight: "600", color: SECONDARY_TEXT_COLOR, marginTop: 6 },
+  cardContent: { 
+    flex: 1, 
+    padding: 12, 
+    borderRadius: 12, 
+    justifyContent: "space-between", 
+    zIndex: 10 
+  },
+  puzzleName: { fontSize: 15, fontWeight: "800", color: PRIMARY_TEXT_COLOR }, 
+  categoryText: { fontSize: 12, fontWeight: "600", color: SECONDARY_TEXT_COLOR, marginTop: 4 },
   attemptedBadge: {
     position: "absolute",
     top: 10,
@@ -275,26 +324,56 @@ const verticalListStyles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 6,
+    zIndex: 20, 
   },
   attemptedBadgeText: { color: "#fff", fontSize: 10, fontWeight: "700" },
+  
+  startQuizButton: {
+    backgroundColor: THEME_COLOR, 
+    paddingVertical: 6,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 8, 
+  },
+  startQuizButtonText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  }
 });
 
 const continueStyles = StyleSheet.create({
   card: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "space-between", // Ensures indicator stays on the right
     alignItems: "center",
     backgroundColor: "rgba(162, 28, 175, 0.1)",
     borderRadius: 12,
-    padding: 20,
+    padding: 15, 
     borderLeftWidth: 5,
     borderLeftColor: THEME_COLOR,
     marginBottom: 15,
   },
   textContainer: { flex: 1, marginRight: 10 },
   statusText: { fontSize: 14, fontWeight: "700", color: THEME_COLOR, marginBottom: 4 },
-  progressIndicator: { flexDirection: "row", alignItems: "center" },
-  progressText: { fontSize: 14, fontWeight: "600", color: THEME_COLOR, marginRight: 8 },
-  progressDot: { width: 10, height: 10, borderRadius: 5 },
+  subtitleText: { fontSize: 16, fontWeight: "800", color: PRIMARY_TEXT_COLOR, marginTop: 2 }, // Added subtitle style for consistency
+  
+  // MODIFIED: Indicator is now a solid background button/badge
+  progressIndicator: { 
+      // Removed flexDirection: "row"
+      backgroundColor: THEME_COLOR, // Apply background color
+      paddingHorizontal: 10,
+      marginTop: 10,
+      paddingVertical: 4,
+      borderRadius: 12,
+      alignSelf: 'flex-start', // Important for vertical alignment
+  },
+  progressText: { 
+      fontSize: 12, // Reduced size for a compact look
+      fontWeight: "700", 
+      color: "#fff", // White text on theme background
+      // Removed marginRight: 8
+  },
+  // Removed progressDot as it's no longer needed
 });
-

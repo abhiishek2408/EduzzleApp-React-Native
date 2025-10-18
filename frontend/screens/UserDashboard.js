@@ -11,12 +11,13 @@ import PlayScreen from "./PlayScreen";
 import ProfileScreen from "./ProfileScreen";
 import PuzzleScreen from "./PuzzleScreen";
 import ResultScreen from "./ResultScreen";
+import StackQuiz from "../screens/Puzzles/StackQuiz";
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
 
-// Single Stack navigator
-const StackScreens = ({ navigation, route }) => {
+// ------------------- Stack Navigator -------------------
+const StackScreens = ({ route, navigation }) => {
   const initialScreen = route.params?.screen || "StackHome";
 
   return (
@@ -27,11 +28,8 @@ const StackScreens = ({ navigation, route }) => {
         headerStyle: { backgroundColor: "#a21caf" },
         headerTitleStyle: { color: "#fff", fontSize: 20, fontWeight: "500" },
         headerLeft: () => (
-          <TouchableOpacity
-            style={{ marginLeft: 15 }}
-            onPress={() => navigation.openDrawer()}
-          >
-            <Ionicons name="menu" size={28} color="#fff" />
+          <TouchableOpacity style={{ marginLeft: 15 }} onPress={() => navigation.openDrawer()}>
+            <Ionicons name="filter-outline" size={24} color="black" />
           </TouchableOpacity>
         ),
       }}
@@ -39,18 +37,21 @@ const StackScreens = ({ navigation, route }) => {
       <Stack.Screen name="StackHome" component={HomeScreen} />
       <Stack.Screen name="StackPlay" component={PlayScreen} />
       <Stack.Screen name="StackProfile" component={ProfileScreen} />
-      <Stack.Screen name="StackQuiz" component={PuzzleScreen} />
+
+      {/* Unique names for puzzle screens */}
+      <Stack.Screen name="PuzzleScreen" component={PuzzleScreen} />
+      <Stack.Screen name="StackQuizScreen" component={StackQuiz} />
       <Stack.Screen name="StackResult" component={ResultScreen} />
     </Stack.Navigator>
   );
 };
 
-// Custom Drawer Content
+// ------------------- Custom Drawer -------------------
 function CustomDrawerContent(props) {
   const { logout } = useContext(AuthContext);
 
   const handleLogout = () => {
-    logout(); // clear token and context
+    logout();
     props.navigation.reset({
       index: 0,
       routes: [{ name: "Login" }],
@@ -68,8 +69,8 @@ function CustomDrawerContent(props) {
         style={styles.drawerItem}
         onPress={() => props.navigation.navigate("Home", { screen: "StackHome" })}
       >
-        <Ionicons name="home-outline" size={22} color="#a21caf" />
-        <Text style={styles.drawerItemText}>Home</Text>
+        <Ionicons name="book-outline" size={22} color="#a21caf" />
+        <Text style={styles.drawerItemText}>Quiz</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -98,7 +99,7 @@ function CustomDrawerContent(props) {
   );
 }
 
-// Drawer navigator
+// ------------------- Drawer Navigator -------------------
 export default function UserDashboard() {
   return (
     <Drawer.Navigator
@@ -106,10 +107,7 @@ export default function UserDashboard() {
       drawerContent={(props) => <CustomDrawerContent {...props} />}
       screenOptions={{
         headerShown: false,
-        drawerStyle: {
-          backgroundColor: "#fff8fc",
-          width: 250,
-        },
+        drawerStyle: { backgroundColor: "#fff8fc", width: 250 },
       }}
     >
       <Drawer.Screen name="Home" component={StackScreens} initialParams={{ screen: "StackHome" }} />
@@ -119,22 +117,11 @@ export default function UserDashboard() {
   );
 }
 
+// ------------------- Styles -------------------
 const styles = StyleSheet.create({
-  drawerContainer: {
-    flex: 1,
-    paddingVertical: 20,
-    backgroundColor: "#fff8fc",
-  },
-  drawerHeader: {
-    alignItems: "center",
-    marginBottom: 30,
-  },
-  drawerHeaderText: {
-    marginTop: 10,
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#a21caf",
-  },
+  drawerContainer: { flex: 1, paddingVertical: 20, backgroundColor: "#fff8fc" },
+  drawerHeader: { alignItems: "center", marginBottom: 30 },
+  drawerHeaderText: { marginTop: 10, fontSize: 20, fontWeight: "bold", color: "#a21caf" },
   drawerItem: {
     flexDirection: "row",
     alignItems: "center",
@@ -145,16 +132,6 @@ const styles = StyleSheet.create({
     marginVertical: 5,
     backgroundColor: "#fde8ff",
   },
-  drawerItemText: {
-    fontSize: 16,
-    marginLeft: 15,
-    color: "#4c1d95",
-    fontWeight: "600",
-  },
-  logoutContainer: {
-    flex: 1,
-    justifyContent: "flex-end",
-    marginTop: 50,
-    paddingHorizontal: 10,
-  },
+  drawerItemText: { fontSize: 16, marginLeft: 15, color: "#4c1d95", fontWeight: "600" },
+  logoutContainer: { flex: 1, justifyContent: "flex-end", marginTop: 50, paddingHorizontal: 10 },
 });
