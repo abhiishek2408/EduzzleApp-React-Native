@@ -73,6 +73,10 @@ router.post("/login", createRateLimiter({ max: 20 }), async (req, res) => {
     }
 
     const user = await User.findOne({ email: email.toLowerCase() });
+
+      console.log("🟢 User fetched from DB:", user); // debug
+    console.log("🖼️ profilePic value:", user?.profilePic); // debug
+
     if (!user) {
       return res.status(400).json({ message: "Invalid credentials" });
     }

@@ -85,6 +85,10 @@ export const AuthProvider = ({ children }) => {
     return data;
   };
 
+
+  console.log("User context data:", user);
+
+
   const logout = async () => {
     setUser(null);
     setToken(null);

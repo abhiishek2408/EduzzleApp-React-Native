@@ -23,6 +23,10 @@ export default function ProfileScreen() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
 
+  console.log("Profile pic URL:", user?.profilePic);
+  console.log("Profile name:", user?.name);
+
+
   const API_URL = "https://eduzzleapp-react-native.onrender.com"; // ✅ your backend URL
 
   // ✅ Logout handler
