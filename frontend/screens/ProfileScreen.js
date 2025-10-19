@@ -235,7 +235,6 @@
 
 
 
-
 import React, { useContext, useEffect, useState } from 'react';
 import {
   View,
@@ -273,6 +272,7 @@ export default function ProfileScreen() {
   // -------------------- Initialize Socket.IO --------------------
   useEffect(() => {
     if (!user?._id) return;
+
     const newSocket = io(API_URL, { query: { userId: user._id } });
     setSocket(newSocket);
 
@@ -305,8 +305,8 @@ export default function ProfileScreen() {
   // -------------------- Fetch stats --------------------
   useEffect(() => {
     const fetchStats = async () => {
+      if (!user?._id) return;
       try {
-        if (!user?._id) return;
         const res = await axios.get(`${API_URL}/api/attempts/stats/${user._id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -328,9 +328,9 @@ export default function ProfileScreen() {
         copyToCacheDirectory: true,
       });
 
-      if (result.canceled) return;
+      if (result.type === 'cancel') return;
 
-      const file = result.assets[0];
+      const file = result;
       const formData = new FormData();
       formData.append('profilePic', {
         uri: file.uri,
@@ -355,9 +355,10 @@ export default function ProfileScreen() {
   // -------------------- Fetch Friends & Pending Requests --------------------
   useEffect(() => {
     if (!user?._id) return;
+
     const fetchFriendsData = async () => {
       try {
-        const res = await axios.get(`${API_URL}/api/friends/list/${user._id}`, {
+        const res = await axios.get(`${API_URL}/api/friends/${user._id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setFriends(res.data.friends || []);
@@ -372,16 +373,22 @@ export default function ProfileScreen() {
   // -------------------- Search Users --------------------
   useEffect(() => {
     if (searchText.trim() === '') return setSearchResults([]);
+
     const delayDebounce = setTimeout(async () => {
       try {
         const res = await axios.get(`${API_URL}/api/user/search?query=${searchText}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setSearchResults(res.data.filter(u => u._id !== user._id && !friends.some(f => f._id === u._id)));
+        setSearchResults(
+          res.data.filter(
+            u => u._id !== user._id && !friends.some(f => f._id === u._id)
+          )
+        );
       } catch (err) {
         console.error(err);
       }
     }, 500);
+
     return () => clearTimeout(delayDebounce);
   }, [searchText, friends]);
 
@@ -389,12 +396,12 @@ export default function ProfileScreen() {
   const sendFriendRequest = async (friendId) => {
     try {
       const res = await axios.post(
-        `${API_URL}/api/friends/request`,
+        `${API_URL}/api/friends/send`,
         { userId: user._id, friendId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       Alert.alert('Request sent!');
-      socket.emit('friendRequestSent', res.data);
+      socket?.emit('friendRequestSent', res.data);
     } catch (err) {
       console.error(err);
       Alert.alert('Error', 'Failed to send friend request.');
@@ -411,7 +418,7 @@ export default function ProfileScreen() {
       const friend = res.data.friend;
       setFriends(prev => [...prev, friend]);
       setPendingRequests(prev => prev.filter(r => r._id !== requestId));
-      socket.emit('friendRequestAccepted', { requestId, friend });
+      socket?.emit('friendRequestAccepted', { requestId, friend });
     } catch (err) {
       console.error(err);
     }
@@ -425,7 +432,7 @@ export default function ProfileScreen() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setPendingRequests(prev => prev.filter(r => r._id !== requestId));
-      socket.emit('friendRequestRejected', { requestId });
+      socket?.emit('friendRequestRejected', { requestId });
     } catch (err) {
       console.error(err);
     }
@@ -433,9 +440,13 @@ export default function ProfileScreen() {
 
   const handleUnfriend = async (friendId) => {
     try {
-      await axios.post(`${API_URL}/api/friends/remove`, { userId: user._id, friendId }, { headers: { Authorization: `Bearer ${token}` } });
+      await axios.post(
+        `${API_URL}/api/friends/remove`,
+        { userId: user._id, friendId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       setFriends(prev => prev.filter(f => f._id !== friendId));
-      socket.emit('friendRemoved', { friendId });
+      socket?.emit('friendRemoved', { friendId });
     } catch (err) {
       console.error(err);
       Alert.alert('Error', 'Failed to remove friend.');
@@ -451,29 +462,37 @@ export default function ProfileScreen() {
             <ActivityIndicator size="large" color="#a21caf" />
           ) : (
             <Image
-              source={{ uri: user?.profilePic || "https://res.cloudinary.com/demo/image/upload/v1710000000/default-profile.png" }}
+              source={{
+                uri:
+                  user?.profilePic ||
+                  'https://res.cloudinary.com/demo/image/upload/v1710000000/default-profile.png',
+              }}
               style={styles.profileImage}
             />
           )}
         </TouchableOpacity>
-        <Text style={styles.name}>{user?.name || "Guest"}</Text>
-        <Text style={styles.email}>{user?.email || "guest@example.com"}</Text>
+        <Text style={styles.name}>{user?.name || 'Guest'}</Text>
+        <Text style={styles.email}>{user?.email || 'guest@example.com'}</Text>
       </View>
 
       {/* Stats Section */}
       <View style={styles.statsContainer}>
-        <View style={styles.statBox}>
-          {loading ? <ActivityIndicator size="small" color="#6a21a8" /> : <Text style={styles.statNumber}>{stats?.attemptCount ?? 0}</Text>}
-          <Text style={styles.statLabel}>Puzzles Solved</Text>
-        </View>
-        <View style={styles.statBox}>
-          {loading ? <ActivityIndicator size="small" color="#6a21a8" /> : <Text style={styles.statNumber}>{stats?.totalPoints ?? 0}</Text>}
-          <Text style={styles.statLabel}>Total Points</Text>
-        </View>
-        <View style={styles.statBox}>
-          {loading ? <ActivityIndicator size="small" color="#6a21a8" /> : <Text style={styles.statNumber}>{stats?.highestLevel ?? "N/A"}</Text>}
-          <Text style={styles.statLabel}>Rank</Text>
-        </View>
+        {['attemptCount', 'totalPoints', 'highestLevel'].map((key, idx) => (
+          <View key={idx} style={styles.statBox}>
+            {loading ? (
+              <ActivityIndicator size="small" color="#6a21a8" />
+            ) : (
+              <Text style={styles.statNumber}>{stats?.[key] ?? 0}</Text>
+            )}
+            <Text style={styles.statLabel}>
+              {key === 'attemptCount'
+                ? 'Puzzles Solved'
+                : key === 'totalPoints'
+                ? 'Total Points'
+                : 'Rank'}
+            </Text>
+          </View>
+        ))}
       </View>
 
       {/* Options Section */}
@@ -492,7 +511,7 @@ export default function ProfileScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* -------------------- Friend Search -------------------- */}
+      {/* Friend Search */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Search Users</Text>
         <TextInput
@@ -505,37 +524,59 @@ export default function ProfileScreen() {
           <View key={u._id} style={styles.friendBox}>
             <Image source={{ uri: u.profilePic }} style={styles.friendPic} />
             <Text style={{ flex: 1, marginLeft: 10 }}>{u.name}</Text>
-            <TouchableOpacity onPress={() => sendFriendRequest(u._id)} style={styles.acceptButton}>
+            <TouchableOpacity
+              onPress={() => sendFriendRequest(u._id)}
+              style={styles.acceptButton}
+            >
               <Text style={{ color: '#fff', fontWeight: '600' }}>Add</Text>
             </TouchableOpacity>
           </View>
         ))}
       </View>
 
-      {/* -------------------- Pending Requests -------------------- */}
+      {/* Pending Requests */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Pending Requests</Text>
         {pendingRequests.length === 0 ? (
           <Text style={{ color: '#555' }}>No pending requests.</Text>
-        ) : pendingRequests.map(r => (
-          <View key={r._id} style={styles.friendBox}>
-            <Image source={{ uri: r.sender?.profilePic || r.receiver?.profilePic }} style={styles.friendPic} />
-            <Text style={{ flex: 1, marginLeft: 10 }}>{r.sender?.name || r.receiver?.name}</Text>
-            {!r.accepted && r.receiver?._id === user._id && (
-              <>
-                <TouchableOpacity onPress={() => acceptRequest(r._id)} style={styles.acceptButton}>
-                  <Text style={{ color: '#fff', fontWeight: '600' }}>Accept</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => rejectRequest(r._id)} style={styles.rejectButton}>
-                  <Text style={{ color: '#fff', fontWeight: '600' }}>Reject</Text>
-                </TouchableOpacity>
-              </>
-            )}
-          </View>
-        ))}
+        ) : (
+          pendingRequests.map(r => (
+            <View key={r._id} style={styles.friendBox}>
+              <Image
+                source={{
+                  uri: r.sender?.profilePic || r.receiver?.profilePic,
+                }}
+                style={styles.friendPic}
+              />
+              <Text style={{ flex: 1, marginLeft: 10 }}>
+                {r.sender?.name || r.receiver?.name}
+              </Text>
+              {!r.accepted && r.receiver?._id === user._id && (
+                <>
+                  <TouchableOpacity
+                    onPress={() => acceptRequest(r._id)}
+                    style={styles.acceptButton}
+                  >
+                    <Text style={{ color: '#fff', fontWeight: '600' }}>
+                      Accept
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => rejectRequest(r._id)}
+                    style={styles.rejectButton}
+                  >
+                    <Text style={{ color: '#fff', fontWeight: '600' }}>
+                      Reject
+                    </Text>
+                  </TouchableOpacity>
+                </>
+              )}
+            </View>
+          ))
+        )}
       </View>
 
-      {/* -------------------- Friends List -------------------- */}
+      {/* Friends List */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Friends</Text>
         {friends.length === 0 ? (
@@ -545,7 +586,10 @@ export default function ProfileScreen() {
             <View key={f._id} style={styles.friendBox}>
               <Image source={{ uri: f.profilePic }} style={styles.friendPic} />
               <Text style={{ flex: 1, marginLeft: 10 }}>{f.name}</Text>
-              <TouchableOpacity onPress={() => handleUnfriend(f._id)} style={styles.rejectButton}>
+              <TouchableOpacity
+                onPress={() => handleUnfriend(f._id)}
+                style={styles.rejectButton}
+              >
                 <Text style={{ color: '#fff', fontWeight: '600' }}>Unfriend</Text>
               </TouchableOpacity>
             </View>
@@ -558,7 +602,15 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fef9ff' },
-  header: { alignItems: 'center', paddingTop: 40, paddingBottom: 20, backgroundColor: '#f3e8ff', borderBottomLeftRadius: 30, borderBottomRightRadius: 30, elevation: 2 },
+  header: {
+    alignItems: 'center',
+    paddingTop: 40,
+    paddingBottom: 20,
+    backgroundColor: '#f3e8ff',
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    elevation: 2,
+  },
   profileImage: { width: 110, height: 110, borderRadius: 55, borderWidth: 3, borderColor: '#a21caf' },
   name: { fontSize: 22, fontWeight: '700', color: '#4b0082', marginTop: 10 },
   email: { fontSize: 14, color: '#555', marginTop: 4 },
