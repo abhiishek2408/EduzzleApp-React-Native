@@ -114,4 +114,25 @@ router.put("/profile-pic", authenticate, upload.single("profilePic"), async (req
   }
 });
 
+
+router.get("/search", authenticate, async (req, res) => {
+  try {
+    const query = req.query.query || "";
+    if (!query) return res.json([]);
+
+    // Search by name or email (case-insensitive)
+    const users = await User.find({
+      $or: [
+        { name: { $regex: query, $options: "i" } },
+        { email: { $regex: query, $options: "i" } },
+      ],
+    }).select("name email profilePic"); // return only necessary fields
+
+    res.json(users);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 export default router;

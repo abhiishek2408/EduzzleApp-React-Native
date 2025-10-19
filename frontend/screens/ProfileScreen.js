@@ -374,7 +374,7 @@ export default function ProfileScreen() {
     if (searchText.trim() === '') return setSearchResults([]);
     const delayDebounce = setTimeout(async () => {
       try {
-        const res = await axios.get(`${API_URL}/api/users/search?query=${searchText}`, {
+        const res = await axios.get(`${API_URL}/api/user/search?query=${searchText}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setSearchResults(res.data.filter(u => u._id !== user._id && !friends.some(f => f._id === u._id)));
