@@ -20,7 +20,15 @@ const userSchema = new mongoose.Schema({
   profilePic: {
     type: String,
     default: "https://res.cloudinary.com/demo/image/upload/v1710000000/default-profile.png"
-  }
+  },
+
+    // 🧩 Friend system
+  friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+  friendRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+  sentRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }]
+
+
+
 }, { timestamps: true });
 
 // Hash password before saving

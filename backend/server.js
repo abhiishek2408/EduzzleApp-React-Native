@@ -4,8 +4,10 @@ import dotenv from "dotenv";
 import helmet from "helmet";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
+import { Server } from "socket.io";
 import authRoutes from "./routes/auth.js";
 import userRoutes from "./routes/user.js";
+import friendRoutes from "./routes/friendRoutes.js";
 import puzzleRoutes from "./routes/puzzle.js";
 import fetchPuzzleRoutes from "./routes/fetchPuzzles.js";
 import puzzleAttemptRoutes from "./routes/puzzleAttemptRoutes.js";
@@ -45,6 +47,27 @@ app.use("/api/puzzles", puzzleRoutes);
 app.use("/api/fetch-puzzles", fetchPuzzleRoutes);
 app.use("/api/puzzle-attempts", puzzleAttemptRoutes);
 app.use("/api/attempts", attemptCountRoutes);
+
+
+const io = new Server(server, {
+  cors: { origin: "*", methods: ["GET", "POST"] },
+});
+
+io.on("connection", (socket) => {
+  console.log("⚡ User connected:", socket.id);
+
+  socket.on("registerUser", (userId) => {
+    socket.join(userId); // join room by userId
+    console.log("🟢 User registered for socket:", userId);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("🔴 User disconnected:", socket.id);
+  });
+});
+
+app.set("io", io);
+app.use("/api/friends", friendRoutes);
 
 // ---- Test endpoint ----
 app.get("/", (req, res) => res.json({ message: "Educational Puzzle App API is running" }));
