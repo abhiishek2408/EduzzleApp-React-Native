@@ -358,7 +358,7 @@ export default function ProfileScreen() {
 
     const fetchFriendsData = async () => {
       try {
-        const res = await axios.get(`${API_URL}/api/friends/${user._id}`, {
+        const res = await axios.get(`${API_URL}/api/friends/pending/${user._id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setFriends(res.data.friends || []);
