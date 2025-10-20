@@ -3,7 +3,7 @@ POST https://eduzzleapp-react-native.onrender.com/api/auth/register
 Content-Type: application/json
 
 {
-  "name": "John Doe",
-  "email": "john@example.com",
-  "password": "John@123"
+  "name": "Abhishek Yadav",
+  "email": "visheshyadav68@gmail.com",
+  "password": "User@#123"
 }
