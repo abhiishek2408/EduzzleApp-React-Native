@@ -1,0 +1,8 @@
+### Verify OTP
+POST https://eduzzleapp-react-native.onrender.com/api/auth/verify-otp
+Content-Type: application/json
+
+{
+  "userId": "<USER_ID_FROM_REGISTER_RESPONSE>",
+  "otp": "123456"
+}

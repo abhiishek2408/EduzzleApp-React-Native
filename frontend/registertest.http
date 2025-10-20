@@ -1,0 +1,9 @@
+### Register new user
+POST https://eduzzleapp-react-native.onrender.com/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "John@123"
+}
