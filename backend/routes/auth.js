@@ -18,6 +18,8 @@ router.post("/register", createRateLimiter({ max: 6 }), async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
 
+    console.log("🟢 Registration attempt:", { name, email, role }); // debug
+
     if (!name || !email || !password) {
       return res.status(400).json({ message: "Name, email and password required" });
     }
