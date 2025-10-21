@@ -18,29 +18,10 @@ router.post("/register", createRateLimiter({ max: 6 }), async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
 
-    console.log("🟢 Registration attempt received:", { name, email, role });
+    // --- validation, existing user check etc. ---
 
-    // --- Basic validation ---
-    if (!name || !email || !password) {
-      console.log("⚠️ Missing required fields:", { name, email, password });
-      return res.status(400).json({ message: "Name, email, and password are required" });
-    }
-
-    if (!validator.isEmail(email)) {
-      console.log("⚠️ Invalid email format:", email);
-      return res.status(400).json({ message: "Invalid email" });
-    }
-
-    // --- Check for existing user ---
-    const existing = await User.findOne({ email: email.toLowerCase() });
-    if (existing) {
-      console.log("⚠️ Email already registered:", email);
-      return res.status(400).json({ message: "Email already registered" });
-    }
-
-    // --- Generate OTP ---
+    // Generate OTP
     const rawOtp = Math.floor(100000 + Math.random() * 900000).toString();
-    const hashedOtp = crypto.createHash("sha256").update(rawOtp).digest("hex");
 
     // --- Create user instance ---
     const user = new User({
@@ -50,14 +31,11 @@ router.post("/register", createRateLimiter({ max: 6 }), async (req, res) => {
       role: role || "user",
       isVerified: false,
       otp: {
-        code: hashedOtp,
+        code: crypto.createHash("sha256").update(rawOtp).digest("hex"),
         expiresAt: new Date(Date.now() + OTP_EXPIRES_MIN * 60 * 1000),
       },
     });
 
-    console.log("🧩 New user prepared (unsaved):", user.email);
-
-    // --- Try sending OTP email ---
     const html = `
       <p>Hello ${name},</p>
       <p>Your verification OTP is: <strong>${rawOtp}</strong></p>
@@ -65,7 +43,6 @@ router.post("/register", createRateLimiter({ max: 6 }), async (req, res) => {
     `;
 
     try {
-      console.log("📧 Attempting to send OTP email to:", user.email);
       await sendEmail({
         to: user.email,
         subject: "Verify your email - OTP",
@@ -77,17 +54,12 @@ router.post("/register", createRateLimiter({ max: 6 }), async (req, res) => {
       return res.status(500).json({ message: "Failed to send OTP email" });
     }
 
-    // --- Save user after email success ---
-    console.log("💾 Saving user to database...");
     await user.save();
-    console.log("✅ User saved successfully:", user._id);
-
     return res.status(201).json({
       message: "Registered successfully. Check your email for OTP.",
       userId: user._id,
       email: user.email,
     });
-
   } catch (err) {
     console.error("❌ Registration error:", err);
     return res.status(500).json({ message: "Server error during registration" });
