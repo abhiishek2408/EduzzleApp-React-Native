@@ -73,7 +73,7 @@ router.post("/register", createRateLimiter({ max: 6 }), async (req, res) => {
       });
       console.log("✅ OTP email sent successfully to:", user.email);
     } catch (emailErr) {
-      console.error("❌ Email sending failed:", emailErr.message);
+      console.error("❌ Email sending failed:", emailErr);
       return res.status(500).json({ message: "Failed to send OTP email" });
     }
 
