@@ -184,14 +184,12 @@
 //   });
 
 
-
-// server.js
 import express from "express";
 import dotenv from "dotenv";
 import helmet from "helmet";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
-import { createServer } from "http"; // ✅ Needed to create HTTP server for Socket.IO
+import { createServer } from "http";
 import { Server } from "socket.io";
 
 import authRoutes from "./routes/auth.js";
@@ -207,14 +205,18 @@ dotenv.config();
 
 const app = express();
 
+/* ✅ IMPORTANT for Render and Express Rate Limit
+   Prevents ValidationError: X-Forwarded-For header issue */
+app.set("trust proxy", 1);
+
 // ---- Security ----
 app.use(helmet());
 
-// ---- CORS (Option 2: Multiple Allowed Origins) ----
+// ---- CORS ----
 const allowedOrigins = [
-  "http://localhost:8081", // for local Expo / Metro
-  "http://10.159.191.56:8081", // for mobile device LAN testing
-  "https://eduzzleapp-react-native.onrender.com", // your production domain on Render
+  "http://localhost:8081",
+  "http://10.159.191.56:8081",
+  "https://eduzzleapp-react-native.onrender.com",
 ];
 
 app.use(
@@ -237,7 +239,7 @@ app.use(express.json());
 // ---- Rate limiter ----
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 200, // limit each IP to 200 requests per window
+  max: 200,
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -257,13 +259,13 @@ app.get("/", (req, res) =>
   res.json({ message: "Educational Puzzle App API is running" })
 );
 
-// ---- Create HTTP server and attach Socket.IO ----
+// ---- Create HTTP server + Socket.IO ----
 const PORT = process.env.PORT || 3000;
-const httpServer = createServer(app); // ✅ Create HTTP server for Socket.IO
+const httpServer = createServer(app);
 
 const io = new Server(httpServer, {
   cors: {
-    origin: "*", // allow all origins for sockets (safe here)
+    origin: "*",
     methods: ["GET", "POST"],
   },
 });
