@@ -18,53 +18,82 @@ router.post("/register", createRateLimiter({ max: 6 }), async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
 
-    console.log("🟢 Registration attempt:", { name, email, role }); // debug
+    console.log("🟢 Registration attempt received:", { name, email, role });
 
+    // --- Basic validation ---
     if (!name || !email || !password) {
-      return res.status(400).json({ message: "Name, email and password required" });
+      console.log("⚠️ Missing required fields:", { name, email, password });
+      return res.status(400).json({ message: "Name, email, and password are required" });
     }
+
     if (!validator.isEmail(email)) {
+      console.log("⚠️ Invalid email format:", email);
       return res.status(400).json({ message: "Invalid email" });
     }
 
+    // --- Check for existing user ---
     const existing = await User.findOne({ email: email.toLowerCase() });
     if (existing) {
+      console.log("⚠️ Email already registered:", email);
       return res.status(400).json({ message: "Email already registered" });
     }
 
-    // Prepare OTP
-    const rawOtp = (Math.floor(100000 + Math.random() * 900000)).toString();
+    // --- Generate OTP ---
+    const rawOtp = Math.floor(100000 + Math.random() * 900000).toString();
     const hashedOtp = crypto.createHash("sha256").update(rawOtp).digest("hex");
 
-    // Create unsaved user instance
+    // --- Create user instance ---
     const user = new User({
       name,
       email: email.toLowerCase(),
       password,
       role: role || "user",
       isVerified: false,
-      otp: { code: hashedOtp, expiresAt: new Date(Date.now() + OTP_EXPIRES_MIN * 60 * 1000) }
+      otp: {
+        code: hashedOtp,
+        expiresAt: new Date(Date.now() + OTP_EXPIRES_MIN * 60 * 1000),
+      },
     });
 
-    // Try sending OTP email BEFORE saving to DB
-    const html = `<p>Your verification OTP: <strong>${rawOtp}</strong></p>
-                  <p>It expires in ${OTP_EXPIRES_MIN} minutes.</p>`;
+    console.log("🧩 New user prepared (unsaved):", user.email);
+
+    // --- Try sending OTP email ---
+    const html = `
+      <p>Hello ${name},</p>
+      <p>Your verification OTP is: <strong>${rawOtp}</strong></p>
+      <p>It expires in ${OTP_EXPIRES_MIN} minutes.</p>
+    `;
+
     try {
-      await sendEmail({ to: user.email, subject: "Verify your email - OTP", html });
+      console.log("📧 Attempting to send OTP email to:", user.email);
+      await sendEmail({
+        to: user.email,
+        subject: "Verify your email - OTP",
+        html,
+      });
+      console.log("✅ OTP email sent successfully to:", user.email);
     } catch (emailErr) {
-      console.error("Email sending failed:", emailErr);
+      console.error("❌ Email sending failed:", emailErr.message);
       return res.status(500).json({ message: "Failed to send OTP email" });
     }
 
-    // Save user ONLY if email sent successfully
+    // --- Save user after email success ---
+    console.log("💾 Saving user to database...");
     await user.save();
+    console.log("✅ User saved successfully:", user._id);
 
-    return res.status(201).json({ message: "Registered. Check email for OTP.", userId: user._id, email: user.email });
+    return res.status(201).json({
+      message: "Registered successfully. Check your email for OTP.",
+      userId: user._id,
+      email: user.email,
+    });
+
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ message: "Server error" });
+    console.error("❌ Registration error:", err);
+    return res.status(500).json({ message: "Server error during registration" });
   }
 });
+
 
 
 router.post("/login", createRateLimiter({ max: 20 }), async (req, res) => {
