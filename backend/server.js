@@ -214,8 +214,6 @@ app.use(helmet());
 
 // ---- CORS ----
 const allowedOrigins = [
-  "http://localhost:8081",
-  "http://10.159.191.56:8081",
   "https://eduzzleapp-react-native.onrender.com",
 ];
 
