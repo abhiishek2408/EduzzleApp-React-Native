@@ -56,7 +56,7 @@
 
 // routes/userRoutes.js
 import express from "express";
-import upload from "../middlewares/multer.js";
+import { upload } from "../middlewares/multer.js";
 import cloudinary from "../config/cloudinary.js";
 import authenticate from "../middlewares/auth.js";
 import User from "../models/User.js";
