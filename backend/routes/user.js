@@ -81,38 +81,64 @@ router.get("/profile", authenticate, async (req, res) => {
 });
 
 // ✅ UPDATE profile picture
-router.put("/profile-pic", authenticate, upload.single("profilePic"), async (req, res) => {
-  try {
-    if (!req.file) return res.status(400).json({ message: "No file uploaded" });
+router.put(
+  "/profile-pic",
+  authenticate,
+  upload.single("profilePic"),
+  async (req, res) => {
+    try {
+      // Check auth
+      if (!req.user || !req.user._id) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
 
-    // Upload to Cloudinary
-    const result = await new Promise((resolve, reject) => {
-      const stream = cloudinary.uploader.upload_stream(
-        { folder: "user_profiles" },
-        (error, result) => {
-          if (error) reject(error);
-          else resolve(result);
-        }
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      console.log("File received:", req.file.originalname, req.file.mimetype);
+      console.log("Cloudinary config loaded:", !!process.env.CLOUDINARY_API_KEY);
+
+      // Upload to Cloudinary
+      const result = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: "user_profiles" },
+          (error, result) => {
+            if (error) {
+              console.error("Cloudinary upload error:", error);
+              reject(error);
+            } else resolve(result);
+          }
+        );
+
+        if (!req.file.buffer) return reject(new Error("File buffer missing"));
+
+        stream.end(req.file.buffer);
+      });
+
+      // Update MongoDB
+      const user = await User.findByIdAndUpdate(
+        req.user._id,
+        { profilePic: result.secure_url },
+        { new: true }
       );
-      stream.end(req.file.buffer);
-    });
 
-    // Update user profilePic in MongoDB
-    const user = await User.findByIdAndUpdate(
-      req.user._id,
-      { profilePic: result.secure_url },
-      { new: true }
-    );
+      if (!user) return res.status(404).json({ message: "User not found" });
 
-    res.status(200).json({
-      message: "Profile picture updated successfully",
-      user,
-    });
-  } catch (err) {
-    console.error("Profile-pic upload error:", err);
-    res.status(500).json({ message: "Server error", error: err.message });
+      res.status(200).json({
+        message: "Profile picture updated successfully",
+        user,
+      });
+    } catch (err) {
+      console.error("Profile-pic upload error:", err);
+      res.status(500).json({
+        message: "Server error",
+        error: err.message,
+        stack: err.stack,
+      });
+    }
   }
-});
+);
 
 
 router.get("/search", authenticate, async (req, res) => {
