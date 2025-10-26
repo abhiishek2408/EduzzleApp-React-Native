@@ -118,7 +118,7 @@ router.post("/login", createRateLimiter({ max: 20 }), async (req, res) => {
     const token = signToken(user);
 
     // --- RETURN USER OBJECT HERE ---
-    return res.json({ message: "Logged in successfully", token, role: user.role, user: {_id: user._id, name: user.name, email: user.email, role: user.role, profilePic: user.profilePic || null }});
+    return res.json({ message: "Logged in successfully", token, role: user.role, user: {_id: user._id, name: user.name, email: user.email, role: user.role, profilePic: user.profilePic || null, subscription: user.subscription || null } });
 
   } catch (err) {
     console.error("Login error:", err);

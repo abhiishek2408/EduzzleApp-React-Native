@@ -32,7 +32,7 @@ const PlansListScreen = ({ navigation }) => {
     try {
       setLoading(true);
       const response = await axios.post(
-        "https://your-api-domain.com/api/subscription/avail",
+        "https://eduzzleapp-react-native.onrender.com/api/subscription/avail",
         { planId, discountCode: selectedDiscount },
         { headers: { Authorization: `Bearer ${token}` } }
       );
