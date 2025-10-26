@@ -25,7 +25,15 @@ const userSchema = new mongoose.Schema({
     // 🧩 Friend system
   friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   friendRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-  sentRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }]
+  sentRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+
+
+  subscription: {
+  planId: { type: mongoose.Schema.Types.ObjectId, ref: "SubscriptionPlan" },
+  startDate: Date,
+  endDate: Date,
+  isActive: { type: Boolean, default: false },
+},
 
 
 

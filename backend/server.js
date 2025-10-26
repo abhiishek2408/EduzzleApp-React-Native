@@ -191,6 +191,7 @@ import cors from "cors";
 import rateLimit from "express-rate-limit";
 import { createServer } from "http";
 import { Server } from "socket.io";
+import cron from "node-cron";
 
 import authRoutes from "./routes/auth.js";
 import userRoutes from "./routes/user.js";
@@ -200,6 +201,7 @@ import fetchPuzzleRoutes from "./routes/fetchQuizzes.js";
 import puzzleAttemptRoutes from "./routes/QuizAttemptRoutes.js";
 import attemptCountRoutes from "./routes/attemptStatsRoutes.js";
 import { connectDB } from "./config/db.js";
+import subscriptionRoutes from "./routes/subscriptionRoute.js";
 
 dotenv.config();
 
@@ -254,6 +256,66 @@ app.use("/api/fetch-puzzles", fetchPuzzleRoutes);
 app.use("/api/puzzle-attempts", puzzleAttemptRoutes);
 app.use("/api/attempts", attemptCountRoutes);
 app.use("/api/friends", friendRoutes);
+app.use("/api/subscription", subscriptionRoutes);
+
+
+// ======================= CRON JOBS =======================
+// 1️⃣ Auto-expire subscriptions at midnight
+cron.schedule("0 0 * * *", async () => {
+  try {
+    const now = new Date();
+    const User = (await import("./models/User.js")).default;
+    const expired = await User.updateMany(
+      { "subscription.isActive": true, "subscription.endDate": { $lte: now } },
+      { $set: { "subscription.isActive": false } }
+    );
+    if (expired.modifiedCount > 0)
+      console.log(`⏰ ${expired.modifiedCount} subscriptions expired and deactivated`);
+  } catch (error) {
+    console.error("Error in subscription expiration cron job:", error);
+  }
+});
+
+// 2️⃣ Send renewal reminders at 9 AM daily
+cron.schedule("0 9 * * *", async () => {
+  try {
+    const now = new Date();
+    const twoDaysLater = new Date();
+    twoDaysLater.setDate(now.getDate() + 2);
+
+    const User = (await import("./models/User.js")).default;
+    const SubscriptionPlan = (await import("./models/SubscriptionPlan.js")).default;
+    const { sendEmail } = await import("./utils/sendEmail.js");
+
+    const usersExpiringSoon = await User.find({
+      "subscription.isActive": true,
+      "subscription.endDate": { $gte: now, $lte: twoDaysLater }
+    }).populate("subscription.planId");
+
+    for (const user of usersExpiringSoon) {
+      const planName = user.subscription.planId?.name || "your plan";
+      const expiryDate = new Date(user.subscription.endDate).toLocaleDateString();
+
+      const emailContent = `
+        <div style="font-family:Arial;padding:15px;background:#f9f9f9;">
+          <h2 style="color:#a21caf;">Renew Your Eduzzle Premium Plan</h2>
+          <p>Hi <b>${user.name}</b>,</p>
+          <p>Your <b>${planName}</b> subscription is expiring on <b>${expiryDate}</b>.</p>
+          <p>Renew now to continue enjoying uninterrupted premium access!</p>
+          <a href="https://yourappdomain.com/renew" style="display:inline-block;margin-top:10px;padding:10px 20px;background:#a21caf;color:#fff;text-decoration:none;border-radius:8px;">Renew Now</a>
+          <p style="margin-top:15px;color:#555;">Thank you for being part of Eduzzle ❤️</p>
+        </div>
+      `;
+
+      await sendEmail(user.email, "Your Premium Plan is Expiring Soon!", emailContent);
+    }
+
+    if (usersExpiringSoon.length > 0)
+      console.log(`📧 Sent renewal reminders to ${usersExpiringSoon.length} users`);
+  } catch (error) {
+    console.error("Error in renewal reminder cron job:", error);
+  }
+});
 
 // ---- Test endpoint ----
 app.get("/", (req, res) =>

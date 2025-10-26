@@ -15,7 +15,8 @@ import ProfileScreen from "./ProfileScreen";
 import PuzzleScreen from "./PuzzleScreen";
 import ResultScreen from "./ResultScreen";
 import StackQuiz from "../screens/Puzzles/StackQuiz";
-import FriendsScreen from "./FriendsScreen"; 
+import FriendsScreen from "./FriendsScreen";
+import PremiumDashboardScreen from "./PremiumDashboardScreen";
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
@@ -45,6 +46,7 @@ const StackScreens = ({ route, navigation }) => {
       <Stack.Screen name="StackPlay" component={PlayScreen} />
       <Stack.Screen name="StackProfile" component={ProfileScreen} />
       <Stack.Screen name="StackFriends" component={FriendsScreen} />
+      <Stack.Screen name="PremiumDashboard" component={PremiumDashboardScreen} />
       <Stack.Screen name="PuzzleScreen" component={PuzzleScreen} />
       <Stack.Screen name="StackQuizScreen" component={StackQuiz} />
       <Stack.Screen name="StackResult" component={ResultScreen} />
@@ -71,6 +73,10 @@ function CustomDrawerContent(props) {
   const handleFriendsPress = () => {
     props.navigation.navigate("Friends", { screen: "StackFriends" });
   };
+
+  const handlePremiumPress = () => {
+    props.navigation.navigate("PremiumDashboard", { screen: "PremiumDashboard" });
+  }
 
   return (
     <DrawerContentScrollView
@@ -124,6 +130,15 @@ function CustomDrawerContent(props) {
       >
         <Ionicons name="people-outline" size={22} color="#a21caf" />
         <Text style={styles.drawerItemText}>Friends</Text>
+      </TouchableOpacity>
+
+      {/* Premium Dashboard */}
+      <TouchableOpacity
+        style={styles.drawerItem}
+        onPress={handlePremiumPress}
+      >
+        <Ionicons name="star-outline" size={22} color="#a21caf" />
+        <Text style={styles.drawerItemText}>Premium</Text>
       </TouchableOpacity>
 
       {/* Logout */}
