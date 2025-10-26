@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import { sendEmail } from "../utils/email.js";
 import { createRateLimiter } from "../middlewares/rateLimiter.js";
+import authenticate from "../middlewares/auth.js";
 
 const router = express.Router();
 const OTP_EXPIRES_MIN = Number(process.env.OTP_EXPIRES_MIN || 10);
