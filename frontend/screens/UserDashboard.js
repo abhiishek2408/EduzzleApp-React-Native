@@ -17,6 +17,7 @@ import ResultScreen from "./ResultScreen";
 import StackQuiz from "../screens/Puzzles/StackQuiz";
 import FriendsScreen from "./FriendsScreen";
 import PremiumDashboardScreen from "./PremiumDashboardScreen";
+import PlanDetailScreen from "./PlanDetailScreen";
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
@@ -50,6 +51,7 @@ const StackScreens = ({ route, navigation }) => {
       <Stack.Screen name="PuzzleScreen" component={PuzzleScreen} />
       <Stack.Screen name="StackQuizScreen" component={StackQuiz} />
       <Stack.Screen name="StackResult" component={ResultScreen} />
+      <Stack.Screen name="PlanDetail" component={PlanDetailScreen} />
     </Stack.Navigator>
   );
 };

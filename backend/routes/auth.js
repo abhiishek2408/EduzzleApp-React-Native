@@ -248,4 +248,23 @@ router.post("/reset-password", createRateLimiter({ max: 8 }), async (req, res) =
   }
 });
 
+
+
+router.get("/me", authenticate, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id)
+      .populate("subscription.planId", "name price durationInDays") // optional: populate plan details
+      .select("-password -otp -resetPasswordToken -resetPasswordExpires -failedLoginAttempts -lockUntil");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.json({ user });
+  } catch (error) {
+    console.error("❌ Error in /api/user/me:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+});
+
 export default router;

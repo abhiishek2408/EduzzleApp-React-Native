@@ -1,73 +1,42 @@
 import React, { useState, useEffect, useContext } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from "react-native";
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from "react-native";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
 
-const PremiumDashboardScreen = ({ navigation }) => {
-  const { token } = useContext(AuthContext);
-  const [subscription, setSubscription] = useState(null);
+const PlansListScreen = ({ navigation }) => {
+  const { token, user, refreshUser } = useContext(AuthContext); // 🔹 added refreshUser
+  const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [renewLoading, setRenewLoading] = useState(false);
-  const [discountCode, setDiscountCode] = useState("");
 
-  // Fetch user subscription on mount
-  const fetchSubscription = async () => {
+  
+
+  const fetchPlans = async () => {
     try {
       setLoading(true);
       const response = await axios.get(
-        "https://eduzzleapp-react-native.onrender.com/api/subscription/my-subscription",
+        "https://eduzzleapp-react-native.onrender.com/api/subscription/plans",
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setSubscription(response.data);
+      setPlans(response.data);
       setLoading(false);
+       await refreshUser();
     } catch (error) {
       setLoading(false);
-      console.error("Error fetching subscription:", error.response?.data || error.message);
-      Alert.alert("Error", "Unable to fetch subscription details.");
+      console.error("Error fetching plans:", error);
+      Alert.alert("Error", "Unable to fetch subscription plans.");
     }
   };
 
   useEffect(() => {
-    fetchSubscription();
+    fetchPlans();
   }, []);
 
-  const handleRenew = async () => {
-    if (!subscription?.planId) return;
-
-    try {
-      setRenewLoading(true);
-      const response = await axios.post(
-        "https://eduzzleapp-react-native.onrender.com/api/subscription/renew",
-        { planId: subscription.planId, discountCode },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      setRenewLoading(false);
-      setSubscription(prev => ({
-        ...prev,
-        endDate: response.data.newEndDate,
-        finalPrice: response.data.finalPrice,
-        discountApplied: response.data.discountApplied
-      }));
-
-      Alert.alert(
-        "Subscription Renewed",
-        `Your ${response.data.plan} subscription is renewed!\nNew End Date: ${new Date(response.data.newEndDate).toLocaleDateString()}\nPrice Paid: ₹${response.data.finalPrice} ${response.data.discountApplied ? `(Discount: ${response.data.discountApplied})` : ""}`
-      );
-      setDiscountCode("");
-    } catch (error) {
-      setRenewLoading(false);
-      console.error("Error renewing subscription:", error.response?.data || error.message);
-      Alert.alert("Error", error.response?.data?.message || "Something went wrong");
-    }
-  };
-
-  const calculateDaysRemaining = endDate => {
-    const today = new Date();
-    const end = new Date(endDate);
-    const diffTime = end - today;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays > 0 ? diffDays : 0;
+  // Navigate to PlanDetailScreen when user clicks a plan
+  const handlePlanPress = (plan) => {
+    navigation.navigate("PlanDetailScreen", {
+      plan,
+      userSubscription: user?.subscription || null,
+    });
   };
 
   if (loading) {
@@ -80,80 +49,55 @@ const PremiumDashboardScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      {subscription ? (
-        <>
-          <Text style={styles.title}>Your Premium Subscription</Text>
-          <Text style={styles.info}>Plan: {subscription.planName}</Text>
-          <Text style={styles.info}>Start Date: {new Date(subscription.startDate).toLocaleDateString()}</Text>
-          <Text style={styles.info}>End Date: {new Date(subscription.endDate).toLocaleDateString()}</Text>
-          <Text style={styles.info}>Days Remaining: {calculateDaysRemaining(subscription.endDate)}</Text>
-          <Text style={styles.info}>Price Paid: ₹{subscription.finalPrice}</Text>
-          {subscription.discountApplied && <Text style={styles.info}>Discount Applied: {subscription.discountApplied}</Text>}
+      <Text style={styles.title}>Available Plans</Text>
 
-          <TextInput
-            style={styles.input}
-            placeholder="Enter discount code (optional)"
-            value={discountCode}
-            onChangeText={setDiscountCode}
-          />
+      <FlatList
+        data={plans}
+        keyExtractor={(item) => item._id}
+        renderItem={({ item }) => {
+          const hasActiveSubscription = user?.subscription?.isActive;
+          const isCurrentPlan = hasActiveSubscription && user.subscription.planId === item._id;
 
-          <TouchableOpacity style={styles.button} onPress={handleRenew} disabled={renewLoading}>
-            {renewLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Renew Now</Text>}
-          </TouchableOpacity>
-        </>
-      ) : (
-        <Text style={styles.noSubscription}>You currently have no active subscription.</Text>
-      )}
+          return (
+            <View style={styles.planCard}>
+              <Text style={styles.planName}>{item.name}</Text>
+              <Text>Duration: {item.durationInDays} days</Text>
+              <Text>Price: ₹{item.price}</Text>
+
+              {isCurrentPlan ? (
+                <View style={[styles.button, { backgroundColor: "#4caf50" }]}>
+                  <Text style={styles.buttonText}>
+                    Subscribed (Ends: {new Date(user.subscription.endDate).toLocaleDateString()})
+                  </Text>
+                </View>
+              ) : hasActiveSubscription ? (
+                <View style={[styles.button, { backgroundColor: "#ccc" }]}>
+                  <Text style={styles.buttonText}>Cannot Subscribe</Text>
+                </View>
+              ) : (
+                <TouchableOpacity
+                  style={styles.button}
+                  onPress={() => handlePlanPress(item)}
+                >
+                  <Text style={styles.buttonText}>View / Subscribe</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          );
+        }}
+      />
     </View>
   );
 };
 
-export default PremiumDashboardScreen;
+export default PlansListScreen;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: "#fff"
-  },
-  loaderContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center"
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: "#a21caf",
-    marginBottom: 20,
-    textAlign: "center"
-  },
-  info: {
-    fontSize: 16,
-    marginBottom: 8
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 12,
-    marginVertical: 20
-  },
-  button: {
-    backgroundColor: "#a21caf",
-    padding: 15,
-    borderRadius: 10,
-    alignItems: "center"
-  },
-  buttonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16
-  },
-  noSubscription: {
-    textAlign: "center",
-    fontSize: 18,
-    marginTop: 50,
-    color: "#555"
-  }
+  container: { flex: 1, padding: 20, backgroundColor: "#fff" },
+  loaderContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
+  title: { fontSize: 22, fontWeight: "bold", marginBottom: 20, color: "#a21caf", textAlign: "center" },
+  planCard: { padding: 15, borderWidth: 1, borderColor: "#ccc", borderRadius: 10, marginBottom: 15 },
+  planName: { fontSize: 18, fontWeight: "bold", marginBottom: 5 },
+  button: { marginTop: 10, backgroundColor: "#a21caf", padding: 12, borderRadius: 8, alignItems: "center" },
+  buttonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
 });
