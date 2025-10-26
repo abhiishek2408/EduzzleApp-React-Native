@@ -75,38 +75,31 @@ function CustomDrawerContent(props) {
   };
 
   const handlePremiumPress = () => {
-    props.navigation.navigate("PremiumDashboard", { screen: "PremiumDashboard" });
-  }
+    props.navigation.navigate("Home", { screen: "PremiumDashboard" });
+  };
 
   return (
     <DrawerContentScrollView
       {...props}
       contentContainerStyle={styles.drawerContainer}
     >
-      {/* Profile Header (Clickable) */}
+      {/* Profile Header */}
       <TouchableOpacity
         onPress={handleProfilePress}
         style={styles.drawerHeader}
       >
         {user?.profilePic ? (
-          <Image
-            source={{ uri: user.profilePic }}
-            style={styles.profileImage}
-          />
+          <Image source={{ uri: user.profilePic }} style={styles.profileImage} />
         ) : (
           <FontAwesome name="user-circle" size={80} color="#a21caf" />
         )}
-        <Text style={styles.drawerHeaderText}>
-          {user?.name || "Welcome!"}
-        </Text>
+        <Text style={styles.drawerHeaderText}>{user?.name || "Welcome!"}</Text>
       </TouchableOpacity>
 
       {/* Quiz */}
       <TouchableOpacity
         style={styles.drawerItem}
-        onPress={() =>
-          props.navigation.navigate("Home", { screen: "StackHome" })
-        }
+        onPress={() => props.navigation.navigate("Home", { screen: "StackHome" })}
       >
         <Ionicons name="book-outline" size={22} color="#a21caf" />
         <Text style={styles.drawerItemText}>Quiz</Text>
@@ -115,28 +108,20 @@ function CustomDrawerContent(props) {
       {/* Play */}
       <TouchableOpacity
         style={styles.drawerItem}
-        onPress={() =>
-          props.navigation.navigate("Play", { screen: "StackPlay" })
-        }
+        onPress={() => props.navigation.navigate("Play", { screen: "StackPlay" })}
       >
         <Ionicons name="game-controller-outline" size={22} color="#a21caf" />
         <Text style={styles.drawerItemText}>Play</Text>
       </TouchableOpacity>
 
       {/* Friends */}
-      <TouchableOpacity
-        style={styles.drawerItem}
-        onPress={handleFriendsPress}
-      >
+      <TouchableOpacity style={styles.drawerItem} onPress={handleFriendsPress}>
         <Ionicons name="people-outline" size={22} color="#a21caf" />
         <Text style={styles.drawerItemText}>Friends</Text>
       </TouchableOpacity>
 
       {/* Premium Dashboard */}
-      <TouchableOpacity
-        style={styles.drawerItem}
-        onPress={handlePremiumPress}
-      >
+      <TouchableOpacity style={styles.drawerItem} onPress={handlePremiumPress}>
         <Ionicons name="star-outline" size={22} color="#a21caf" />
         <Text style={styles.drawerItemText}>Premium</Text>
       </TouchableOpacity>
@@ -145,9 +130,7 @@ function CustomDrawerContent(props) {
       <View style={styles.logoutContainer}>
         <TouchableOpacity style={styles.drawerItem} onPress={handleLogout}>
           <Ionicons name="log-out-outline" size={22} color="#ff4444" />
-          <Text style={[styles.drawerItemText, { color: "#ff4444" }]}>
-            Logout
-          </Text>
+          <Text style={[styles.drawerItemText, { color: "#ff4444" }]}>Logout</Text>
         </TouchableOpacity>
       </View>
     </DrawerContentScrollView>
@@ -192,9 +175,9 @@ export default function UserDashboard() {
 // ------------------- Styles -------------------
 const styles = StyleSheet.create({
   drawerContainer: { flex: 1, paddingVertical: 20, backgroundColor: "#fff8fc" },
-  drawerHeader: { 
-    alignItems: "center", 
-    marginBottom: 30, 
+  drawerHeader: {
+    alignItems: "center",
+    marginBottom: 30,
   },
   profileImage: {
     width: 80,

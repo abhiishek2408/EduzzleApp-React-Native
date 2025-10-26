@@ -2,7 +2,7 @@ import express from "express";
 import mongoose from "mongoose";
 import SubscriptionPlan from "../models/SubscriptionPlan.js";
 import User from "../models/User.js";
-import { authenticate } from "../middlewares/auth.js";
+import authenticate from "../middlewares/auth.js";
 
 const router = express.Router();
 
