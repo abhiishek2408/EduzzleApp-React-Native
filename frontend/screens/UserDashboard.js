@@ -15,6 +15,7 @@ import ProfileScreen from "./ProfileScreen";
 import PuzzleScreen from "./PuzzleScreen";
 import ResultScreen from "./ResultScreen";
 import StackQuiz from "../screens/Puzzles/StackQuiz";
+import FriendsScreen from "./FriendsScreen"; 
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
@@ -43,8 +44,7 @@ const StackScreens = ({ route, navigation }) => {
       <Stack.Screen name="StackHome" component={HomeScreen} />
       <Stack.Screen name="StackPlay" component={PlayScreen} />
       <Stack.Screen name="StackProfile" component={ProfileScreen} />
-
-      {/* Unique names for puzzle screens */}
+      <Stack.Screen name="StackFriends" component={FriendsScreen} />
       <Stack.Screen name="PuzzleScreen" component={PuzzleScreen} />
       <Stack.Screen name="StackQuizScreen" component={StackQuiz} />
       <Stack.Screen name="StackResult" component={ResultScreen} />
@@ -54,7 +54,7 @@ const StackScreens = ({ route, navigation }) => {
 
 // ------------------- Custom Drawer -------------------
 function CustomDrawerContent(props) {
-  const { logout, user } = useContext(AuthContext); // ✅ include user
+  const { logout, user } = useContext(AuthContext);
 
   const handleLogout = () => {
     logout();
@@ -64,22 +64,28 @@ function CustomDrawerContent(props) {
     });
   };
 
+  const handleProfilePress = () => {
+    props.navigation.navigate("Profile", { screen: "StackProfile" });
+  };
+
+  const handleFriendsPress = () => {
+    props.navigation.navigate("Friends", { screen: "StackFriends" });
+  };
+
   return (
     <DrawerContentScrollView
       {...props}
       contentContainerStyle={styles.drawerContainer}
     >
-      <View style={styles.drawerHeader}>
+      {/* Profile Header (Clickable) */}
+      <TouchableOpacity
+        onPress={handleProfilePress}
+        style={styles.drawerHeader}
+      >
         {user?.profilePic ? (
           <Image
             source={{ uri: user.profilePic }}
-            style={{
-              width: 80,
-              height: 80,
-              borderRadius: 40,
-              borderWidth: 2,
-              borderColor: "#a21caf",
-            }}
+            style={styles.profileImage}
           />
         ) : (
           <FontAwesome name="user-circle" size={80} color="#a21caf" />
@@ -87,8 +93,9 @@ function CustomDrawerContent(props) {
         <Text style={styles.drawerHeaderText}>
           {user?.name || "Welcome!"}
         </Text>
-      </View>
+      </TouchableOpacity>
 
+      {/* Quiz */}
       <TouchableOpacity
         style={styles.drawerItem}
         onPress={() =>
@@ -99,6 +106,7 @@ function CustomDrawerContent(props) {
         <Text style={styles.drawerItemText}>Quiz</Text>
       </TouchableOpacity>
 
+      {/* Play */}
       <TouchableOpacity
         style={styles.drawerItem}
         onPress={() =>
@@ -109,16 +117,16 @@ function CustomDrawerContent(props) {
         <Text style={styles.drawerItemText}>Play</Text>
       </TouchableOpacity>
 
+      {/* Friends */}
       <TouchableOpacity
         style={styles.drawerItem}
-        onPress={() =>
-          props.navigation.navigate("Profile", { screen: "StackProfile" })
-        }
+        onPress={handleFriendsPress}
       >
-        <Ionicons name="person-outline" size={22} color="#a21caf" />
-        <Text style={styles.drawerItemText}>Profile</Text>
+        <Ionicons name="people-outline" size={22} color="#a21caf" />
+        <Text style={styles.drawerItemText}>Friends</Text>
       </TouchableOpacity>
 
+      {/* Logout */}
       <View style={styles.logoutContainer}>
         <TouchableOpacity style={styles.drawerItem} onPress={handleLogout}>
           <Ionicons name="log-out-outline" size={22} color="#ff4444" />
@@ -157,6 +165,11 @@ export default function UserDashboard() {
         component={StackScreens}
         initialParams={{ screen: "StackProfile" }}
       />
+      <Drawer.Screen
+        name="Friends"
+        component={StackScreens}
+        initialParams={{ screen: "StackFriends" }}
+      />
     </Drawer.Navigator>
   );
 }
@@ -164,7 +177,17 @@ export default function UserDashboard() {
 // ------------------- Styles -------------------
 const styles = StyleSheet.create({
   drawerContainer: { flex: 1, paddingVertical: 20, backgroundColor: "#fff8fc" },
-  drawerHeader: { alignItems: "center", marginBottom: 30 },
+  drawerHeader: { 
+    alignItems: "center", 
+    marginBottom: 30, 
+  },
+  profileImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 2,
+    borderColor: "#a21caf",
+  },
   drawerHeaderText: {
     marginTop: 10,
     fontSize: 20,

@@ -195,9 +195,9 @@ import { Server } from "socket.io";
 import authRoutes from "./routes/auth.js";
 import userRoutes from "./routes/user.js";
 import friendRoutes from "./routes/friendRoutes.js";
-import puzzleRoutes from "./routes/puzzle.js";
-import fetchPuzzleRoutes from "./routes/fetchPuzzles.js";
-import puzzleAttemptRoutes from "./routes/puzzleAttemptRoutes.js";
+import puzzleRoutes from "./routes/QuizRoutes.js";
+import fetchPuzzleRoutes from "./routes/fetchQuizzes.js";
+import puzzleAttemptRoutes from "./routes/QuizAttemptRoutes.js";
 import attemptCountRoutes from "./routes/attemptStatsRoutes.js";
 import { connectDB } from "./config/db.js";
 

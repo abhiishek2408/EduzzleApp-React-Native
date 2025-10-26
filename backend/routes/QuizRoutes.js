@@ -17,9 +17,9 @@
 // module.exports = router;
 
 
-// routes/puzzle.js
+// routes/QuizRoutes.js
 import express from "express";
-import Puzzle from "../models/Puzzle.js";
+import Puzzle from "../models/Quiz.js";
 import UserAttempt from "../models/UserAttempt.js";
 
 const router = express.Router();

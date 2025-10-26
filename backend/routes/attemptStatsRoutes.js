@@ -1,5 +1,5 @@
 import express from "express";
-import PuzzleAttempt from "../models/PuzzleAttempt.js";
+import QuizAttempt from "../models/QuizAttempt.js";
 
 const router = express.Router();
 
@@ -9,7 +9,7 @@ router.get("/stats/:id", async (req, res) => {
     const userId = req.params.id;
 
     // Find all attempts for this user
-    const attempts = await PuzzleAttempt.find({ user: userId });
+    const attempts = await QuizAttempt.find({ user: userId });
 
     const attemptCount = attempts.length;
 
@@ -41,13 +41,13 @@ router.get("/stats/:id", async (req, res) => {
 
 
 
-// Get all puzzle IDs attempted by a user
+// Get all quiz IDs attempted by a user
 router.get("/attempted-puzzles/:userId", async (req, res) => {
   try {
     const userId = req.params.userId;
 
-    // Fetch only puzzle IDs for this user
-    const attempts = await PuzzleAttempt.find({ user: userId }).select("puzzle -_id");
+    // Fetch only quiz IDs for this user
+    const attempts = await QuizAttempt.find({ user: userId }).select("puzzle -_id");
 
     const attemptedPuzzleIds = attempts.map((att) => att.puzzle.toString());
 

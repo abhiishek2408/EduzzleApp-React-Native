@@ -1,12 +1,39 @@
 // routes/fetchPuzzles.js
 import express from "express";
-import Puzzle from "../models/Puzzle.js";
+import Puzzle from "../models/Quiz.js";
 
 const router = express.Router();
 
 // ✅ GET: Fetch puzzles allowed for a specific user
+// router.get("/all", async (req, res) => {
+//   const userId = req.query.userId; // Example: pass ?userId=abc123
+
+//   if (!userId) {
+//     return res.status(400).json({ message: "User ID required" });
+//   }
+
+//   try {
+//     const puzzles = await Puzzle.find({
+//       isActive: true,
+//       $or: [
+//         { allowedUsers: { $exists: false } },
+//         { allowedUsers: { $size: 0 } },
+//         { allowedUsers: userId },
+//       ],
+//     }).select(
+//       "name description category numberOfLevels totalMarks tags levels.name"
+//     );
+
+//     res.status(200).json(puzzles);
+//   } catch (err) {
+//     console.error("Error fetching puzzles for user:", err);
+//     res.status(500).json({ message: "Error fetching puzzles", error: err });
+//   }
+// });
+
+
 router.get("/all", async (req, res) => {
-  const userId = req.query.userId; // Example: pass ?userId=abc123
+  const userId = req.query.userId; // Example: /api/puzzles/all?userId=abc123
 
   if (!userId) {
     return res.status(400).json({ message: "User ID required" });
@@ -16,12 +43,13 @@ router.get("/all", async (req, res) => {
     const puzzles = await Puzzle.find({
       isActive: true,
       $or: [
+        { isFree: true }, // ✅ Free puzzles available for all users
         { allowedUsers: { $exists: false } },
         { allowedUsers: { $size: 0 } },
         { allowedUsers: userId },
       ],
     }).select(
-      "name description category numberOfLevels totalMarks tags levels.name"
+      "name description category numberOfLevels totalMarks tags levels.name isFree"
     );
 
     res.status(200).json(puzzles);
@@ -30,6 +58,7 @@ router.get("/all", async (req, res) => {
     res.status(500).json({ message: "Error fetching puzzles", error: err });
   }
 });
+
 
 // ✅ GET: Fetch full puzzle by ID (detailed view for test attempt)
 router.get("/by-id/:id", async (req, res) => {

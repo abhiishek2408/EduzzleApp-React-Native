@@ -1,6 +1,6 @@
 // routes/puzzleAttemptRoutes.js
 import express from "express";
-import PuzzleAttempt from "../models/PuzzleAttempt.js";
+import PuzzleAttempt from "../models/QuizAttempt.js";
 
 const router = express.Router();
 

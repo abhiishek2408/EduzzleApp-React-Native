@@ -1,4 +1,4 @@
-// models/Puzzle.js
+// models/Quiz.js
 import mongoose from "mongoose";
 
 // Question Schema
@@ -58,6 +58,7 @@ const puzzleSchema = new mongoose.Schema({
   },
   author: { type: String },
   isActive: { type: Boolean, default: true },
+  isFree: { type: Boolean, default: false },
   totalMarks: { type: Number },
   tags: [{ type: String }],
   allowedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
