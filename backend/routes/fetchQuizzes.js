@@ -4,32 +4,34 @@ import Puzzle from "../models/Quiz.js";
 
 const router = express.Router();
 
-// ✅ GET: Fetch puzzles allowed for a specific user
-// router.get("/all", async (req, res) => {
-//   const userId = req.query.userId; // Example: pass ?userId=abc123
+// search puzzles by name or tags
+router.get("/search", async (req, res) => {
+  const query = req.query.q;
+  if (!query) {
+    return res.status(400).json({ message: "Search query required" });
+  }
 
-//   if (!userId) {
-//     return res.status(400).json({ message: "User ID required" });
-//   }
+  try {
+    const puzzles = await Puzzle.find({
+      isActive: true,
+      $or: [
+        { name: { $regex: query, $options: "i" } },
+        { tags: { $regex: query, $options: "i" } },
+      ],
+    }).select(
+      "name description category numberOfLevels totalMarks tags levels.name isFree"
+    );
 
-//   try {
-//     const puzzles = await Puzzle.find({
-//       isActive: true,
-//       $or: [
-//         { allowedUsers: { $exists: false } },
-//         { allowedUsers: { $size: 0 } },
-//         { allowedUsers: userId },
-//       ],
-//     }).select(
-//       "name description category numberOfLevels totalMarks tags levels.name"
-//     );
+    res.status(200).json(puzzles);
+  } catch (err) {
+    console.error("Error searching puzzles:", err);
+    res.status(500).json({ message: "Error searching puzzles", error: err });
+  }
+});
 
-//     res.status(200).json(puzzles);
-//   } catch (err) {
-//     console.error("Error fetching puzzles for user:", err);
-//     res.status(500).json({ message: "Error fetching puzzles", error: err });
-//   }
-// });
+//you can search quizzes by li
+
+
 
 
 router.get("/all", async (req, res) => {
