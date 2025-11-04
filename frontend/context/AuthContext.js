@@ -260,7 +260,7 @@ export const AuthProvider = ({ children }) => {
     if (!token) return;
     try {
       const { data } = await axios.get(
-        "https://eduzzleapp-react-native.onrender.com/api/user/me",
+        "https://eduzzleapp-react-native.onrender.com/api/auth/me",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
