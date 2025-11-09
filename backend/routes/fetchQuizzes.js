@@ -54,36 +54,39 @@ router.get("/search/level", async (req, res) => {
 
 router.get("/all", async (req, res) => {
   const userId = req.query.userId;
+  console.log("🟡 userId received:", userId);
 
   if (!userId) {
     return res.status(400).json({ message: "User ID required" });
   }
 
-  // ✅ पहले चेक करो कि userId valid ObjectId है या नहीं
   if (!mongoose.Types.ObjectId.isValid(userId)) {
+    console.log("🔴 Invalid ObjectId format");
     return res.status(400).json({ message: "Invalid User ID format" });
   }
 
   try {
+    console.log("🟢 Finding quizzes for user...");
     const quizzes = await Quiz.find({
       isActive: true,
       $or: [
         { isFree: true },
         { allowedUsers: { $exists: false } },
         { allowedUsers: { $size: 0 } },
-        // ✅ अब यहाँ ObjectId डालो
         { allowedUsers: { $in: [new mongoose.Types.ObjectId(userId)] } },
       ],
     }).select(
       "name description category numberOfLevels totalMarks tags levels.name isFree"
     );
 
+    console.log("✅ Quizzes found:", quizzes.length);
     res.status(200).json(quizzes);
   } catch (err) {
-    console.error("Error fetching quizzes for user:", err);
+    console.error("❌ Error fetching quizzes for user:", err);
     res.status(500).json({ message: "Error fetching quizzes", error: err });
   }
 });
+
 
 
 // ✅ GET: Fetch full quiz by ID (detailed view for test attempt)
