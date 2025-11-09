@@ -347,6 +347,8 @@ import StackQuiz from "../screens/Puzzles/StackQuiz";
 import FriendsScreen from "./FriendsScreen";
 import SubscriptionScreen from "./SubscriptionScreen";
 import PlanDetailScreen from "./PlanDetailScreen";
+import QuizScreen from "./QuizScreen";
+import Notification from "./Notification";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -358,11 +360,7 @@ const StackScreens = ({ route }) => {
   return (
     <Stack.Navigator
       initialRouteName={initialScreen}
-      screenOptions={{
-        headerTitle: () => <LogoHeader />,
-        headerStyle: { backgroundColor: "#a21caf" },
-        headerTitleStyle: { color: "#fff", fontSize: 20, fontWeight: "500" },
-      }}
+      screenOptions={{headerShown:false}}
     >
       <Stack.Screen name="StackHome" component={HomeScreen} />
       <Stack.Screen name="StackPlay" component={PlayScreen} />
@@ -373,6 +371,8 @@ const StackScreens = ({ route }) => {
       <Stack.Screen name="StackQuizScreen" component={StackQuiz} />
       <Stack.Screen name="StackResult" component={ResultScreen} />
       <Stack.Screen name="PlanDetail" component={PlanDetailScreen} />
+      <Stack.Screen name="QuizzesScreen" component={QuizScreen} />
+      <Stack.Screen name="NotificationScreen" component={Notification} />
     </Stack.Navigator>
   );
 };

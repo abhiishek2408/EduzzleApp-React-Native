@@ -31,8 +31,8 @@ const levelSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
-// Puzzle Schema
-const puzzleSchema = new mongoose.Schema({
+// quiz Schema
+const quizSchema = new mongoose.Schema({
   name: { type: String, required: true },
   description: { type: String },
   category: { type: String },
@@ -53,7 +53,7 @@ const puzzleSchema = new mongoose.Schema({
         const allValid = requiredNames.every((name) => levelNames.includes(name));
         return val.length === 3 && allValid && new Set(levelNames).size === 3;
       },
-      message: "Puzzle must have exactly 3 levels named 'Easy', 'Medium', and 'Hard'.",
+      message: "quiz must have exactly 3 levels named 'Easy', 'Medium', and 'Hard'.",
     },
   },
   author: { type: String },
@@ -66,4 +66,4 @@ const puzzleSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now },
 });
 
-export default mongoose.model("Puzzle", puzzleSchema);
+export default mongoose.model("Quiz", quizSchema);

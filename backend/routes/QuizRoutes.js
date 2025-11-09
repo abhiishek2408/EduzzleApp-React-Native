@@ -19,12 +19,12 @@
 
 // routes/QuizRoutes.js
 import express from "express";
-import Puzzle from "../models/Quiz.js";
+import Quiz from "../models/Quiz.js";
 import UserAttempt from "../models/UserAttempt.js";
 
 const router = express.Router();
 
-// 📌 Create a new puzzle (must have exactly 3 levels: Easy, Medium, Hard)
+// 📌 Create a new quiz (must have exactly 3 levels: Easy, Medium, Hard)
 router.post("/create", async (req, res) => {
   try {
     const { name, description, category, author, levels } = req.body;
@@ -41,11 +41,11 @@ router.post("/create", async (req, res) => {
     ) {
       return res.status(400).json({
         message:
-          "Puzzle must include exactly 3 levels named: Easy, Medium, and Hard.",
+          "Quiz must include exactly 3 levels named: Easy, Medium, and Hard.",
       });
     }
 
-    const puzzle = new Puzzle({
+    const quiz = new Quiz({
       name,
       description,
       category,
@@ -54,30 +54,30 @@ router.post("/create", async (req, res) => {
       author,
     });
 
-    await puzzle.save();
-    res.status(201).json({ message: "Puzzle created successfully", puzzle });
+    await quiz.save();
+    res.status(201).json({ message: "Quiz created successfully", quiz });
   } catch (err) {
     console.error(err);
     res
       .status(500)
-      .json({ message: "Failed to create puzzle", error: err.message });
+      .json({ message: "Failed to create quiz", error: err.message });
   }
 });
 
-// 📌 Get all puzzles
+// 📌 Get all quizzes
 router.get("/", async (req, res) => {
   try {
-    const puzzles = await Puzzle.find();
-    res.json(puzzles);
+    const quizzes = await Quiz.find();
+    res.json(quizzes);
   } catch (err) {
-    console.error("Failed to fetch puzzles:", err);
-    res.status(500).json({ message: "Failed to fetch puzzles", error: err });
+    console.error("Failed to fetch quizzes:", err);
+    res.status(500).json({ message: "Failed to fetch quizzes", error: err });
   }
 });
 
 // 📌 Add question to a specific level (Easy/Medium/Hard)
 router.post("/:puzzleId/levels/:levelName/add-question", async (req, res) => {
-  const { puzzleId, levelName } = req.params;
+  const { quizId, levelName } = req.params;
   const {
     question,
     options,

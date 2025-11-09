@@ -1,8 +1,8 @@
-// models/PuzzleAttempt.js
+// models/QuizAttempt.js
 import mongoose from "mongoose";
 
 const answerSchema = new mongoose.Schema({
-  questionId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "Puzzle.questions" },
+  questionId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "Quiz.questions" },
   selectedOption: { type: String, required: true },
   correctOption: { type: String, required: true },
   isCorrect: { type: Boolean, required: true },
@@ -29,10 +29,10 @@ const levelAttemptSchema = new mongoose.Schema({
   answers: [answerSchema],
 });
 
-// Puzzle Attempt Schema (per user per attempt)
-const puzzleAttemptSchema = new mongoose.Schema({
+// Quiz Attempt Schema (per user per attempt)
+const quizAttemptSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  puzzle: { type: mongoose.Schema.Types.ObjectId, ref: "Puzzle", required: true },
+  quiz: { type: mongoose.Schema.Types.ObjectId, ref: "Quiz", required: true },
 
   // Support for multiple retakes
   attemptNumber: { type: Number, default: 1 },
@@ -52,4 +52,4 @@ const puzzleAttemptSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
-export default mongoose.model("PuzzleAttempt", puzzleAttemptSchema);
+export default mongoose.model("QuizAttempt", quizAttemptSchema);

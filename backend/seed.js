@@ -390,65 +390,111 @@
 
 
 
+// import mongoose from "mongoose";
+// import dotenv from "dotenv";
+// import User from "./models/User.js"; // adjust path
+// import SubscriptionPlan from "./models/SubscriptionPlan.js"; // adjust path
+
+// dotenv.config();
+
+// const MONGO_URI = process.env.MONGO_URI;
+
+// if (!MONGO_URI) {
+//   console.error("MONGO_URI not found in .env");
+//   process.exit(1);
+// }
+
+// const updateUsers = async () => {
+//   try {
+//     await mongoose.connect(MONGO_URI, {
+//       useNewUrlParser: true,
+//       useUnifiedTopology: true,
+//     });
+//     console.log("MongoDB connected");
+
+//     // Optional: pick a default subscription plan
+//     const defaultPlan = await SubscriptionPlan.findOne({ name: "1 Month" });
+    
+//     if (!defaultPlan) {
+//       console.warn("No default subscription plan found, subscription will be empty");
+//     }
+
+//     // Update all users that don't have subscription field
+//     const result = await User.updateMany(
+//       { subscription: { $exists: false } }, // only users missing subscription
+//       {
+//         $set: {
+//           subscription: defaultPlan
+//             ? {
+//                 planId: defaultPlan._id,
+//                 startDate: new Date(),
+//                 endDate: new Date(Date.now() + defaultPlan.durationInDays * 24 * 60 * 60 * 1000),
+//                 isActive: true,
+//               }
+//             : {
+//                 planId: null,
+//                 startDate: null,
+//                 endDate: null,
+//                 isActive: false,
+//               },
+//         },
+//       }
+//     );
+
+//     console.log(`Updated ${result.modifiedCount} users with default subscription`);
+//   } catch (err) {
+//     console.error("Error updating users:", err);
+//   } finally {
+//     await mongoose.connection.close();
+//     console.log("MongoDB connection closed");
+//     process.exit(0);
+//   }
+// };
+
+// updateUsers();
+
+
+
+
+
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-import User from "./models/User.js"; // adjust path
-import SubscriptionPlan from "./models/SubscriptionPlan.js"; // adjust path
 
+// Load environment variables from .env
 dotenv.config();
 
-const MONGO_URI = process.env.MONGO_URI;
-
-if (!MONGO_URI) {
-  console.error("MONGO_URI not found in .env");
-  process.exit(1);
-}
-
-const updateUsers = async () => {
+const renameCollection = async () => {
   try {
-    await mongoose.connect(MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    console.log("MongoDB connected");
+    // Use URI from .env or fallback to localhost
+    const mongoURI = process.env.MONGO_URI || "mongodb://localhost:27017/edu-puzzle";
 
-    // Optional: pick a default subscription plan
-    const defaultPlan = await SubscriptionPlan.findOne({ name: "1 Month" });
-    
-    if (!defaultPlan) {
-      console.warn("No default subscription plan found, subscription will be empty");
+    // Connect to the database
+    const conn = await mongoose.connect(mongoURI);
+    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+
+    // Rename the collection
+    const oldName = "puzzleattempts";
+    const newName = "QuizAttempts";
+
+    const db = conn.connection.db;
+
+    // Check if 'puzzles' collection exists
+    const collections = await db.listCollections({ name: oldName }).toArray();
+
+    if (collections.length > 0) {
+      await db.collection(oldName).rename(newName);
+      console.log(`🎉 Collection renamed from '${oldName}' ➜ '${newName}'`);
+    } else {
+      console.log(`⚠️ Collection '${oldName}' does not exist, skipping rename.`);
     }
 
-    // Update all users that don't have subscription field
-    const result = await User.updateMany(
-      { subscription: { $exists: false } }, // only users missing subscription
-      {
-        $set: {
-          subscription: defaultPlan
-            ? {
-                planId: defaultPlan._id,
-                startDate: new Date(),
-                endDate: new Date(Date.now() + defaultPlan.durationInDays * 24 * 60 * 60 * 1000),
-                isActive: true,
-              }
-            : {
-                planId: null,
-                startDate: null,
-                endDate: null,
-                isActive: false,
-              },
-        },
-      }
-    );
-
-    console.log(`Updated ${result.modifiedCount} users with default subscription`);
-  } catch (err) {
-    console.error("Error updating users:", err);
-  } finally {
-    await mongoose.connection.close();
-    console.log("MongoDB connection closed");
+    await mongoose.disconnect();
+    console.log("🔌 MongoDB disconnected.");
     process.exit(0);
+  } catch (err) {
+    console.error("❌ Error renaming collection:", err.message);
+    process.exit(1);
   }
 };
 
-updateUsers();
+renameCollection();

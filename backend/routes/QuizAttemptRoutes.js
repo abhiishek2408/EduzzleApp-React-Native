@@ -1,15 +1,15 @@
-// routes/puzzleAttemptRoutes.js
+// routes/QuizAttemptRoutes.js
 import express from "express";
-import PuzzleAttempt from "../models/QuizAttempt.js";
+import QuizAttempt from "../models/QuizAttempt.js";
 
 const router = express.Router();
 
-// POST /api/puzzle-attempts/
+
 router.post("/", async (req, res) => {
   try {
     const {
       user,
-      puzzle,
+      quiz,
       attemptNumber = 1,
       startedAt,
       endedAt,
@@ -21,9 +21,9 @@ router.post("/", async (req, res) => {
       rating,
     } = req.body;
 
-    const attempt = new PuzzleAttempt({
+    const attempt = new QuizAttempt({
       user,
-      puzzle,
+      quiz,
       attemptNumber,
       startedAt,
       endedAt,

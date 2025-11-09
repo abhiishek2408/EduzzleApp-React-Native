@@ -1,10 +1,10 @@
-// routes/fetchPuzzles.js
+// routes/fetchQuizzes.js
 import express from "express";
-import Puzzle from "../models/Quiz.js";
+import Quiz from "../models/Quiz.js";
 
 const router = express.Router();
 
-// search puzzles by name or tags
+// search quizzes by name or tags
 router.get("/search", async (req, res) => {
   const query = req.query.q;
   if (!query) {
@@ -12,7 +12,7 @@ router.get("/search", async (req, res) => {
   }
 
   try {
-    const puzzles = await Puzzle.find({
+    const quizzes = await Quiz.find({
       isActive: true,
       $or: [
         { name: { $regex: query, $options: "i" } },
@@ -22,30 +22,47 @@ router.get("/search", async (req, res) => {
       "name description category numberOfLevels totalMarks tags levels.name isFree"
     );
 
-    res.status(200).json(puzzles);
+    res.status(200).json(quizzes);
   } catch (err) {
-    console.error("Error searching puzzles:", err);
-    res.status(500).json({ message: "Error searching puzzles", error: err });
+    console.error("Error searching quizzes:", err);
+    res.status(500).json({ message: "Error searching quizzes", error: err });
   }
 });
 
-//you can search quizzes by li
+//you can search quizzes by level
+router.get("/search/level", async (req, res) => {
+  const level = req.query.level;
+  if (!level) {
+    return res.status(400).json({ message: "Level query required" });
+  }
 
+  try {
+    const quizzes = await Quiz.find({
+      isActive: true,
+      "levels.name": { $regex: level, $options: "i" },
+    }).select(
+      "name description category numberOfLevels totalMarks tags levels.name isFree"
+    );
 
-
+    res.status(200).json(quizzes);
+  } catch (err) {
+    console.error("Error searching quizzes by level:", err);
+    res.status(500).json({ message: "Error searching quizzes by level", error: err });
+  }
+});
 
 router.get("/all", async (req, res) => {
-  const userId = req.query.userId; // Example: /api/puzzles/all?userId=abc123
+  const userId = req.query.userId; 
 
   if (!userId) {
     return res.status(400).json({ message: "User ID required" });
   }
 
   try {
-    const puzzles = await Puzzle.find({
+    const quizs = await quiz.find({
       isActive: true,
       $or: [
-        { isFree: true }, // ✅ Free puzzles available for all users
+        { isFree: true }, 
         { allowedUsers: { $exists: false } },
         { allowedUsers: { $size: 0 } },
         { allowedUsers: userId },
@@ -54,23 +71,23 @@ router.get("/all", async (req, res) => {
       "name description category numberOfLevels totalMarks tags levels.name isFree"
     );
 
-    res.status(200).json(puzzles);
+    res.status(200).json(quizs);
   } catch (err) {
-    console.error("Error fetching puzzles for user:", err);
-    res.status(500).json({ message: "Error fetching puzzles", error: err });
+    console.error("Error fetching quizzes for user:", err);
+    res.status(500).json({ message: "Error fetching quizzes", error: err });
   }
 });
 
 
-// ✅ GET: Fetch full puzzle by ID (detailed view for test attempt)
+// ✅ GET: Fetch full quiz by ID (detailed view for test attempt)
 router.get("/by-id/:id", async (req, res) => {
   try {
-    const puzzle = await Puzzle.findById(req.params.id);
-    if (!puzzle) return res.status(404).json({ message: "Puzzle not found" });
-    res.status(200).json(puzzle);
+    const quiz = await Quiz.findById(req.params.id);
+    if (!quiz) return res.status(404).json({ message: "Quiz not found" });
+    res.status(200).json(quiz);
   } catch (err) {
-    console.error("Error fetching puzzle by ID:", err);
-    res.status(500).json({ message: "Error fetching puzzle", error: err });
+    console.error("Error fetching quiz by ID:", err);
+    res.status(500).json({ message: "Error fetching quiz", error: err });
   }
 });
 

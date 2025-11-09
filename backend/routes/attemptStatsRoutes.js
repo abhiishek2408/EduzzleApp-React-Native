@@ -47,11 +47,11 @@ router.get("/attempted-puzzles/:userId", async (req, res) => {
     const userId = req.params.userId;
 
     // Fetch only quiz IDs for this user
-    const attempts = await QuizAttempt.find({ user: userId }).select("puzzle -_id");
+    const attempts = await QuizAttempt.find({ user: userId }).select("quiz -_id");
 
-    const attemptedPuzzleIds = attempts.map((att) => att.puzzle.toString());
+    const attemptedQuizIds = attempts.map((att) => att.quiz.toString());
 
-    res.json({ success: true, attemptedPuzzleIds });
+    res.json({ success: true, attemptedQuizIds });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Server error", error });
