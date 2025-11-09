@@ -28,17 +28,17 @@ import { AuthContext } from "../context/AuthContext";
 import { GameContext } from "../context/GameContext";
 import ResultComponent from "./ResultScreen";
 
-export default function PuzzleScreen() {
+export default function QuizScreen() {
   const route = useRoute();
   const navigation = useNavigation();
 
-  const { puzzleId } = route.params || {};
+  const { quizId } = route.params || {};
   const { user } = useContext(AuthContext);
   const { resetRetries, setScore } = useContext(GameContext);
 
   const [loading, setLoading] = useState(true);
   const [quizData, setQuizData] = useState(null);
-  const [activePuzzle, setActivePuzzle] = useState(null);
+  const [activeQuiz, setActiveQuiz] = useState(null);
   const [startTime, setStartTime] = useState(null);
   const [endTime, setEndTime] = useState(null);
 
@@ -73,7 +73,7 @@ export default function PuzzleScreen() {
       );
 
       setQuizData(data);
-      setActivePuzzle(id);
+      setActiveQuiz(id);
       setStartTime(Date.now());
       setCurrentLevelIndex(0);
       setCurrentQuestionIndex(0);
@@ -84,21 +84,21 @@ export default function PuzzleScreen() {
       setLocalScore(0);
     } catch (err) {
       console.error(err);
-      Alert.alert("Error", "Could not load puzzle data");
-      navigation.replace("PuzzleSelection");
+      Alert.alert("Error", "Could not load quiz data");
+      navigation.replace("QuizSelection");
     } finally {
       setLoading(false);
     }
   };
 
-  // ---- Load Puzzle ----
+  // ---- Load Quiz ----
   useEffect(() => {
-    if (!puzzleId) {
-      navigation.replace("PuzzleSelection");
+    if (!quizId) {
+      navigation.replace("QuizSelection");
     } else {
-      startQuiz(puzzleId);
+      startQuiz(quizId);
     }
-  }, [puzzleId]);
+  }, [quizId]);
 
   // ---- Timer ----
   useEffect(() => {
@@ -241,7 +241,7 @@ export default function PuzzleScreen() {
   const submitResults = async () => {
     const payload = {
       user: user._id,
-      puzzle: activePuzzle,
+      quiz: activeQuiz,
       startedAt: new Date(startTime),
       endedAt: new Date(endTime),
       totalTimeTaken: Math.floor((endTime - startTime) / 1000),
@@ -303,7 +303,7 @@ export default function PuzzleScreen() {
       {/* SVG Background */}
       <View style={StyleSheet.absoluteFillObject}>
         <Svg height="100%" width="100%">
-          {/* Gradients, shapes, puzzle symbols here */}
+
         </Svg>
       </View>
 

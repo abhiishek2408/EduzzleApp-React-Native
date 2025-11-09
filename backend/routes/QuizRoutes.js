@@ -1,22 +1,3 @@
-// const express = require('express');
-// const router = express.Router();
-// const Puzzle = require('../models/Puzzle');
-
-// // POST /api/puzzles/create
-// router.post('/create', async (req, res) => {
-//   try {
-//     const puzzle = new Puzzle(req.body);
-//     await puzzle.save();
-//     res.status(201).json({ message: 'Puzzle created successfully', puzzle });
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ message: 'Failed to create puzzle', error: err });
-//   }
-// });
-
-// module.exports = router;
-
-
 // routes/QuizRoutes.js
 import express from "express";
 import Quiz from "../models/Quiz.js";
@@ -91,10 +72,10 @@ router.post("/:puzzleId/levels/:levelName/add-question", async (req, res) => {
   } = req.body;
 
   try {
-    const puzzle = await Puzzle.findById(puzzleId);
-    if (!puzzle) return res.status(404).json({ message: "Puzzle not found" });
+    const quiz = await Quiz.findById(quizId);
+    if (!quiz) return res.status(404).json({ message: "Quiz not found" });
 
-    const level = puzzle.levels.find(
+    const level = quiz.levels.find(
       (lvl) => lvl.name.toLowerCase() === levelName.toLowerCase()
     );
     if (!level) return res.status(404).json({ message: "Level not found" });
@@ -112,7 +93,7 @@ router.post("/:puzzleId/levels/:levelName/add-question", async (req, res) => {
       points,
     });
 
-    await puzzle.save();
+    await quiz.save();
     res.status(200).json({ message: "Question added successfully", level });
   } catch (error) {
     console.error(error);
@@ -120,17 +101,17 @@ router.post("/:puzzleId/levels/:levelName/add-question", async (req, res) => {
   }
 });
 
-// 📌 Get puzzle by ID
+
 router.get("/:id", async (req, res) => {
   try {
-    const puzzle = await Puzzle.findById(req.params.id);
-    if (!puzzle) {
-      return res.status(404).json({ message: "Puzzle not found" });
+    const quiz = await Quiz.findById(req.params.id);
+    if (!quiz) {
+      return res.status(404).json({ message: "Quiz not found" });
     }
-    res.json(puzzle);
+    res.json(quiz);
   } catch (error) {
-    console.error("Error fetching puzzle by ID:", error);
-    res.status(500).json({ message: "Error fetching puzzle", error });
+    console.error("Error fetching quiz by ID:", error);
+    res.status(500).json({ message: "Error fetching quiz", error });
   }
 });
 

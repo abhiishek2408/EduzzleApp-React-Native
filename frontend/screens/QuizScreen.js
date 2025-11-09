@@ -25,8 +25,8 @@ const { width: screenWidth } = Dimensions.get("window");
 const CARD_WIDTH = (screenWidth - 2 * PADDING_HORIZONTAL - CARD_MARGIN) / 2;
 const CARD_HEIGHT = 140;
 
-// ------------------- REUSABLE PUZZLE CARD -------------------
-const PuzzleCard = ({
+// ------------------- REUSABLE QUIZ CARD -------------------
+const QuizCard = ({
   title,
   subtitle,
   iconName,
@@ -102,9 +102,9 @@ const PuzzleCard = ({
 
         {isGrid && (
           <>
-            <Text style={verticalListStyles.puzzleName}>{title}</Text>
+            <Text style={verticalListStyles.quizName}>{title}</Text>
 
-            <Text style={[verticalListStyles.puzzleName, { marginBottom: 4 }]} numberOfLines={2}>
+            <Text style={[verticalListStyles.quizName, { marginBottom: 4 }]} numberOfLines={2}>
               {subtitle}
             </Text>
 
@@ -147,25 +147,25 @@ const PuzzleCard = ({
 // ------------------- MAIN SCREEN -------------------
 export default function QuizScreen({ navigation }) {
   const { user } = useContext(AuthContext);
-  const [puzzles, setPuzzles] = useState([]);
-  const [attemptedPuzzleIds, setAttemptedPuzzleIds] = useState([]);
+  const [quizzes, setQuizzes] = useState([]);
+  const [attemptedQuizIds, setAttemptedQuizIds] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchPuzzles = async () => {
+  const fetchQuizzes = async () => {
     try {
       const res = await axios.get(
         `https://eduzzleapp-react-native.onrender.com/api/fetch-puzzles/all?userId=${user._id}`
       );
-      setPuzzles(res.data);
+      setQuizzes(res.data);
     } catch (err) {
       console.error(err);
-      Alert.alert("Error", "Could not load puzzles");
+      Alert.alert("Error", "Could not load quizzes");
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchAttemptedPuzzles = async () => {
+  const fetchAttemptedQuizzes = async () => {
     try {
       const res = await axios.get(
         `https://eduzzleapp-react-native.onrender.com/api/attempts/attempted-puzzles/${user._id}`
@@ -178,8 +178,8 @@ export default function QuizScreen({ navigation }) {
 
   useEffect(() => {
     if (user?._id) {
-      fetchPuzzles();
-      fetchAttemptedPuzzles();
+      fetchQuizzes();
+      fetchAttemptedQuizzes();
     }
   }, [user]);
 
@@ -219,24 +219,24 @@ export default function QuizScreen({ navigation }) {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Removed Today's Puzzle */}
 
-        {/* Grid Puzzles */}
-        {puzzles.length > 0 && (
+        {/* Grid Quizzes */}
+        {quizzes.length > 0 && (
           <View style={{ marginBottom: 25 }}>
             <Text style={styles.sectionTitle}>Quizzes</Text>
             <View style={verticalListStyles.grid}>
-              {puzzles.map((puzzle, index) => (
-                <PuzzleCard
-                  key={puzzle._id}
-                  subtitle={puzzle.name}
-                  category={puzzle.category}
+              {quizzes.map((quiz, index) => (
+                <QuizCard
+                  key={quiz._id}
+                  subtitle={quiz.name}
+                  category={quiz.category}
                   isGrid={true}
                   index={index}
-                  attempted={attemptedPuzzleIds.includes(puzzle._id)}
-                  onPress={() => navigation.navigate("PuzzleScreen", { puzzleId: puzzle._id })}
-                  gradientKey={puzzle._id}
+                  attempted={attemptedQuizIds.includes(quiz._id)}
+                  onPress={() => navigation.navigate("QuizPlayScreen", { quizId: quiz._id })}
+                  gradientKey={quiz._id}
                   iconName="lightbulb-on-outline"
                   iconColor={PRIMARY_TEXT_COLOR}
-                  isFree={puzzle.isFree}
+                  isFree={quiz.isFree}
                 />
               ))}
             </View>
@@ -276,7 +276,7 @@ const verticalListStyles = StyleSheet.create({
     marginBottom: CARD_MARGIN,
   },
   cardContent: { flex: 1, padding: 12, borderRadius: 12, justifyContent: "space-between", zIndex: 10 },
-  puzzleName: { fontSize: 15, fontWeight: "800", color: PRIMARY_TEXT_COLOR },
+  quizName: { fontSize: 15, fontWeight: "800", color: PRIMARY_TEXT_COLOR },
   categoryText: { fontSize: 12, fontWeight: "600", color: SECONDARY_TEXT_COLOR, marginTop: 4 },
   attemptedBadge: {
     position: "absolute",

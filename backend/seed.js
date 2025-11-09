@@ -473,8 +473,8 @@ const renameCollection = async () => {
     console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
 
     // Rename the collection
-    const oldName = "puzzleattempts";
-    const newName = "QuizAttempts";
+    const oldName = "QuizAttempts";
+    const newName = "quizattempts";
 
     const db = conn.connection.db;
 

@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 
 const attemptSchema = new mongoose.Schema({
   userId: String,
-  puzzleId: String,
+  quizId: String,
   score: Number,
   result: String,
   levelWise: [
