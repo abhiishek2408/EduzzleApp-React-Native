@@ -240,8 +240,8 @@ export default function QuizScreen() {
   // ---- Submit Results ----
   const submitResults = async () => {
     const payload = {
-      user: user._id,
-      quiz: activeQuiz,
+      userId: user._id,
+      quizId: activeQuiz,
       startedAt: new Date(startTime),
       endedAt: new Date(endTime),
       totalTimeTaken: Math.floor((endTime - startTime) / 1000),

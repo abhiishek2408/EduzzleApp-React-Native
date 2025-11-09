@@ -8,8 +8,8 @@ const router = express.Router();
 router.post("/", async (req, res) => {
   try {
     const {
-      user,
-      quiz,
+      userId,
+      quizId,
       attemptNumber = 1,
       startedAt,
       endedAt,
@@ -22,8 +22,8 @@ router.post("/", async (req, res) => {
     } = req.body;
 
     const attempt = new QuizAttempt({
-      user,
-      quiz,
+      userId,
+      quizId,
       attemptNumber,
       startedAt,
       endedAt,
