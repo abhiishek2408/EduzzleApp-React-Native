@@ -160,6 +160,9 @@ const QuizCard = ({
   );
 };
 
+
+
+
 // ------------------- MAIN SCREEN -------------------
 export default function HomeScreen({ navigation }) {
   const { user } = useContext(AuthContext);
@@ -185,6 +188,7 @@ export default function HomeScreen({ navigation }) {
     }
   };
 
+
   const fetchAttemptedQuizzes = async () => {
     try {
       const res = await axios.get(
@@ -196,6 +200,8 @@ export default function HomeScreen({ navigation }) {
     }
   };
 
+
+  
   const filterQuizzes = async (query) => {
     if (!query || query.trim() === "") {
       fetchQuizzes();

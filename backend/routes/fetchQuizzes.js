@@ -53,20 +53,26 @@ router.get("/search/level", async (req, res) => {
 
 
 router.get("/all", async (req, res) => {
-  const userId = req.query.userId; 
+  const userId = req.query.userId;
 
   if (!userId) {
     return res.status(400).json({ message: "User ID required" });
+  }
+
+  // ✅ पहले चेक करो कि userId valid ObjectId है या नहीं
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    return res.status(400).json({ message: "Invalid User ID format" });
   }
 
   try {
     const quizzes = await Quiz.find({
       isActive: true,
       $or: [
-        { isFree: true }, 
+        { isFree: true },
         { allowedUsers: { $exists: false } },
         { allowedUsers: { $size: 0 } },
-        { allowedUsers: userId },
+        // ✅ अब यहाँ ObjectId डालो
+        { allowedUsers: { $in: [new mongoose.Types.ObjectId(userId)] } },
       ],
     }).select(
       "name description category numberOfLevels totalMarks tags levels.name isFree"
