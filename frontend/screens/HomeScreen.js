@@ -174,19 +174,21 @@ export default function HomeScreen({ navigation }) {
   const scrollRef = useRef(null);
   const currentOffset = useRef(0);
 
-  const fetchQuizzes = async () => {
-    try {
-      const res = await axios.get(
-        `https://eduzzleapp-react-native.onrender.com/api/fetch-puzzles/all?userId=${user._id}`
-      );
-      setQuizzes(res.data);
-    } catch (err) {
-      console.error(err);
-      Alert.alert("Error", "Could not load quizzes");
-    } finally {
-      setLoading(false);
-    }
-  };
+  
+ const fetchQuizzes = async () => {
+  try {
+    const res = await axios.get(
+      "https://eduzzleapp-react-native.onrender.com/api/fetch-puzzles/all-free-quizzes"
+    );
+    setQuizzes(res.data);
+  } catch (err) {
+    console.error("Error fetching free quizzes:", err);
+    Alert.alert("Error", "Could not load free quizzes");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
 
   const fetchAttemptedQuizzes = async () => {
@@ -201,7 +203,7 @@ export default function HomeScreen({ navigation }) {
   };
 
 
-  
+
   const filterQuizzes = async (query) => {
     if (!query || query.trim() === "") {
       fetchQuizzes();

@@ -456,6 +456,54 @@
 
 
 
+// import mongoose from "mongoose";
+// import dotenv from "dotenv";
+// import Quiz from "./models/Quiz.js";
+
+// dotenv.config();
+// const mongoURI = process.env.MONGO_URI;
+
+// const reorderFieldsAndAddIsFree = async () => {
+//   try {
+//     await mongoose.connect(mongoURI);
+//     console.log("✅ MongoDB connected");
+
+//     // Find documents that do not have `isFree`
+//     const quizzes = await Quiz.find({ isFree: { $exists: false } });
+
+//     console.log(`🟡 Found ${quizzes.length} quizzes missing "isFree"`);
+
+//     for (const quiz of quizzes) {
+//       // Convert Mongoose document to plain object
+//       const obj = quiz.toObject();
+
+//       // Rebuild object with desired order: insert isFree right after isActive
+//       const reordered = {};
+//       for (const key of Object.keys(obj)) {
+//         reordered[key] = obj[key];
+//         if (key === "isActive") {
+//           reordered["isFree"] = false; // add right after isActive
+//         }
+//       }
+
+//       // Replace entire document with reordered one
+//       await Quiz.replaceOne({ _id: quiz._id }, reordered);
+//     }
+
+//     console.log(`✅ Successfully updated ${quizzes.length} documents`);
+//   } catch (err) {
+//     console.error("❌ Error:", err);
+//   } finally {
+//     await mongoose.disconnect();
+//     console.log("🔌 MongoDB disconnected");
+//   }
+// };
+
+// reorderFieldsAndAddIsFree();
+
+
+
+
 
 import mongoose from "mongoose";
 import dotenv from "dotenv";
@@ -473,8 +521,8 @@ const renameCollection = async () => {
     console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
 
     // Rename the collection
-    const oldName = "QuizAttempts";
-    const newName = "quizattempts";
+    const oldName = "puzzle";
+    const newName = "quizId";
 
     const db = conn.connection.db;
 

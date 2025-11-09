@@ -7,13 +7,8 @@ const router = express.Router();
 router.get("/stats/:id", async (req, res) => {
   try {
     const userId = req.params.id;
-
-    // Find all attempts for this user
     const attempts = await QuizAttempt.find({ user: userId });
-
     const attemptCount = attempts.length;
-
-    // Sum totalScore across all attempts
     const totalPoints = attempts.reduce((sum, att) => sum + (att.totalScore || 0), 0);
 
     // Find highest level passed
@@ -47,7 +42,7 @@ router.get("/attempted-puzzles/:userId", async (req, res) => {
     const userId = req.params.userId;
 
     // Fetch only quiz IDs for this user
-    const attempts = await QuizAttempt.find({ user: userId }).select("quiz -_id");
+    const attempts = await QuizAttempt.find({ userId: userId }).select("quizId -_id");
 
     const attemptedQuizIds = attempts.map((att) => att.quiz.toString());
 

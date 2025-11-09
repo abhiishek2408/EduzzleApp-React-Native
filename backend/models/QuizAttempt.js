@@ -31,10 +31,8 @@ const levelAttemptSchema = new mongoose.Schema({
 
 // Quiz Attempt Schema (per user per attempt)
 const quizAttemptSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  quiz: { type: mongoose.Schema.Types.ObjectId, ref: "Quiz", required: true },
-
-  // Support for multiple retakes
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  quizId: { type: mongoose.Schema.Types.ObjectId, ref: "Quiz", required: true },
   attemptNumber: { type: Number, default: 1 },
 
   startedAt: { type: Date, default: Date.now },
