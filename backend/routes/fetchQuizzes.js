@@ -51,6 +51,7 @@ router.get("/search/level", async (req, res) => {
   }
 });
 
+
 router.get("/all", async (req, res) => {
   const userId = req.query.userId; 
 
@@ -59,7 +60,7 @@ router.get("/all", async (req, res) => {
   }
 
   try {
-    const quizs = await quiz.find({
+    const quizzes = await Quiz.find({
       isActive: true,
       $or: [
         { isFree: true }, 
@@ -71,7 +72,7 @@ router.get("/all", async (req, res) => {
       "name description category numberOfLevels totalMarks tags levels.name isFree"
     );
 
-    res.status(200).json(quizs);
+    res.status(200).json(quizzes);
   } catch (err) {
     console.error("Error fetching quizzes for user:", err);
     res.status(500).json({ message: "Error fetching quizzes", error: err });
