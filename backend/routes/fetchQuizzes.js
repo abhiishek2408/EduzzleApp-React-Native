@@ -80,21 +80,24 @@ router.get("/all", async (req, res) => {
 });
 
 
+
 router.get("/all-free-quizzes", async (req, res) => {
   try {
-    const freeQuizzes = await Quiz.find({
-      isActive: true,
-      isFree: true,
-    }).select(
+    const freeQuizzes = await Quiz.find(
+      { isActive: true, isFree: true },
       "name description category numberOfLevels totalMarks tags levels.name isFree"
     );
 
     res.status(200).json(freeQuizzes);
   } catch (err) {
     console.error("Error fetching free quizzes:", err);
-    res.status(500).json({ message: "Error fetching free quizzes", error: err.message });
+    res.status(500).json({
+      message: "Error fetching free quizzes",
+      error: err.message,
+    });
   }
 });
+
 
 
 // ✅ GET: Fetch full quiz by ID (detailed view for test attempt)
