@@ -44,7 +44,7 @@ router.get("/attempted-puzzles/:userId", async (req, res) => {
     // Fetch only quiz IDs for this user
     const attempts = await QuizAttempt.find({ userId: userId }).select("quizId -_id");
 
-    const attemptedQuizIds = attempts.map((att) => att.quiz.toString());
+    const attemptedQuizIds = attempts.map((att) => att.quizId.toString());
 
     res.json({ success: true, attemptedQuizIds });
   } catch (error) {
