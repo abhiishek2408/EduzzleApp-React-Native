@@ -10,13 +10,16 @@ import {
   Image,
   TextInput,
   Alert,
+  FlatList,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import * as DocumentPicker from 'expo-document-picker';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import io from 'socket.io-client';
+import { LinearGradient } from 'expo-linear-gradient';
 
 
 export default function ProfileScreen() {
@@ -25,6 +28,10 @@ export default function ProfileScreen() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [badges, setBadges] = useState([]);
+  const [rewards, setRewards] = useState([]);
+  const [loadingBadges, setLoadingBadges] = useState(true);
+  const [loadingRewards, setLoadingRewards] = useState(true);
 
 
 
@@ -57,6 +64,40 @@ export default function ProfileScreen() {
     };
     fetchStats();
   }, [user, token]);
+
+  // -------------------- Fetch Badges --------------------
+  useEffect(() => {
+    const fetchBadges = async () => {
+      if (!user?._id) return;
+      setLoadingBadges(true);
+      try {
+        const res = await axios.get(`${API_URL}/api/badges/${user._id}`);
+        setBadges(Array.isArray(res.data) ? res.data : []);
+      } catch (err) {
+        console.error('Error fetching badges:', err);
+      } finally {
+        setLoadingBadges(false);
+      }
+    };
+    fetchBadges();
+  }, [user]);
+
+  // -------------------- Fetch Rewards --------------------
+  useEffect(() => {
+    const fetchRewards = async () => {
+      if (!user?._id) return;
+      setLoadingRewards(true);
+      try {
+        const res = await axios.get(`${API_URL}/api/rewards/${user._id}`);
+        setRewards(Array.isArray(res.data) ? res.data : []);
+      } catch (err) {
+        console.error('Error fetching rewards:', err);
+      } finally {
+        setLoadingRewards(false);
+      }
+    };
+    fetchRewards();
+  }, [user]);
 
   // -------------------- Profile Pic Upload (Fetch Version) --------------------
 const handleImagePick = async () => {
@@ -137,22 +178,127 @@ const handleImagePick = async () => {
 
       {/* Stats Section */}
       <View style={styles.statsContainer}>
-        {['attemptCount', 'totalPoints', 'highestLevel'].map((key, idx) => (
-          <View key={idx} style={styles.statBox}>
-            {loading ? (
-              <ActivityIndicator size="small" color="#6a21a8" />
-            ) : (
-              <Text style={styles.statNumber}>{stats?.[key] ?? 0}</Text>
-            )}
-            <Text style={styles.statLabel}>
-              {key === 'attemptCount'
-                ? 'Puzzles Solved'
-                : key === 'totalPoints'
-                ? 'Total Points'
-                : 'Rank'}
-            </Text>
+        <View style={styles.statBox}>
+          {loading ? (
+            <ActivityIndicator size="small" color="#6a21a8" />
+          ) : (
+            <>
+              <MaterialCommunityIcons name="puzzle" size={28} color="#6a21a8" />
+              <Text style={styles.statNumber}>{stats?.attemptCount ?? 0}</Text>
+              <Text style={styles.statLabel}>Puzzles Solved</Text>
+            </>
+          )}
+        </View>
+        <View style={styles.statBox}>
+          {loading ? (
+            <ActivityIndicator size="small" color="#6a21a8" />
+          ) : (
+            <>
+              <MaterialCommunityIcons name="star" size={28} color="#fbbf24" />
+              <Text style={styles.statNumber}>{stats?.totalPoints ?? 0}</Text>
+              <Text style={styles.statLabel}>Total Points</Text>
+            </>
+          )}
+        </View>
+        <View style={styles.statBox}>
+          {loading ? (
+            <ActivityIndicator size="small" color="#6a21a8" />
+          ) : (
+            <>
+              <MaterialCommunityIcons name="crown" size={28} color="#f59e0b" />
+              <Text style={styles.statNumber}>{stats?.highestLevel ?? 0}</Text>
+              <Text style={styles.statLabel}>Rank</Text>
+            </>
+          )}
+        </View>
+      </View>
+
+      {/* Coins Section */}
+      <View style={styles.coinsContainer}>
+        <LinearGradient
+          colors={['#fbbf24', '#f59e0b']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.coinsCard}
+        >
+          <MaterialCommunityIcons name="cash-multiple" size={40} color="#fff" />
+          <View style={styles.coinsTextContainer}>
+            <Text style={styles.coinsLabel}>Your Coins</Text>
+            <Text style={styles.coinsValue}>{user?.coins ?? 0}</Text>
           </View>
-        ))}
+        </LinearGradient>
+      </View>
+
+      {/* Badges Section */}
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <MaterialCommunityIcons name="medal" size={24} color="#a21caf" />
+          <Text style={styles.sectionTitle}>Badges Earned</Text>
+        </View>
+        {loadingBadges ? (
+          <ActivityIndicator size="small" color="#a21caf" style={{ marginVertical: 12 }} />
+        ) : !badges || badges.length === 0 ? (
+          <Text style={styles.emptyText}>No badges yet. Complete quests to earn badges!</Text>
+        ) : (
+          <FlatList
+            data={badges}
+            keyExtractor={(item) => item._id}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            renderItem={({ item }) => (
+              <View style={styles.badgeCard}>
+                <MaterialCommunityIcons name="medal" size={40} color="#fbbf24" />
+                <Text style={styles.badgeName} numberOfLines={1}>
+                  {item.name || item.title || "Badge"}
+                </Text>
+                <Text style={styles.badgeMeta}>
+                  {item.unlockedAt ? new Date(item.unlockedAt).toLocaleDateString() : ""}
+                </Text>
+                {item.claimed && (
+                  <View style={styles.claimedBadge}>
+                    <Text style={styles.claimedText}>✓ Claimed</Text>
+                  </View>
+                )}
+              </View>
+            )}
+          />
+        )}
+      </View>
+
+      {/* Rewards Section */}
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <MaterialCommunityIcons name="gift" size={24} color="#10b981" />
+          <Text style={styles.sectionTitle}>Rewards</Text>
+        </View>
+        {loadingRewards ? (
+          <ActivityIndicator size="small" color="#10b981" style={{ marginVertical: 12 }} />
+        ) : !rewards || rewards.length === 0 ? (
+          <Text style={styles.emptyText}>No rewards yet. Keep playing to earn rewards!</Text>
+        ) : (
+          <FlatList
+            data={rewards}
+            keyExtractor={(item) => item._id}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            renderItem={({ item }) => (
+              <View style={styles.rewardCard}>
+                <MaterialCommunityIcons name="gift" size={40} color="#10b981" />
+                <Text style={styles.rewardName} numberOfLines={1}>
+                  {item.title || item.name || "Reward"}
+                </Text>
+                <Text style={styles.rewardMeta}>
+                  {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : ""}
+                </Text>
+                {item.claimed && (
+                  <View style={styles.claimedBadge}>
+                    <Text style={styles.claimedText}>✓ Claimed</Text>
+                  </View>
+                )}
+              </View>
+            )}
+          />
+        )}
       </View>
 
       {/* Options Section */}
@@ -177,16 +323,186 @@ const handleImagePick = async () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fef9ff' },
-  header: { alignItems: 'center', paddingTop: 40, paddingBottom: 20, backgroundColor: '#f3e8ff', borderBottomLeftRadius: 30, borderBottomRightRadius: 30, elevation: 2 },
-  profileImage: { width: 110, height: 110, borderRadius: 55, borderWidth: 3, borderColor: '#a21caf' },
-  name: { fontSize: 22, fontWeight: '700', color: '#4b0082', marginTop: 10 },
-  email: { fontSize: 14, color: '#555', marginTop: 4 },
-  statsContainer: { flexDirection: 'row', justifyContent: 'space-around', marginTop: 30, paddingHorizontal: 20 },
-  statBox: { backgroundColor: '#ede9fe', borderRadius: 16, padding: 16, alignItems: 'center', width: '30%' },
-  statNumber: { fontSize: 20, fontWeight: '600', color: '#6a21a8' },
-  statLabel: { fontSize: 12, color: '#444', marginTop: 4, textAlign: 'center' },
-  section: { marginTop: 40, paddingHorizontal: 20 },
-  option: { flexDirection: 'row', alignItems: 'center', paddingVertical: 15, borderBottomColor: '#ddd', borderBottomWidth: 1 },
-  optionText: { fontSize: 16, marginLeft: 15, color: '#3c0753', fontWeight: '500' },
-
+  header: { 
+    alignItems: 'center', 
+    paddingTop: 40, 
+    paddingBottom: 20, 
+    backgroundColor: '#f3e8ff', 
+    borderBottomLeftRadius: 30, 
+    borderBottomRightRadius: 30, 
+    elevation: 2 
+  },
+  profileImage: { 
+    width: 110, 
+    height: 110, 
+    borderRadius: 55, 
+    borderWidth: 3, 
+    borderColor: '#a21caf' 
+  },
+  name: { 
+    fontSize: 22, 
+    fontWeight: '700', 
+    color: '#4b0082', 
+    marginTop: 10 
+  },
+  email: { 
+    fontSize: 14, 
+    color: '#555', 
+    marginTop: 4 
+  },
+  statsContainer: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-around', 
+    marginTop: 30, 
+    paddingHorizontal: 20 
+  },
+  statBox: { 
+    backgroundColor: '#ede9fe', 
+    borderRadius: 16, 
+    padding: 16, 
+    alignItems: 'center', 
+    width: '30%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  statNumber: { 
+    fontSize: 20, 
+    fontWeight: '700', 
+    color: '#6a21a8',
+    marginTop: 8,
+  },
+  statLabel: { 
+    fontSize: 12, 
+    color: '#444', 
+    marginTop: 4, 
+    textAlign: 'center' 
+  },
+  coinsContainer: {
+    paddingHorizontal: 20,
+    marginTop: 20,
+  },
+  coinsCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 20,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 6,
+    gap: 16,
+  },
+  coinsTextContainer: {
+    flex: 1,
+  },
+  coinsLabel: {
+    fontSize: 14,
+    color: '#fff',
+    fontWeight: '600',
+  },
+  coinsValue: {
+    fontSize: 32,
+    color: '#fff',
+    fontWeight: '900',
+    marginTop: 4,
+  },
+  section: { 
+    marginTop: 30, 
+    paddingHorizontal: 20 
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    gap: 8,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#3c0753',
+  },
+  emptyText: {
+    color: '#999',
+    fontSize: 13,
+    marginBottom: 12,
+  },
+  badgeCard: {
+    backgroundColor: '#fffbeb',
+    padding: 14,
+    borderRadius: 16,
+    marginRight: 12,
+    alignItems: 'center',
+    width: 140,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  badgeName: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#2d0c57',
+    marginTop: 8,
+    textAlign: 'center',
+  },
+  badgeMeta: {
+    fontSize: 11,
+    color: '#777',
+    marginTop: 4,
+  },
+  rewardCard: {
+    backgroundColor: '#ecfdf5',
+    padding: 14,
+    borderRadius: 16,
+    marginRight: 12,
+    alignItems: 'center',
+    width: 140,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  rewardName: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#2d0c57',
+    marginTop: 8,
+    textAlign: 'center',
+  },
+  rewardMeta: {
+    fontSize: 11,
+    color: '#777',
+    marginTop: 4,
+  },
+  claimedBadge: {
+    marginTop: 8,
+    backgroundColor: '#d1fae5',
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+  },
+  claimedText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#10b981',
+  },
+  option: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    paddingVertical: 15, 
+    borderBottomColor: '#ddd', 
+    borderBottomWidth: 1 
+  },
+  optionText: { 
+    fontSize: 16, 
+    marginLeft: 15, 
+    color: '#3c0753', 
+    fontWeight: '500' 
+  },
 });

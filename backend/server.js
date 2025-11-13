@@ -202,6 +202,7 @@ import puzzleAttemptRoutes from "./routes/QuizAttemptRoutes.js";
 import attemptCountRoutes from "./routes/attemptStatsRoutes.js";
 import { connectDB } from "./config/db.js";
 import subscriptionRoutes from "./routes/subscriptionRoute.js";
+import gamingQuizEventRoutes from "./routes/gamingQuizEventRoutes.js";
 import rewardRoutes from "./routes/rewardRoutes.js";
 import badgeRoutes from "./routes/badgeRoutes.js";
 import dailyQuestRoutes from "./routes/dailyQuestRoutes.js";
@@ -260,9 +261,29 @@ app.use("/api/puzzle-attempts", puzzleAttemptRoutes);
 app.use("/api/attempts", attemptCountRoutes);
 app.use("/api/friends", friendRoutes);
 app.use("/api/subscription", subscriptionRoutes);
+app.use("/api/gaming-events", gamingQuizEventRoutes);
 app.use("/api/rewards", rewardRoutes);
 app.use("/api/badges", badgeRoutes);
 app.use("/api/daily-quests", dailyQuestRoutes);
+// 3️⃣ Update GamingQuizEvent status every minute
+cron.schedule("* * * * *", async () => {
+  try {
+    const now = new Date();
+    const GamingQuizEvent = (await import("./models/GamingQuizEvent.js")).default;
+    // Set live
+    await GamingQuizEvent.updateMany(
+      { isActive: true, status: { $ne: "disabled" }, startTime: { $lte: now }, endTime: { $gte: now } },
+      { $set: { status: "live" } }
+    );
+    // Set completed
+    await GamingQuizEvent.updateMany(
+      { isActive: true, status: { $ne: "disabled" }, endTime: { $lt: now } },
+      { $set: { status: "completed" } }
+    );
+  } catch (error) {
+    console.error("Error updating GamingQuizEvent status:", error);
+  }
+});
 
 
 // ======================= CRON JOBS =======================

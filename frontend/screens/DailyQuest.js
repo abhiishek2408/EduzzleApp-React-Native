@@ -1,30 +1,34 @@
 import React, { useEffect, useState, useContext } from "react";
-import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet, FlatList, Alert } from "react-native";
+import { View, Text, ActivityIndicator, StyleSheet, Animated } from "react-native";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
+import { LinearGradient } from "expo-linear-gradient";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
 const API_BASE = "https://eduzzleapp-react-native.onrender.com/api";
+const DAILY_TARGET = 3; // Target quizzes per day
 
 export default function DailyQuest({ navigation }) {
   const { user } = useContext(AuthContext);
   const [loading, setLoading] = useState(true);
   const [quest, setQuest] = useState({ quizzesAttempted: 0, completed: false, currentStreak: 0 });
-  const [badges, setBadges] = useState([]);
-  const [rewards, setRewards] = useState([]);
+  const [progressAnim] = useState(new Animated.Value(0));
 
   const fetchData = async () => {
     if (!user?._id) return;
     setLoading(true);
     try {
-      const [questRes, badgesRes, rewardsRes] = await Promise.all([
-        axios.get(`${API_BASE}/daily-quests/${user._id}`),
-        axios.get(`${API_BASE}/badges/${user._id}`),
-        axios.get(`${API_BASE}/rewards/${user._id}`),
-      ]);
+      const questRes = await axios.get(`${API_BASE}/daily-quests/${user._id}`);
 
       setQuest(questRes.data || { quizzesAttempted: 0, completed: false, currentStreak: 0 });
-      setBadges(Array.isArray(badgesRes.data) ? badgesRes.data : []);
-      setRewards(Array.isArray(rewardsRes.data) ? rewardsRes.data : []);
+
+      // Animate progress bar
+      const progress = Math.min((questRes.data?.quizzesAttempted || 0) / DAILY_TARGET, 1);
+      Animated.timing(progressAnim, {
+        toValue: progress,
+        duration: 1000,
+        useNativeDriver: false,
+      }).start();
     } catch (err) {
       console.error("DailyQuest fetch error:", err?.response?.data || err.message || err);
       Alert.alert("Error", "Could not load daily quest data");
@@ -37,138 +41,128 @@ export default function DailyQuest({ navigation }) {
     fetchData();
   }, [user?._id]);
 
-  const claimBadge = async (badgeId) => {
-    try {
-      await axios.patch(`${API_BASE}/badges/claim/${badgeId}`);
-      // refresh
-      fetchData();
-      Alert.alert("Success", "Badge reward claimed");
-    } catch (err) {
-      console.error(err);
-      Alert.alert("Error", "Could not claim badge");
-    }
-  };
-
-  const claimReward = async (rewardId) => {
-    try {
-      await axios.patch(`${API_BASE}/rewards/claim/${rewardId}`);
-      fetchData();
-      Alert.alert("Success", "Reward claimed");
-    } catch (err) {
-      console.error(err);
-      Alert.alert("Error", "Could not claim reward");
-    }
-  };
-
   if (loading) return <ActivityIndicator size="small" color="#a21caf" style={{ marginVertical: 12 }} />;
+
+  const progressPercentage = Math.min((quest.quizzesAttempted / DAILY_TARGET) * 100, 100);
+  const progressWidth = progressAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0%', '100%'],
+  });
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Daily Quest</Text>
-
-      <View style={styles.card}>
-        <Text style={styles.questText}>Quizzes attempted today</Text>
-        <Text style={styles.questValue}>{quest.quizzesAttempted}</Text>
-        <Text style={styles.small}>Streak: {quest.currentStreak || 0} days</Text>
-        <Text style={[styles.small, { marginTop: 8 }]}>Completed: {quest.completed ? "Yes" : "No"}</Text>
+      <View style={styles.header}>
+        <MaterialCommunityIcons name="trophy-award" size={28} color="#a21caf" />
+        <Text style={styles.title}>Daily Quest</Text>
       </View>
 
-      <Text style={[styles.subTitle, { marginTop: 12 }]}>Badges</Text>
-      {badges.length === 0 ? (
-        <Text style={styles.emptyText}>No badges yet.</Text>
-      ) : (
-        <FlatList
-          data={badges}
-          keyExtractor={(i) => i._id}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          renderItem={({ item }) => (
-            <View style={styles.badgeItem}>
-              <Text style={styles.badgeName}>{item.name || item.title || "Badge"}</Text>
-              <Text style={styles.badgeMeta}>{item.unlockedAt ? new Date(item.unlockedAt).toLocaleDateString() : ""}</Text>
-              <TouchableOpacity
-                style={[styles.claimBtn, item.claimed ? styles.claimed : null]}
-                onPress={() => !item.claimed && claimBadge(item._id)}
-              >
-                <Text style={styles.claimText}>{item.claimed ? "Claimed" : "Claim"}</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-        />
-      )}
+      <LinearGradient
+        colors={['#fdf4ff', '#fae8ff']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.card}
+      >
+        <View style={styles.streakContainer}>
+          <MaterialCommunityIcons name="fire" size={24} color="#ff6b35" />
+          <Text style={styles.streakText}>{quest.currentStreak || 0} Day Streak</Text>
+        </View>
 
-      <Text style={[styles.subTitle, { marginTop: 12 }]}>Rewards</Text>
-      {rewards.length === 0 ? (
-        <Text style={styles.emptyText}>No rewards yet.</Text>
-      ) : (
-        <FlatList
-          data={rewards}
-          keyExtractor={(i) => i._id}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          renderItem={({ item }) => (
-            <View style={styles.rewardItem}>
-              <Text style={styles.rewardName}>{item.title || item.name || "Reward"}</Text>
-              <Text style={styles.badgeMeta}>{item.createdAt ? new Date(item.createdAt).toLocaleDateString() : ""}</Text>
-              <TouchableOpacity
-                style={[styles.claimBtn, item.claimed ? styles.claimed : null]}
-                onPress={() => !item.claimed && claimReward(item._id)}
-              >
-                <Text style={styles.claimText}>{item.claimed ? "Claimed" : "Claim"}</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-        />
-      )}
+        <Text style={styles.questText}>Complete {DAILY_TARGET} quizzes today!</Text>
+        <Text style={styles.questValue}>{quest.quizzesAttempted} / {DAILY_TARGET}</Text>
+
+        {/* Animated Progress Bar */}
+        <View style={styles.progressBarContainer}>
+          <Animated.View style={[styles.progressBarFill, { width: progressWidth }]}>
+            <LinearGradient
+              colors={['#a21caf', '#c026d3', '#e879f9']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.progressGradient}
+            />
+          </Animated.View>
+        </View>
+        
+        <Text style={styles.progressText}>{progressPercentage.toFixed(0)}% Complete</Text>
+
+        {quest.completed && (
+          <View style={styles.completedBadge}>
+            <MaterialCommunityIcons name="check-circle" size={20} color="#10b981" />
+            <Text style={styles.completedText}>Quest Completed! 🎉</Text>
+          </View>
+        )}
+      </LinearGradient>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { paddingHorizontal: 12, marginBottom: 8 },
-  title: { fontSize: 18, fontWeight: "700", color: "#2d0c57" },
-  subTitle: { fontSize: 15, fontWeight: "700", color: "#4a4a6a" },
+  container: { paddingHorizontal: 16, marginBottom: 12 },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+    gap: 8,
+  },
+  title: { fontSize: 22, fontWeight: "800", color: "#2d0c57" },
   card: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 14,
-    marginTop: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 4,
+    borderRadius: 16,
+    padding: 18,
+    marginBottom: 12,
+    shadowColor: "#a21caf",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 6,
   },
-  questText: { fontSize: 13, color: "#666" },
-  questValue: { fontSize: 36, color: "#a21caf", fontWeight: "900", marginTop: 6 },
-  small: { fontSize: 12, color: "#666" },
-  emptyText: { color: "#999", marginTop: 8 },
-  badgeItem: {
-    backgroundColor: "#fff8fb",
-    padding: 10,
-    borderRadius: 12,
-    marginRight: 10,
+  streakContainer: {
+    flexDirection: "row",
     alignItems: "center",
-    width: 140,
+    marginBottom: 12,
+    gap: 6,
   },
-  badgeName: { fontSize: 14, fontWeight: "800", color: "#2d0c57" },
-  badgeMeta: { fontSize: 11, color: "#777", marginTop: 6 },
-  claimBtn: {
-    marginTop: 10,
-    backgroundColor: "#a21caf",
+  streakText: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#ff6b35",
+  },
+  questText: { fontSize: 14, color: "#666", marginBottom: 6 },
+  questValue: { fontSize: 32, color: "#a21caf", fontWeight: "900", marginBottom: 12 },
+  progressBarContainer: {
+    height: 12,
+    backgroundColor: "#e5e7eb",
+    borderRadius: 20,
+    overflow: "hidden",
+    marginVertical: 10,
+  },
+  progressBarFill: {
+    height: "100%",
+    borderRadius: 20,
+  },
+  progressGradient: {
+    flex: 1,
+    borderRadius: 20,
+  },
+  progressText: {
+    fontSize: 13,
+    color: "#6b7280",
+    fontWeight: "600",
+    textAlign: "center",
+    marginTop: 4,
+  },
+  completedBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 12,
+    backgroundColor: "#d1fae5",
+    paddingVertical: 8,
     paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 10,
+    borderRadius: 20,
+    gap: 6,
   },
-  claimText: { color: "#fff", fontWeight: "700" },
-  claimed: { backgroundColor: "#999" },
-  rewardItem: {
-    backgroundColor: "#f5fff6",
-    padding: 10,
-    borderRadius: 12,
-    marginRight: 10,
-    alignItems: "center",
-    width: 140,
+  completedText: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#10b981",
   },
-  rewardName: { fontSize: 14, fontWeight: "800", color: "#2d0c57" },
 });
