@@ -7,7 +7,7 @@ const router = express.Router();
 router.get("/stats/:id", async (req, res) => {
   try {
     const userId = req.params.id;
-    const attempts = await QuizAttempt.find({ user: userId });
+    const attempts = await QuizAttempt.find({ userId: userId });
     const attemptCount = attempts.length;
     const totalPoints = attempts.reduce((sum, att) => sum + (att.totalScore || 0), 0);
 
