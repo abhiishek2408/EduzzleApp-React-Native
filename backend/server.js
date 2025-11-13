@@ -202,6 +202,9 @@ import puzzleAttemptRoutes from "./routes/QuizAttemptRoutes.js";
 import attemptCountRoutes from "./routes/attemptStatsRoutes.js";
 import { connectDB } from "./config/db.js";
 import subscriptionRoutes from "./routes/subscriptionRoute.js";
+import rewardRoutes from "./routes/rewardRoutes.js";
+import badgeRoutes from "./routes/badgeRoutes.js";
+import dailyQuestRoutes from "./routes/dailyQuestRoutes.js";
 
 dotenv.config();
 
@@ -257,6 +260,9 @@ app.use("/api/puzzle-attempts", puzzleAttemptRoutes);
 app.use("/api/attempts", attemptCountRoutes);
 app.use("/api/friends", friendRoutes);
 app.use("/api/subscription", subscriptionRoutes);
+app.use("/api/rewards", rewardRoutes);
+app.use("/api/badges", badgeRoutes);
+app.use("/api/daily-quests", dailyQuestRoutes);
 
 
 // ======================= CRON JOBS =======================

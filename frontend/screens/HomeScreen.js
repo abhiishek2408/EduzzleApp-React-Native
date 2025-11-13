@@ -17,6 +17,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { AuthContext } from "../context/AuthContext";
 import { useRoute } from "@react-navigation/native";
 import LogoHeader from "./LogoHeader";
+import DailyQuest from "./DailyQuest";
 
 const THEME_COLOR = "#a21caf";
 const PRIMARY_TEXT_COLOR = "#2d0c57";
@@ -401,7 +402,9 @@ export default function HomeScreen({ navigation }) {
           </Text>
         )}
 
-        <Text style={styles.sectionTitle}>Today's Puzzle</Text>
+  <DailyQuest navigation={navigation} />
+
+  <Text style={styles.sectionTitle}>Today's Puzzle</Text>
         <QuizCard
           title="Today's Puzzle"
           subtitle="Stack Quiz"

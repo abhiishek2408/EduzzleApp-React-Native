@@ -127,7 +127,7 @@
 //       description:
 //         "Challenge yourself on computer networking concepts from basics to advanced routing and protocols.",
 //       category: "Networking",
-//       isFree: true,
+//       coins: true,
 //       author: "System",
 //       tags: ["Networking", "TCP/IP", "OSI", "Protocols", "Network Devices"],
 //       numberOfLevels: 3,
@@ -458,36 +458,36 @@
 
 // import mongoose from "mongoose";
 // import dotenv from "dotenv";
-// import Quiz from "./models/Quiz.js";
+// import User from "./models/User.js";
 
 // dotenv.config();
 // const mongoURI = process.env.MONGO_URI;
 
-// const reorderFieldsAndAddIsFree = async () => {
+// const reorderFieldsAndAddcoins = async () => {
 //   try {
 //     await mongoose.connect(mongoURI);
 //     console.log("✅ MongoDB connected");
 
-//     // Find documents that do not have `isFree`
-//     const quizzes = await Quiz.find({ isFree: { $exists: false } });
+//     // Find documents that do not have `coins`
+//     const quizzes = await User.find({ coins: { $exists: false } });
 
-//     console.log(`🟡 Found ${quizzes.length} quizzes missing "isFree"`);
+//     console.log(`🟡 Found ${quizzes.length} quizzes missing "coins"`);
 
 //     for (const quiz of quizzes) {
 //       // Convert Mongoose document to plain object
 //       const obj = quiz.toObject();
 
-//       // Rebuild object with desired order: insert isFree right after isActive
+//       // Rebuild object with desired order: insert coins right after isActive
 //       const reordered = {};
 //       for (const key of Object.keys(obj)) {
 //         reordered[key] = obj[key];
-//         if (key === "isActive") {
-//           reordered["isFree"] = false; // add right after isActive
+//         if (key === "role") {
+//           reordered["coins"] = false; // add right after isActive
 //         }
 //       }
 
 //       // Replace entire document with reordered one
-//       await Quiz.replaceOne({ _id: quiz._id }, reordered);
+//       await User.replaceOne({ _id: quiz._id }, reordered);
 //     }
 
 //     console.log(`✅ Successfully updated ${quizzes.length} documents`);
@@ -499,50 +499,90 @@
 //   }
 // };
 
-// reorderFieldsAndAddIsFree();
+// reorderFieldsAndAddcoins();
 
 
+
+
+
+// import mongoose from "mongoose";
+// import dotenv from "dotenv";
+
+// // Load environment variables from .env
+// dotenv.config();
+
+// const renameCollection = async () => {
+//   try {
+//     // Use URI from .env or fallback to localhost
+//     const mongoURI = process.env.MONGO_URI || "mongodb://localhost:27017/edu-puzzle";
+
+//     // Connect to the database
+//     const conn = await mongoose.connect(mongoURI);
+//     console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+
+//     // Rename the collection
+//     const oldName = "puzzle";
+//     const newName = "quizId";
+
+//     const db = conn.connection.db;
+
+//     // Check if 'puzzles' collection exists
+//     const collections = await db.listCollections({ name: oldName }).toArray();
+
+//     if (collections.length > 0) {
+//       await db.collection(oldName).rename(newName);
+//       console.log(`🎉 Collection renamed from '${oldName}' ➜ '${newName}'`);
+//     } else {
+//       console.log(`⚠️ Collection '${oldName}' does not exist, skipping rename.`);
+//     }
+
+//     await mongoose.disconnect();
+//     console.log("🔌 MongoDB disconnected.");
+//     process.exit(0);
+//   } catch (err) {
+//     console.error("❌ Error renaming collection:", err.message);
+//     process.exit(1);
+//   }
+// };
+
+// renameCollection();
 
 
 
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import DailyQuest from "./models/DailyQuest.js";
 
-// Load environment variables from .env
 dotenv.config();
 
-const renameCollection = async () => {
+const seedDailyQuests = async () => {
   try {
-    // Use URI from .env or fallback to localhost
-    const mongoURI = process.env.MONGO_URI || "mongodb://localhost:27017/edu-puzzle";
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log("✅ MongoDB connected...");
 
-    // Connect to the database
-    const conn = await mongoose.connect(mongoURI);
-    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+    const quests = [
+      {
+        title: "3-Day Streak on App",
+        description: "Login and complete any activity for 3 consecutive days.",
+        rewardValue: 20,
+        date: new Date(),
+      },
+      {
+        title: "Solve Any 5 Puzzles",
+        description: "Attempt and solve at least 5 puzzles today.",
+        rewardValue: 10,
+        date: new Date(),
+      },
+    ];
 
-    // Rename the collection
-    const oldName = "puzzle";
-    const newName = "quizId";
+    await DailyQuest.insertMany(quests);
+    console.log("🎯 Daily quests seeded successfully!");
 
-    const db = conn.connection.db;
-
-    // Check if 'puzzles' collection exists
-    const collections = await db.listCollections({ name: oldName }).toArray();
-
-    if (collections.length > 0) {
-      await db.collection(oldName).rename(newName);
-      console.log(`🎉 Collection renamed from '${oldName}' ➜ '${newName}'`);
-    } else {
-      console.log(`⚠️ Collection '${oldName}' does not exist, skipping rename.`);
-    }
-
-    await mongoose.disconnect();
-    console.log("🔌 MongoDB disconnected.");
-    process.exit(0);
-  } catch (err) {
-    console.error("❌ Error renaming collection:", err.message);
+    process.exit();
+  } catch (error) {
+    console.error("❌ Error seeding daily quests:", error);
     process.exit(1);
   }
 };
 
-renameCollection();
+seedDailyQuests();
