@@ -55,36 +55,68 @@ const quizAttemptSchema = new mongoose.Schema({
 quizAttemptSchema.post("save", async function (doc) {
   try {
     const userId = doc.userId;
+
+    // Get today's normalized date
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    let quest = await DailyQuest.findOne({ userId, date: today });
+    // Get user's DailyQuest (only ONE document per user)
+    let quest = await DailyQuest.findOne({ userId });
+
     if (!quest) {
+      // First time user → create base quest document
       quest = await DailyQuest.create({
         userId,
-        date: today,
-        quizzesAttempted: 1,
+        lastQuestDate: today,
+        quizzesAttemptedToday: 1,
+        streak: 0,
+        completedToday: false,
       });
     } else {
-      quest.quizzesAttempted += 1;
+      // Compare today with lastQuestDate
+      const last = quest.lastQuestDate
+        ? new Date(quest.lastQuestDate).setHours(0, 0, 0, 0)
+        : null;
+
+      if (last !== today.getTime()) {
+        // New day → reset
+        quest.quizzesAttemptedToday = 0;
+        quest.completedToday = false;
+      }
+
+      // Update daily quiz count
+      quest.quizzesAttemptedToday += 1;
+      quest.lastQuestDate = today;
     }
 
-    // ✅ When quest completed
-    if (quest.quizzesAttempted >= 5 && !quest.completed) {
-      quest.completed = true;
+    // 🎯 Reward logic
+    if (quest.quizzesAttemptedToday >= 5 && !quest.completedToday) {
+      quest.completedToday = true;
 
-      // ✅ Daily reward - award 10 coins
+      // Streak update
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      yesterday.setHours(0, 0, 0, 0);
+
+      const last = new Date(quest.lastQuestDate).setHours(0, 0, 0, 0);
+
+      if (last === yesterday.getTime()) {
+        quest.streak += 1;
+      } else {
+        quest.streak = 1;
+      }
+
+      // Reward coins to user
       const User = mongoose.model("User");
-      await User.findByIdAndUpdate(userId, {
-        $inc: { coins: 10 },
-      });
+      await User.findByIdAndUpdate(userId, { $inc: { coins: 10 } });
     }
 
     quest.updatedAt = new Date();
     await quest.save();
   } catch (err) {
-    console.error("Error updating quest/badge/reward:", err);
+    console.error("Error updating daily quest:", err);
   }
 });
+
 
 export default mongoose.model("QuizAttempt", quizAttemptSchema);
