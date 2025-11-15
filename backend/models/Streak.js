@@ -8,11 +8,11 @@ const streakSchema = new mongoose.Schema({
   longestStreak: { type: Number, default: 0 },
   lastCompletedDate: { type: Date },
   
-  // Track milestone achievements
+  // Track milestone achievements (coins only)
   milestonesAchieved: [{
-    days: { type: Number }, // 3, 7, 15, 30
+    days: { type: Number }, // 3, 5, 10
     achievedAt: { type: Date },
-    badgeName: { type: String }, // Bronze, Silver, Gold, Diamond
+    coinsAwarded: { type: Number },
   }],
 
   createdAt: { type: Date, default: Date.now },

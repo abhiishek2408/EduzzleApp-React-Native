@@ -139,10 +139,9 @@ quizAttemptSchema.post("save", async function (doc) {
 
           // Check for milestone achievements
           const milestones = [
-            { days: 3, name: "Bronze", coins: 50 },
-            { days: 7, name: "Silver", coins: 150 },
-            { days: 15, name: "Gold", coins: 300 },
-            { days: 30, name: "Diamond", coins: 1000 },
+            { days: 3, coins: 5 },
+            { days: 5, coins: 10 },
+            { days: 10, coins: 15 },
           ];
 
           const currentStreakDays = streak.currentStreak;
@@ -157,35 +156,21 @@ quizAttemptSchema.post("save", async function (doc) {
               streak.milestonesAchieved.push({
                 days: matchedMilestone.days,
                 achievedAt: new Date(),
-                badgeName: matchedMilestone.name,
+                coinsAwarded: matchedMilestone.coins,
               });
 
-              const existingBadge = await Badge.findOne({
+              await Reward.create({
                 userId,
-                name: matchedMilestone.name,
+                type: "streakReward",
+                title: `${currentStreakDays}-Day Streak Reward`,
+                description: `You earned ${matchedMilestone.coins} coins for your ${currentStreakDays}-day streak!`,
+                value: matchedMilestone.coins,
               });
 
-              if (!existingBadge) {
-                await Badge.create({
-                  userId,
-                  name: matchedMilestone.name,
-                  streakDays: matchedMilestone.days,
-                  rewardCoins: matchedMilestone.coins,
-                });
-
-                await Reward.create({
-                  userId,
-                  type: "streakReward",
-                  title: `${matchedMilestone.name} Badge Unlocked`,
-                  description: `You reached a ${currentStreakDays}-day streak!`,
-                  value: matchedMilestone.coins,
-                });
-
-                const User = mongoose.model("User");
-                await User.findByIdAndUpdate(userId, {
-                  $inc: { coins: matchedMilestone.coins },
-                });
-              }
+              const User = mongoose.model("User");
+              await User.findByIdAndUpdate(userId, {
+                $inc: { coins: matchedMilestone.coins },
+              });
             }
           }
 

@@ -2,7 +2,6 @@
 import express from "express";
 import Streak from "../models/Streak.js";
 import DailyQuest from "../models/DailyQuest.js";
-import Badge from "../models/Badge.js";
 import Reward from "../models/Reward.js";
 import User from "../models/User.js";
 
@@ -101,12 +100,11 @@ router.post("/:userId/update", async (req, res) => {
     streak.lastCompletedDate = new Date();
     streak.updatedAt = new Date();
 
-    // Check for milestone achievements and award badges
+    // Check for milestone achievements and award coins
     const milestones = [
-      { days: 3, name: "Bronze", coins: 50 },
-      { days: 7, name: "Silver", coins: 150 },
-      { days: 15, name: "Gold", coins: 300 },
-      { days: 30, name: "Diamond", coins: 1000 },
+      { days: 3, coins: 5 },
+      { days: 5, coins: 10 },
+      { days: 10, coins: 15 },
     ];
 
     const currentStreakDays = streak.currentStreak;
@@ -123,38 +121,22 @@ router.post("/:userId/update", async (req, res) => {
         streak.milestonesAchieved.push({
           days: matchedMilestone.days,
           achievedAt: new Date(),
-          badgeName: matchedMilestone.name,
+          coinsAwarded: matchedMilestone.coins,
         });
 
-        // Check if badge already exists
-        const existingBadge = await Badge.findOne({
+        // Create reward record
+        await Reward.create({
           userId,
-          name: matchedMilestone.name,
+          type: "streakReward",
+          title: `${currentStreakDays}-Day Streak Reward`,
+          description: `You earned ${matchedMilestone.coins} coins for your ${currentStreakDays}-day streak!`,
+          value: matchedMilestone.coins,
         });
 
-        if (!existingBadge) {
-          // Create badge
-          await Badge.create({
-            userId,
-            name: matchedMilestone.name,
-            streakDays: matchedMilestone.days,
-            rewardCoins: matchedMilestone.coins,
-          });
-
-          // Create reward record
-          await Reward.create({
-            userId,
-            type: "streakReward",
-            title: `${matchedMilestone.name} Badge Unlocked`,
-            description: `You reached a ${currentStreakDays}-day streak!`,
-            value: matchedMilestone.coins,
-          });
-
-          // Award coins to user
-          await User.findByIdAndUpdate(userId, {
-            $inc: { coins: matchedMilestone.coins },
-          });
-        }
+        // Award coins to user automatically
+        await User.findByIdAndUpdate(userId, {
+          $inc: { coins: matchedMilestone.coins },
+        });
       }
     }
 
