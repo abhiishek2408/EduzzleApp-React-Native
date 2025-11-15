@@ -96,4 +96,6 @@ streakSchema.post("save", async function(doc) {
     console.error("Error in Streak post-save milestone award:", e);
   }
 });
+ 
+export default mongoose.model("Streak", streakSchema);
     
