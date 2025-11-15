@@ -1,12 +1,12 @@
 // models/GamingQuizEvent.js
 import mongoose from "mongoose";
 
-// Reuse a simplified question shape for snapshotting into an event if needed
+// Embedded question schema (similar to Quiz question schema)
 const eventQuestionSchema = new mongoose.Schema({
-  questionBankId: { type: mongoose.Schema.Types.ObjectId, ref: "QuestionBank" },
+  question: { type: String }, // optional alias
   text: { type: String, required: true },
   options: [{ type: String, required: true }],
-  answer: { type: String, required: true }, // kept for snapshot integrity (not sent to client)
+  answer: { type: String, required: true }, // stored server-side; not returned to client
   explanation: { type: String },
   image: { type: String },
   tags: [{ type: String }],
@@ -43,16 +43,10 @@ const gamingQuizEventSchema = new mongoose.Schema(
     totalTimerSec: { type: Number },
     perQuestionTimerSec: { type: Number, default: 30 },
 
-    // Question sourcing
+    // Embedded questions for the event
     randomizeQuestions: { type: Boolean, default: true },
     totalQuestions: { type: Number, required: true },
-    questionBankFilter: {
-      categories: [{ type: String }],
-      difficulties: [{ type: String }],
-      tags: [{ type: String }],
-    },
-    // Optional snapshot of selected questions for deterministic replay
-    questionsSnapshot: [eventQuestionSchema],
+    questions: [eventQuestionSchema],
 
     // Scoring rules
     scoring: {

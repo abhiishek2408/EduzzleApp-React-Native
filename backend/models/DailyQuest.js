@@ -8,10 +8,6 @@ const dailyQuestSchema = new mongoose.Schema({
   quizzesAttempted: { type: Number, default: 0 },
   completed: { type: Boolean, default: false },
 
-  // Streak tracking
-  currentStreak: { type: Number, default: 0 },
-  lastCompletedDate: { type: Date },
-
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });

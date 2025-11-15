@@ -3,7 +3,6 @@ import express from "express";
 import mongoose from "mongoose";
 import GamingQuizEvent from "../models/GamingQuizEvent.js";
 import GamingQuizEventAttempt from "../models/GamingQuizEventAttempt.js";
-import QuestionBank from "../models/QuestionBank.js";
 import User from "../models/User.js";
 
 const router = express.Router();
@@ -78,9 +77,26 @@ router.post("/:id/join", async (req, res) => {
     if (!isWithinWindow(ev) && ev.status !== "live") return res.status(403).json({ message: "Event not live" });
 
     const existing = await GamingQuizEventAttempt.findOne({ eventId: ev._id, userId });
-    if (existing && !ev.allowMultipleAttempts) return res.status(409).json({ message: "Already joined/attempted" });
+    if (existing) {
+      if (!ev.allowMultipleAttempts) {
+        // If already attempted and finished, don't allow rejoin
+        if (existing.finishedAt) {
+          return res.status(409).json({ 
+            message: "You have already completed this event", 
+            attemptId: existing._id,
+            finished: true
+          });
+        }
+        // If joined but not finished, allow them to continue
+        return res.status(200).json({ 
+          success: true, 
+          attemptId: existing._id,
+          message: "Continue your attempt"
+        });
+      }
+    }
 
-    // Entry cost
+    // Entry cost (only for new attempts)
     if (ev.entryCostCoins > 0) {
       const user = await User.findById(userId);
       if (!user) return res.status(404).json({ message: "User not found" });
@@ -104,32 +120,22 @@ router.get("/:id/questions", async (req, res) => {
     if (!ev) return res.status(404).json({ message: "Event not found" });
     if (!isWithinWindow(ev) && ev.status !== "live") return res.status(403).json({ message: "Event not live" });
 
-    // If snapshot exists, send without answers
-    if (ev.questionsSnapshot?.length) {
-      const payload = ev.questionsSnapshot.map((q) => ({
-        _id: q._id,
-        text: q.text,
-        options: q.options,
-        image: q.image,
-        timeLimit: q.timeLimit,
-        points: q.points,
-        tags: q.tags,
-      }));
-      return res.json({ questions: payload, totalTimerSec: ev.totalTimerSec, perQuestionTimerSec: ev.perQuestionTimerSec });
-    }
+  // Use embedded questions; optionally randomize (no artificial cap)
+  let qs = Array.isArray(ev.questions) ? [...ev.questions] : [];
+  if (!qs.length) return res.status(404).json({ message: "No questions configured for event" });
+  if (ev.randomizeQuestions) qs.sort(() => Math.random() - 0.5);
 
-    const filter = { isActive: true };
-    if (ev.questionBankFilter?.categories?.length) filter.category = { $in: ev.questionBankFilter.categories };
-    if (ev.questionBankFilter?.difficulties?.length) filter.difficulty = { $in: ev.questionBankFilter.difficulties };
-    if (ev.questionBankFilter?.tags?.length) filter.tags = { $in: ev.questionBankFilter.tags };
-
-    // Random sample
-    const sample = await QuestionBank.aggregate([
-      { $match: filter },
-      { $sample: { size: ev.totalQuestions } },
-      { $project: { text: 1, options: 1, image: 1, timeLimit: 1, points: 1, tags: 1 } },
-    ]);
-    res.json({ questions: sample, totalTimerSec: ev.totalTimerSec, perQuestionTimerSec: ev.perQuestionTimerSec });
+    const payload = qs.map((q) => ({
+      _id: q._id,
+      text: q.text || q.question,
+      options: q.options,
+      image: q.image,
+      timeLimit: q.timeLimit,
+      points: q.points,
+      tags: q.tags,
+    }));
+    const windowSecs = Math.max(0, Math.floor((new Date(ev.endTime) - new Date(ev.startTime)) / 1000));
+    res.json({ questions: payload, totalTimerSec: windowSecs, perQuestionTimerSec: ev.perQuestionTimerSec });
   } catch (e) {
     console.error(e);
     res.status(400).json({ message: "Failed to fetch questions" });
@@ -147,15 +153,9 @@ router.post("/:id/submit", async (req, res) => {
     if (!attempt) return res.status(404).json({ message: "Attempt not found" });
     if (attempt.finishedAt) return res.status(409).json({ message: "Already submitted" });
 
-    // Build answer key
+    // Build answer key from embedded questions
     let answerKeyMap = new Map();
-    if (ev.questionsSnapshot?.length) {
-      ev.questionsSnapshot.forEach((q) => answerKeyMap.set(String(q._id), q.answer));
-    } else {
-      const ids = answers.map((a) => new mongoose.Types.ObjectId(a.questionId));
-      const keyDocs = await QuestionBank.find({ _id: { $in: ids } }, { answer: 1 });
-      keyDocs.forEach((doc) => answerKeyMap.set(String(doc._id), doc.answer));
-    }
+    (ev.questions || []).forEach((q) => answerKeyMap.set(String(q._id), q.answer));
 
     // Score
     let score = 0, correct = 0, wrong = 0, streak = 0, maxStreak = 0;
