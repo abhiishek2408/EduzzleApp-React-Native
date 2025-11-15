@@ -6,12 +6,12 @@ import { LinearGradient } from "expo-linear-gradient";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
 const API_BASE = "https://eduzzleapp-react-native.onrender.com/api";
-const DAILY_TARGET = 3; // Target quizzes per day
+const DAILY_TARGET = 5; // Target quizzes per day
 
 export default function DailyQuest({ navigation }) {
   const { user } = useContext(AuthContext);
   const [loading, setLoading] = useState(true);
-  const [quest, setQuest] = useState({ quizzesAttempted: 0, completed: false });
+  const [quest, setQuest] = useState({ quizzesAttemptedToday: 0, completedToday: false, streak: 0 });
   const [streak, setStreak] = useState({ currentStreak: 0, longestStreak: 0 });
   const [progressAnim] = useState(new Animated.Value(0));
 
@@ -22,11 +22,11 @@ export default function DailyQuest({ navigation }) {
       const questRes = await axios.get(`${API_BASE}/daily-quests/${user._id}`);
       const streakRes = await axios.get(`${API_BASE}/streaks/${user._id}`);
 
-      setQuest(questRes.data || { quizzesAttempted: 0, completed: false });
+      setQuest(questRes.data || { quizzesAttemptedToday: 0, completedToday: false, streak: 0 });
       setStreak(streakRes.data?.streak || { currentStreak: 0, longestStreak: 0 });
 
       // Animate progress bar
-      const progress = Math.min((questRes.data?.quizzesAttempted || 0) / DAILY_TARGET, 1);
+      const progress = Math.min((questRes.data?.quizzesAttemptedToday || 0) / DAILY_TARGET, 1);
       Animated.timing(progressAnim, {
         toValue: progress,
         duration: 1000,
@@ -46,7 +46,7 @@ export default function DailyQuest({ navigation }) {
 
   if (loading) return <ActivityIndicator size="small" color="#a21caf" style={{ marginVertical: 12 }} />;
 
-  const progressPercentage = Math.min((quest.quizzesAttempted / DAILY_TARGET) * 100, 100);
+  const progressPercentage = Math.min((quest.quizzesAttemptedToday / DAILY_TARGET) * 100, 100);
   const progressWidth = progressAnim.interpolate({
     inputRange: [0, 1],
     outputRange: ['0%', '100%'],
@@ -71,7 +71,7 @@ export default function DailyQuest({ navigation }) {
         </View>
 
         <Text style={styles.questText}>Complete {DAILY_TARGET} quizzes today!</Text>
-        <Text style={styles.questValue}>{quest.quizzesAttempted} / {DAILY_TARGET}</Text>
+        <Text style={styles.questValue}>{quest.quizzesAttemptedToday} / {DAILY_TARGET}</Text>
 
         {/* Animated Progress Bar */}
         <View style={styles.progressBarContainer}>
@@ -87,7 +87,7 @@ export default function DailyQuest({ navigation }) {
         
         <Text style={styles.progressText}>{progressPercentage.toFixed(0)}% Complete</Text>
 
-        {quest.completed && (
+        {quest.completedToday && (
           <View style={styles.completedBadge}>
             <MaterialCommunityIcons name="check-circle" size={20} color="#10b981" />
             <Text style={styles.completedText}>Quest Completed! 🎉</Text>

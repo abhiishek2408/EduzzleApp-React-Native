@@ -29,9 +29,7 @@ export default function ProfileScreen() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [badges, setBadges] = useState([]);
-  const [rewards, setRewards] = useState([]);
   const [loadingBadges, setLoadingBadges] = useState(true);
-  const [loadingRewards, setLoadingRewards] = useState(true);
 
 
 
@@ -91,24 +89,7 @@ export default function ProfileScreen() {
     fetchBadges();
   }, [user]);
 
-  // -------------------- Fetch Rewards --------------------
-  useEffect(() => {
-    const fetchRewards = async () => {
-      if (!user?._id) return;
-      setLoadingRewards(true);
-      try {
-        const res = await axios.get(`${API_URL}/api/rewards/${user._id}`);
-        setRewards(Array.isArray(res.data) ? res.data : []);
-      } catch (err) {
-        console.error('Error fetching rewards:', err);
-      } finally {
-        setLoadingRewards(false);
-      }
-    };
-    fetchRewards();
-  }, [user]);
-
-  // -------------------- Profile Pic Upload (Fetch Version) --------------------
+  // -------------------- Image Picker  // -------------------- Profile Pic Upload (Fetch Version) --------------------
 const handleImagePick = async () => {
   try {
     const result = await DocumentPicker.getDocumentAsync({
@@ -262,42 +243,6 @@ const handleImagePick = async () => {
                 </Text>
                 <Text style={styles.badgeMeta}>
                   {item.unlockedAt ? new Date(item.unlockedAt).toLocaleDateString() : ""}
-                </Text>
-                {item.claimed && (
-                  <View style={styles.claimedBadge}>
-                    <Text style={styles.claimedText}>✓ Claimed</Text>
-                  </View>
-                )}
-              </View>
-            )}
-          />
-        )}
-      </View>
-
-      {/* Rewards Section */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <MaterialCommunityIcons name="gift" size={24} color="#10b981" />
-          <Text style={styles.sectionTitle}>Rewards</Text>
-        </View>
-        {loadingRewards ? (
-          <ActivityIndicator size="small" color="#10b981" style={{ marginVertical: 12 }} />
-        ) : !rewards || rewards.length === 0 ? (
-          <Text style={styles.emptyText}>No rewards yet. Keep playing to earn rewards!</Text>
-        ) : (
-          <FlatList
-            data={rewards}
-            keyExtractor={(item) => item._id}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            renderItem={({ item }) => (
-              <View style={styles.rewardCard}>
-                <MaterialCommunityIcons name="gift" size={40} color="#10b981" />
-                <Text style={styles.rewardName} numberOfLines={1}>
-                  {item.title || item.name || "Reward"}
-                </Text>
-                <Text style={styles.rewardMeta}>
-                  {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : ""}
                 </Text>
                 {item.claimed && (
                   <View style={styles.claimedBadge}>
