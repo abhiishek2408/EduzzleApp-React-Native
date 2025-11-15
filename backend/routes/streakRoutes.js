@@ -2,7 +2,6 @@
 import express from "express";
 import Streak from "../models/Streak.js";
 import DailyQuest from "../models/DailyQuest.js";
-import Reward from "../models/Reward.js";
 import User from "../models/User.js";
 
 const router = express.Router();
@@ -122,15 +121,6 @@ router.post("/:userId/update", async (req, res) => {
           days: matchedMilestone.days,
           achievedAt: new Date(),
           coinsAwarded: matchedMilestone.coins,
-        });
-
-        // Create reward record
-        await Reward.create({
-          userId,
-          type: "streakReward",
-          title: `${currentStreakDays}-Day Streak Reward`,
-          description: `You earned ${matchedMilestone.coins} coins for your ${currentStreakDays}-day streak!`,
-          value: matchedMilestone.coins,
         });
 
         // Award coins to user automatically

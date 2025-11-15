@@ -1,7 +1,5 @@
 // models/QuizAttempt.js
 import mongoose from "mongoose";
-import Reward from "./Reward.js";
-import Badge from "./Badge.js";
 import DailyQuest from "./DailyQuest.js";
 
 const answerSchema = new mongoose.Schema({
@@ -75,107 +73,16 @@ quizAttemptSchema.post("save", async function (doc) {
     if (quest.quizzesAttempted >= 5 && !quest.completed) {
       quest.completed = true;
 
-      // ✅ Daily reward
-      const reward = await Reward.create({
-        userId,
-        type: "coin",
-        title: "Daily Quest Completed",
-        description: "You completed 5 quizzes today!",
-        value: 10,
+      // ✅ Daily reward - award 10 coins
+      const User = mongoose.model("User");
+      await User.findByIdAndUpdate(userId, {
+        $inc: { coins: 10 },
       });
 
-      if (reward.value > 0) {
-        const User = mongoose.model("User");
-        await User.findByIdAndUpdate(userId, {
-          $inc: { coins: reward.value },
-        });
-      }
-
-      // ✅ Update streak via streak system
-      // Import Streak model dynamically to avoid circular dependencies
-      const Streak = mongoose.model("Streak");
-      const axios = (await import("axios")).default;
-      
-      // Call the streak update endpoint (or update directly)
+      // ✅ Update streak via Streak model
       try {
-        // Direct update approach
-        let streak = await Streak.findOne({ userId });
-        if (!streak) {
-          streak = await Streak.create({ userId });
-        }
-
-        // Check if already updated today
-        let shouldUpdate = true;
-        if (streak.lastCompletedDate) {
-          const lastDate = new Date(streak.lastCompletedDate);
-          lastDate.setHours(0, 0, 0, 0);
-          if (lastDate.getTime() === today.getTime()) {
-            shouldUpdate = false;
-          }
-        }
-
-        if (shouldUpdate) {
-          // Check yesterday's quest
-          const yesterday = new Date(today);
-          yesterday.setDate(yesterday.getDate() - 1);
-          const yesterdayQuest = await DailyQuest.findOne({
-            userId,
-            date: yesterday,
-            completed: true,
-          });
-
-          if (yesterdayQuest) {
-            streak.currentStreak += 1;
-          } else {
-            streak.currentStreak = 1;
-          }
-
-          if (streak.currentStreak > streak.longestStreak) {
-            streak.longestStreak = streak.currentStreak;
-          }
-
-          streak.lastCompletedDate = new Date();
-          streak.updatedAt = new Date();
-
-          // Check for milestone achievements
-          const milestones = [
-            { days: 3, coins: 5 },
-            { days: 5, coins: 10 },
-            { days: 10, coins: 15 },
-          ];
-
-          const currentStreakDays = streak.currentStreak;
-          const matchedMilestone = milestones.find((m) => m.days === currentStreakDays);
-
-          if (matchedMilestone) {
-            const alreadyAchieved = streak.milestonesAchieved.some(
-              (m) => m.days === matchedMilestone.days
-            );
-
-            if (!alreadyAchieved) {
-              streak.milestonesAchieved.push({
-                days: matchedMilestone.days,
-                achievedAt: new Date(),
-                coinsAwarded: matchedMilestone.coins,
-              });
-
-              await Reward.create({
-                userId,
-                type: "streakReward",
-                title: `${currentStreakDays}-Day Streak Reward`,
-                description: `You earned ${matchedMilestone.coins} coins for your ${currentStreakDays}-day streak!`,
-                value: matchedMilestone.coins,
-              });
-
-              const User = mongoose.model("User");
-              await User.findByIdAndUpdate(userId, {
-                $inc: { coins: matchedMilestone.coins },
-              });
-            }
-          }
-
-          await streak.save();
-        }
+        const Streak = mongoose.model("Streak");
+        await Streak.updateUserStreak(userId);
       } catch (streakError) {
         console.error("Error updating streak:", streakError);
       }
