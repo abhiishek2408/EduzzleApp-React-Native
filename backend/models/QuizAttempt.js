@@ -78,14 +78,6 @@ quizAttemptSchema.post("save", async function (doc) {
       await User.findByIdAndUpdate(userId, {
         $inc: { coins: 10 },
       });
-
-      // ✅ Update streak via Streak model
-      try {
-        const Streak = mongoose.model("Streak");
-        await Streak.updateUserStreak(userId);
-      } catch (streakError) {
-        console.error("Error updating streak:", streakError);
-      }
     }
 
     quest.updatedAt = new Date();
