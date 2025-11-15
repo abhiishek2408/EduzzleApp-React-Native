@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from "react";
-import { View, Text, ActivityIndicator, StyleSheet, Animated } from "react-native";
+import { View, Text, ActivityIndicator, StyleSheet, Animated, Alert } from "react-native";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
 import { LinearGradient } from "expo-linear-gradient";
@@ -11,7 +11,8 @@ const DAILY_TARGET = 3; // Target quizzes per day
 export default function DailyQuest({ navigation }) {
   const { user } = useContext(AuthContext);
   const [loading, setLoading] = useState(true);
-  const [quest, setQuest] = useState({ quizzesAttempted: 0, completed: false, currentStreak: 0 });
+  const [quest, setQuest] = useState({ quizzesAttempted: 0, completed: false });
+  const [streak, setStreak] = useState({ currentStreak: 0, longestStreak: 0 });
   const [progressAnim] = useState(new Animated.Value(0));
 
   const fetchData = async () => {
@@ -19,8 +20,10 @@ export default function DailyQuest({ navigation }) {
     setLoading(true);
     try {
       const questRes = await axios.get(`${API_BASE}/daily-quests/${user._id}`);
+      const streakRes = await axios.get(`${API_BASE}/streaks/${user._id}`);
 
-      setQuest(questRes.data || { quizzesAttempted: 0, completed: false, currentStreak: 0 });
+      setQuest(questRes.data || { quizzesAttempted: 0, completed: false });
+      setStreak(streakRes.data?.streak || { currentStreak: 0, longestStreak: 0 });
 
       // Animate progress bar
       const progress = Math.min((questRes.data?.quizzesAttempted || 0) / DAILY_TARGET, 1);
@@ -64,7 +67,7 @@ export default function DailyQuest({ navigation }) {
       >
         <View style={styles.streakContainer}>
           <MaterialCommunityIcons name="fire" size={24} color="#ff6b35" />
-          <Text style={styles.streakText}>{quest.currentStreak || 0} Day Streak</Text>
+          <Text style={styles.streakText}>{streak.currentStreak || 0} Day Streak</Text>
         </View>
 
         <Text style={styles.questText}>Complete {DAILY_TARGET} quizzes today!</Text>

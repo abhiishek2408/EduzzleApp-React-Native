@@ -16,6 +16,9 @@ import SubscriptionScreen from "./SubscriptionScreen";
 import PlanDetailScreen from "./PlanDetailScreen";
 import QuizScreen from "./QuizScreen";
 import Notification from "./Notification";
+import GamingEventDetail from "./GamingEventDetail";
+import GamingEventPlay from "./GamingEventPlay";
+import GamingEventsList from "./GamingEventsList";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -40,6 +43,9 @@ const StackScreens = ({ route }) => {
       <Stack.Screen name="PlanDetail" component={PlanDetailScreen} />
       <Stack.Screen name="QuizzesScreen" component={QuizScreen} />
       <Stack.Screen name="NotificationScreen" component={Notification} />
+      <Stack.Screen name="GamingEventDetail" component={GamingEventDetail} />
+      <Stack.Screen name="GamingEventPlay" component={GamingEventPlay} />
+      <Stack.Screen name="GamingEventsList" component={GamingEventsList} />
     </Stack.Navigator>
   );
 };

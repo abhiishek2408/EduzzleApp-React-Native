@@ -16,7 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import * as DocumentPicker from 'expo-document-picker';
 import { AuthContext } from '../context/AuthContext';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import axios from 'axios';
 import io from 'socket.io-client';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -48,22 +48,31 @@ export default function ProfileScreen() {
   };
 
   // -------------------- Fetch stats --------------------
+  const fetchStats = async () => {
+    if (!user?._id) return;
+    setLoading(true);
+    try {
+      const res = await axios.get(`${API_URL}/api/attempts/stats/${user._id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setStats(res.data);
+    } catch (err) {
+      console.error('Error fetching stats:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch stats on mount and when screen comes into focus
   useEffect(() => {
-    const fetchStats = async () => {
-      if (!user?._id) return;
-      try {
-        const res = await axios.get(`${API_URL}/api/attempts/stats/${user._id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setStats(res.data);
-      } catch (err) {
-        console.error('Error fetching stats:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchStats();
   }, [user, token]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchStats();
+    }, [user, token])
+  );
 
   // -------------------- Fetch Badges --------------------
   useEffect(() => {
@@ -185,7 +194,7 @@ const handleImagePick = async () => {
             <>
               <MaterialCommunityIcons name="puzzle" size={28} color="#6a21a8" />
               <Text style={styles.statNumber}>{stats?.attemptCount ?? 0}</Text>
-              <Text style={styles.statLabel}>Puzzles Solved</Text>
+              <Text style={styles.statLabel}>Quizzes Solved</Text>
             </>
           )}
         </View>

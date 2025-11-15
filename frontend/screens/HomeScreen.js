@@ -18,6 +18,7 @@ import { AuthContext } from "../context/AuthContext";
 import { useRoute } from "@react-navigation/native";
 import LogoHeader from "./LogoHeader";
 import DailyQuest from "./DailyQuest";
+import GamingEventsSection from "./GamingEventsSection";
 
 const THEME_COLOR = "#a21caf";
 const PRIMARY_TEXT_COLOR = "#2d0c57";
@@ -403,6 +404,9 @@ export default function HomeScreen({ navigation }) {
         )}
 
   <DailyQuest navigation={navigation} />
+
+  {/* Gaming Events below Daily Quest */}
+  <GamingEventsSection navigation={navigation} />
 
   <Text style={styles.sectionTitle}>Today's Puzzle</Text>
         <QuizCard
