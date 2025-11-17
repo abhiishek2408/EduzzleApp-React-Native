@@ -167,7 +167,30 @@ export const AuthProvider = ({ children }) => {
           ] = `Bearer ${savedToken}`;
         }
         if (savedUser) {
-          setUser(JSON.parse(savedUser));
+          const parsedUser = JSON.parse(savedUser);
+          setUser(parsedUser);
+          
+          // Track daily login for returning users
+          if (parsedUser?._id && savedToken) {
+            setTimeout(() => {
+              axios.post(
+                `https://eduzzleapp-react-native.onrender.com/api/streaks/daily-login/${parsedUser._id}`
+              ).then(response => {
+                if (response?.data?.success) {
+                  console.log("✅ Daily login streak updated on app load");
+                  // Refresh user to get updated coins
+                  axios.get("https://eduzzleapp-react-native.onrender.com/api/auth/me", {
+                    headers: { Authorization: `Bearer ${savedToken}` }
+                  }).then(res => {
+                    if (res?.data?.user) {
+                      setUser(res.data.user);
+                      AsyncStorage.setItem("user", JSON.stringify(res.data.user));
+                    }
+                  }).catch(e => console.log("Refresh after streak:", e?.message));
+                }
+              }).catch(e => console.log("Daily login track error:", e?.message));
+            }, 1000);
+          }
         }
       } catch (err) {
         console.log("Auth load error:", err);
@@ -177,6 +200,22 @@ export const AuthProvider = ({ children }) => {
     };
     loadAuth();
   }, []);
+
+  // Global 401 handler: auto-logout on unauthorized
+  useEffect(() => {
+    const interceptor = axios.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        if (error?.response?.status === 401) {
+          try {
+            await logout();
+          } catch {}
+        }
+        return Promise.reject(error);
+      }
+    );
+    return () => axios.interceptors.response.eject(interceptor);
+  }, [token]);
 
   // --- ACTIONS ---
 
@@ -226,6 +265,12 @@ export const AuthProvider = ({ children }) => {
     }
 
     axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
+    
+    // Track daily login streak after successful login
+    if (data.user?._id) {
+      setTimeout(() => trackDailyLogin(), 500);
+    }
+    
     return data;
   };
 
@@ -257,20 +302,62 @@ export const AuthProvider = ({ children }) => {
 
   // 🔹 NEW: refresh user info from backend
   const refreshUser = async () => {
-    if (!token) return;
     try {
-      const { data } = await axios.get(
-        "https://eduzzleapp-react-native.onrender.com/api/auth/me",
-        {
-          headers: { Authorization: `Bearer ${token}` },
+      let effectiveToken = token;
+      if (!effectiveToken) {
+        effectiveToken = await AsyncStorage.getItem("token");
+        if (effectiveToken) {
+          setToken(effectiveToken);
+          axios.defaults.headers.common["Authorization"] = `Bearer ${effectiveToken}`;
         }
-      );
+      }
+      if (!effectiveToken) return;
 
-      console.log("🔹 refreshUser fetched:", data.user);
-      setUser(data);
-      await AsyncStorage.setItem("user", JSON.stringify(data));
+      const makeRequest = async () =>
+        axios.get("https://eduzzleapp-react-native.onrender.com/api/auth/me", {
+          headers: { Authorization: `Bearer ${effectiveToken}` },
+        });
+
+      let res;
+      try {
+        res = await makeRequest();
+      } catch (e) {
+        // Retry once if defaults header missing or transient failure
+        axios.defaults.headers.common["Authorization"] = `Bearer ${effectiveToken}`;
+        res = await makeRequest();
+      }
+
+      const data = res?.data;
+      if (data?.user) {
+        setUser(data.user);
+        await AsyncStorage.setItem("user", JSON.stringify(data.user));
+      }
     } catch (err) {
-      console.error("Error refreshing user:", err);
+      if (err?.response?.status === 401) {
+        console.log("refreshUser: token invalid/expired. Logging out.");
+        await logout();
+        return;
+      }
+      console.error("Error refreshing user:", err?.message || err);
+    }
+  };
+
+  // 🔥 Track daily login streak (independent of quizzes)
+  const trackDailyLogin = async () => {
+    try {
+      if (!user?._id) return;
+      
+      const { data } = await axios.post(
+        `https://eduzzleapp-react-native.onrender.com/api/streaks/daily-login/${user._id}`
+      );
+      
+      if (data?.success) {
+        console.log("✅ Daily login streak updated:", data.streak);
+        // Refresh user to get updated coins if milestone was achieved
+        await refreshUser();
+      }
+    } catch (err) {
+      console.error("Error tracking daily login:", err?.message || err);
     }
   };
 
@@ -288,6 +375,7 @@ export const AuthProvider = ({ children }) => {
         forgotPassword,
         resetPassword,
         refreshUser, // ✅ added here
+        trackDailyLogin, // ✅ track daily login streak
         isAuthenticated: !!token,
       }}
     >

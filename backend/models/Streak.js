@@ -28,8 +28,8 @@ const MILESTONES = [
   { days: 10, coins: 15 },
 ];
 
-// Static method to update streak when an action is completed for the day
-streakSchema.statics.updateUserStreak = async function(userId) {
+// Static method to update daily login streak
+streakSchema.statics.updateDailyLoginStreak = async function(userId) {
   const User = mongoose.model("User");
 
   const now = new Date();
@@ -38,7 +38,14 @@ streakSchema.statics.updateUserStreak = async function(userId) {
 
   let streak = await this.findOne({ userId });
   if (!streak) {
-    streak = await this.create({ userId });
+    // First time opening app - create streak with day 1
+    streak = await this.create({ 
+      userId,
+      currentStreak: 1,
+      longestStreak: 1,
+      lastCompletedDate: now
+    });
+    return streak;
   }
 
   // Already updated today? return as-is
@@ -50,7 +57,7 @@ streakSchema.statics.updateUserStreak = async function(userId) {
     }
   }
 
-  // Continue streak only if last completion was yesterday; otherwise reset to 1
+  // Check if streak continues or breaks
   const yesterday = new Date(today);
   yesterday.setDate(yesterday.getDate() - 1);
 
@@ -58,11 +65,14 @@ streakSchema.statics.updateUserStreak = async function(userId) {
   if (last) last.setHours(0, 0, 0, 0);
 
   if (last && last.getTime() === yesterday.getTime()) {
+    // Consecutive day - increment streak
     streak.currentStreak += 1;
   } else {
+    // Streak broken - reset to 1
     streak.currentStreak = 1;
   }
 
+  // Update longest streak if current exceeds it
   if (streak.currentStreak > streak.longestStreak) {
     streak.longestStreak = streak.currentStreak;
   }

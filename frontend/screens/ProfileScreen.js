@@ -23,7 +23,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 
 export default function ProfileScreen() {
-  const { logout, user, token, setUser } = useContext(AuthContext);
+  const { logout, user, token, setUser, refreshUser } = useContext(AuthContext);
   const navigation = useNavigation();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -68,8 +68,14 @@ export default function ProfileScreen() {
 
   useFocusEffect(
     React.useCallback(() => {
-      fetchStats();
-    }, [user, token])
+      // Refresh user to get latest coins, then fetch stats
+      (async () => {
+        try {
+          await refreshUser?.();
+        } catch {}
+        await fetchStats();
+      })();
+    }, [token])
   );
 
   // -------------------- Fetch Badges --------------------

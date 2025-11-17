@@ -119,7 +119,20 @@ router.post("/login", createRateLimiter({ max: 20 }), async (req, res) => {
     const token = signToken(user);
 
     // --- RETURN USER OBJECT HERE ---
-    return res.json({ message: "Logged in successfully", token, role: user.role, user: {_id: user._id, name: user.name, email: user.email, role: user.role, profilePic: user.profilePic || null, subscription: user.subscription || null } });
+    return res.json({
+      message: "Logged in successfully",
+      token,
+      role: user.role,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        profilePic: user.profilePic || null,
+        subscription: user.subscription || null,
+        coins: user.coins ?? 0,
+      },
+    });
 
   } catch (err) {
     console.error("Login error:", err);
@@ -154,7 +167,19 @@ router.post("/verify-otp", createRateLimiter({ max: 12 }), async (req, res) => {
 
     // send back a token
     const token = signToken(user);
-    return res.json({ message: "Email verified", token, role: user.role, user: {_id: user._id, name: user.name, email: user.email, role: user.role, profilePic: user.profilePic || null } });
+    return res.json({
+      message: "Email verified",
+      token,
+      role: user.role,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        profilePic: user.profilePic || null,
+        coins: user.coins ?? 0,
+      },
+    });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Server error" });
