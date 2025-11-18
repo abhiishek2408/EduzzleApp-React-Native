@@ -125,6 +125,41 @@ router.post("/reject/:userId", async (req, res) => {
 
 
 /**
+ * 🚫 CANCEL SENT FRIEND REQUEST (by sender)
+ */
+router.post("/cancel/:userId", async (req, res) => {
+  try {
+    const io = req.app.get("io");
+    const senderId = req.body.senderId;   // current logged-in user (sender)
+    const receiverId = req.params.userId; // receiver whose pending list has the request
+
+    const sender = await User.findById(senderId);
+    const receiver = await User.findById(receiverId);
+
+    if (!sender || !receiver) return res.status(404).json({ message: "User not found" });
+
+    // Remove request if exists
+    sender.sentRequests = sender.sentRequests.filter(id => id.toString() !== receiverId);
+    receiver.friendRequests = receiver.friendRequests.filter(id => id.toString() !== senderId);
+
+    await sender.save();
+    await receiver.save();
+
+    // ⚡ Notify receiver that request was cancelled
+    if (io.sockets.sockets.get(receiverId)) {
+      io.to(receiverId).emit("friendRequestCancelled", {
+        by: { _id: sender._id, name: sender.name, profilePic: sender.profilePic },
+      });
+    }
+
+    res.json({ message: "Friend request cancelled" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+/**
  * 🧑‍🤝‍🧑 GET FRIEND LIST
  */
 router.get("/friends/:userId", async (req, res) => {
