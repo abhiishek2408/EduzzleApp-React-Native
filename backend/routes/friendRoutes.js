@@ -229,6 +229,23 @@ router.get("/pending/:userId", async (req, res) => {
 });
 
 /**
+ * 🤝 CHECK IF TWO USERS ARE FRIENDS
+ * Returns: { isFriend: boolean }
+ */
+router.get("/is-friend/:userId/:otherId", async (req, res) => {
+  try {
+    const { userId, otherId } = req.params;
+    const user = await User.findById(userId).select("friends");
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const isFriend = user.friends?.some(id => id.toString() === otherId);
+    res.json({ isFriend: !!isFriend });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
  * 🏆 GET FRIENDS LEADERBOARD
  * Returns leaderboard with friends' quiz stats sorted by total points
  */
