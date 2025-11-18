@@ -362,17 +362,17 @@ const io = new Server(httpServer, {
 
 io.on("connection", (socket) => {
   console.log("⚡ User connected:", socket.id);
-  // Automatically join room based on handshake query userId (for notifications)
-  const userIdFromQuery = socket.handshake.query?.userId;
-  if (userIdFromQuery) {
-    socket.join(userIdFromQuery);
-    console.log("🟢 User auto-joined room:", userIdFromQuery);
+
+  // Auto-register user from query parameter
+  const userId = socket.handshake.query.userId;
+  if (userId) {
+    socket.join(userId);
+    console.log("🟢 User auto-registered for socket:", userId);
   }
 
   socket.on("registerUser", (userId) => {
-    // Fallback manual registration
     socket.join(userId);
-    console.log("🟢 User registered for socket (manual):", userId);
+    console.log("🟢 User manually registered for socket:", userId);
   });
 
   socket.on("disconnect", () => {
