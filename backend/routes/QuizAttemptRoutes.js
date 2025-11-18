@@ -1,6 +1,7 @@
 // routes/QuizAttemptRoutes.js
 import express from "express";
 import QuizAttempt from "../models/QuizAttempt.js";
+import User from "../models/User.js";
 
 const router = express.Router();
 
@@ -21,6 +22,10 @@ router.post("/", async (req, res) => {
       rating,
     } = req.body;
 
+    // Check if this is the first attempt for this quiz by this user
+    const existingAttempt = await QuizAttempt.findOne({ userId, quizId });
+    const isFirstAttempt = !existingAttempt;
+
     const attempt = new QuizAttempt({
       userId,
       quizId,
@@ -36,7 +41,21 @@ router.post("/", async (req, res) => {
     });
 
     await attempt.save();
-    res.status(201).json({ message: "Attempt saved successfully", attempt });
+
+    // Award 3 coins only on first attempt of this quiz
+    if (isFirstAttempt) {
+      await User.findByIdAndUpdate(
+        userId,
+        { $inc: { coins: 3 } },
+        { new: true }
+      );
+    }
+
+    res.status(201).json({ 
+      message: "Attempt saved successfully", 
+      attempt,
+      coinsAwarded: isFirstAttempt ? 3 : 0
+    });
   } catch (error) {
     console.error("Error saving attempt:", error);
     res.status(500).json({ error: "Internal Server Error" });
