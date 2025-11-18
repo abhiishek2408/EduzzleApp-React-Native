@@ -5,64 +5,69 @@ import QuizAttempt from "../models/QuizAttempt.js";
 const router = express.Router();
 
 /**
- * 🏆 GET FRIENDS LEADERBOARD
- * Returns leaderboard with friends' quiz stats sorted by total points
+ * Get Friends Leaderboard for a specific user
+ * Returns sorted list of friends with their quiz stats
  */
-router.get("/leaderboard/:userId", async (req, res) => {
+router.get("/friends/:userId", async (req, res) => {
   try {
-    const userId = req.params.userId;
+    const { userId } = req.params;
 
-    // Get current user with friends list
-    const currentUser = await User.findById(userId).select("friends");
-    if (!currentUser) return res.status(404).json({ message: "User not found" });
+    // Get user with friends populated
+    const user = await User.findById(userId).populate("friends", "name profilePic");
 
-    // Include current user + all friends
-    const userIds = [userId, ...currentUser.friends.map(id => id.toString())];
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
-    // Aggregate quiz attempts to get stats for each user
-    const stats = await QuizAttempt.aggregate([
-      {
-        $match: {
-          userId: { $in: userIds.map(id => id) }
-        }
-      },
-      {
-        $group: {
-          _id: "$userId",
-          quizzesSolved: { $addToSet: "$quizId" }, // unique quizzes
-          totalPoints: { $sum: "$totalScore" }
-        }
-      },
-      {
-        $project: {
-          userId: "$_id",
-          quizzesSolved: { $size: "$quizzesSolved" },
-          totalPoints: 1
-        }
-      },
-      {
-        $sort: { totalPoints: -1, quizzesSolved: -1 } // sort by points desc, then quizzes desc
-      }
-    ]);
+    // Include the user themselves in the leaderboard
+    const friendIds = [...user.friends.map(f => f._id), userId];
 
-    // Get user details for each entry
-    const leaderboard = await Promise.all(
-      stats.map(async (stat) => {
-        const user = await User.findById(stat.userId).select("name profilePic");
+    // Aggregate quiz attempts for all friends
+    const leaderboardData = await Promise.all(
+      friendIds.map(async (friendId) => {
+        const attempts = await QuizAttempt.find({ userId: friendId });
+        
+        // Get unique quiz IDs (quizzes solved)
+        const uniqueQuizzes = [...new Set(attempts.map(a => a.quizId.toString()))];
+        
+        // Calculate total points from all attempts
+        const totalPoints = attempts.reduce((sum, attempt) => sum + (attempt.totalScore || 0), 0);
+
+        // Get friend details
+        const friend = friendIds.length > 1 
+          ? user.friends.find(f => f._id.toString() === friendId.toString()) || user
+          : user;
+
         return {
-          userId: stat.userId,
-          name: user?.name || "Unknown",
-          profilePic: user?.profilePic || "https://t4.ftcdn.net/jpg/04/31/64/75/360_F_431647519_usrbQ8Z983hTYe8zgA7t1XVc5fEtqcpa.jpg",
-          quizzesSolved: stat.quizzesSolved,
-          totalPoints: stat.totalPoints
+          userId: friendId,
+          name: friend.name,
+          profilePic: friend.profilePic,
+          quizzesSolved: uniqueQuizzes.length,
+          totalPoints: totalPoints,
         };
       })
     );
 
-    res.json(leaderboard);
-  } catch (err) {
-    console.error("Leaderboard error:", err);
-    res.status(500).json({ error: err.message });
+    // Sort by total points (descending), then by quizzes solved
+    leaderboardData.sort((a, b) => {
+      if (b.totalPoints !== a.totalPoints) {
+        return b.totalPoints - a.totalPoints;
+      }
+      return b.quizzesSolved - a.quizzesSolved;
+    });
+
+    // Assign ranks
+    leaderboardData.forEach((item, index) => {
+      item.rank = index + 1;
+    });
+
+    res.json({
+      success: true,
+      leaderboard: leaderboardData,
+    });
+  } catch (error) {
+    console.error("Error fetching friends leaderboard:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
