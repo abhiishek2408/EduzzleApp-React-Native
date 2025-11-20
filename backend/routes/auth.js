@@ -19,11 +19,13 @@ const signToken = (user) => jwt.sign({ id: user._id, role: user.role }, process.
 router.post("/register", createRateLimiter({ max: 6 }), async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
+    console.log("📝 Registration attempt for:", email);
 
     // --- validation, existing user check etc. ---
 
     // Generate OTP
     const rawOtp = Math.floor(100000 + Math.random() * 900000).toString();
+    console.log("🔢 Generated OTP:", rawOtp);
 
     // --- Create user instance ---
     const user = new User({
@@ -40,6 +42,7 @@ router.post("/register", createRateLimiter({ max: 6 }), async (req, res) => {
 
     // Save user first for faster response
     await user.save();
+    console.log("💾 User saved to database");
 
     // Send email asynchronously (don't wait for it)
     const html = `
@@ -48,6 +51,7 @@ router.post("/register", createRateLimiter({ max: 6 }), async (req, res) => {
       <p>It expires in ${OTP_EXPIRES_MIN} minutes.</p>
     `;
 
+    console.log("📧 Attempting to send email to:", user.email);
     // Send email in background without blocking response
     sendEmail({
       to: user.email,
