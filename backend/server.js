@@ -208,6 +208,7 @@ import dailyQuestRoutes from "./routes/dailyQuestRoutes.js";
 import streakRoutes from "./routes/streakRoutes.js";
 import leaderboardRoutes from "./routes/leaderboardRoutes.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
+import notificationRoutes from "./routes/notificationRoutes.js";
 
 dotenv.config();
 
@@ -269,6 +270,7 @@ app.use("/api/daily-quests", dailyQuestRoutes);
 app.use("/api/streaks", streakRoutes);
 app.use("/api/leaderboard", leaderboardRoutes);
 app.use("/api/reviews", reviewRoutes);
+app.use("/api/notifications", notificationRoutes);
 // 3️⃣ Update GamingQuizEvent status every minute
 cron.schedule("* * * * *", async () => {
   try {

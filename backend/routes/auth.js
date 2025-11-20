@@ -3,6 +3,7 @@ import crypto from "crypto";
 import validator from "validator";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import Notification from "../models/Notification.js";
 import { sendEmail } from "../utils/email.js";
 import { createRateLimiter } from "../middlewares/rateLimiter.js";
 import authenticate from "../middlewares/auth.js";
@@ -164,6 +165,22 @@ router.post("/verify-otp", createRateLimiter({ max: 12 }), async (req, res) => {
     user.isVerified = true;
     user.otp = undefined;
     await user.save();
+
+    // Create welcome notification
+    try {
+      await Notification.create({
+        userId: user._id,
+        type: 'welcome',
+        message: `Welcome to Eduzzle, ${user.name}! 🎉 Start your learning journey by exploring quizzes and puzzles. Good luck!`,
+        metadata: {
+          icon: 'hand-wave',
+          color: '#10b981'
+        }
+      });
+    } catch (notifErr) {
+      console.error("Error creating welcome notification:", notifErr);
+      // Don't fail the registration if notification creation fails
+    }
 
     // send back a token
     const token = signToken(user);
