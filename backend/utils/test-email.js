@@ -3,9 +3,15 @@ import { sendEmail } from "./email.js";
 (async () => {
   try {
     await sendEmail({
-      to: "visheshyadav68@gmail.com", // your real email
-      subject: "Test Email from Resend",
-      html: "<h1>It works!</h1><p>This is a test email from Resend API</p>",
+      to: "abhishekydv2408@gmail.com",
+      subject: "Test Email - Eduzzle App",
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9;">
+          <h1 style="color: #a21caf;">🎉 Email is Working!</h1>
+          <p>Your Eduzzle email service is configured correctly.</p>
+          <p>You can now send OTP emails to any user.</p>
+        </div>
+      `,
     });
     console.log("✅ Test email sent successfully");
   } catch (err) {

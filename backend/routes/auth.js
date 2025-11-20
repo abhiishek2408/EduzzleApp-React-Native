@@ -51,9 +51,17 @@ router.post("/register", createRateLimiter({ max: 6 }), async (req, res) => {
         html,
       });
       console.log("✅ OTP email sent successfully to:", user.email);
+      console.log("🔑 OTP Code (for testing):", rawOtp); // For development only
     } catch (emailErr) {
       console.error("❌ Email sending failed:", emailErr);
-      return res.status(500).json({ message: "Failed to send OTP email" });
+      // Still save user and return OTP for development
+      console.log("⚠️ Email failed, but here's the OTP for testing:", rawOtp);
+      await user.save();
+      return res.status(201).json({
+        message: "Registered. Email failed, check server logs for OTP (dev only).",
+        userId: user._id,
+        email: user.email,
+      });
     }
 
     await user.save();

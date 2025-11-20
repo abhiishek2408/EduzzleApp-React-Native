@@ -43,25 +43,74 @@
 
 
 // utils/sendEmail.js
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Choose email service: 'gmail', 'brevo', or 'resend'
+const EMAIL_SERVICE = process.env.EMAIL_SERVICE || 'gmail';
+
+// Gmail SMTP Configuration
+const gmailTransporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_APP_PASSWORD, // Use App Password, not regular password
+  },
+});
+
+// Brevo (Sendinblue) SMTP Configuration
+const brevoTransporter = nodemailer.createTransport({
+  host: 'smtp-relay.brevo.com',
+  port: 587,
+  auth: {
+    user: process.env.BREVO_USER,
+    pass: process.env.BREVO_API_KEY,
+  },
+});
+
+// Resend fallback (using nodemailer)
+const resendTransporter = nodemailer.createTransport({
+  host: 'smtp.resend.com',
+  port: 465,
+  secure: true,
+  auth: {
+    user: 'resend',
+    pass: process.env.RESEND_API_KEY,
+  },
+});
+
+// Select transporter based on configuration
+const getTransporter = () => {
+  switch (EMAIL_SERVICE) {
+    case 'brevo':
+      return brevoTransporter;
+    case 'resend':
+      return resendTransporter;
+    case 'gmail':
+    default:
+      return gmailTransporter;
+  }
+};
 
 export async function sendEmail({ to, subject, text, html }) {
-  console.log("Sending email to:", to);
+  console.log(`📧 Sending email via ${EMAIL_SERVICE} to:`, to);
 
   try {
-    const result = await resend.emails.send({
-      from: process.env.RESEND_FROM,
+    const transporter = getTransporter();
+    const fromEmail = process.env.EMAIL_FROM || process.env.GMAIL_USER || 'noreply@eduzzle.com';
+    
+    const result = await transporter.sendMail({
+      from: `"Eduzzle" <${fromEmail}>`,
       to,
       subject,
       text,
       html,
     });
-    console.log("✅ Email sent successfully:", result);
+    
+    console.log("✅ Email sent successfully:", result.messageId);
+    return result;
   } catch (err) {
     console.error("❌ Email sending failed:", err);
     throw err;
