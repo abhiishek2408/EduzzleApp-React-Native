@@ -11,7 +11,7 @@ export async function sendEmail({ to, subject, text, html }) {
 
   try {
     const result = await resend.emails.send({
-      from: `Eduzzle <${process.env.RESEND_FROM_EMAIL}>`,
+      from: `Eduzzle <${process.env.RESEND_FROM}>`,
       to,
       subject,
       html,
@@ -24,3 +24,16 @@ export async function sendEmail({ to, subject, text, html }) {
     throw err;
   }
 }
+
+// Test email - run with: node utils/email.js
+sendEmail({
+  to: "yabhi7392@gmail.com",
+  subject: "Test Email from Eduzzle",
+  html: "<h1>Hello from Eduzzle!</h1><p>This is a test email sent using Resend API.</p>"
+}).then(() => {
+  console.log("🎉 Test email completed");
+  process.exit(0);
+}).catch((err) => {
+  console.error("💥 Test email failed:", err);
+  process.exit(1);
+});
