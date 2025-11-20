@@ -51,18 +51,19 @@ router.post("/register", createRateLimiter({ max: 6 }), async (req, res) => {
       <p>It expires in ${OTP_EXPIRES_MIN} minutes.</p>
     `;
 
-    console.log("Attempting to send email to:", user.email);
+    console.log("📧 Attempting to send email to:", user.email);
     // Send email in background without blocking response
+    const userEmail = user.email; // Store email in closure
     sendEmail({
-      to: user.email,
+      to: userEmail,
       subject: "Verify your email - OTP",
       html,
     }).then(() => {
-      console.log("OTP email sent successfully to:", user.email);
-      console.log("OTP Code (for testing):", rawOtp);
+      console.log("✅ OTP email sent successfully to:", userEmail);
+      console.log("🔑 OTP Code (for testing):", rawOtp);
     }).catch((emailErr) => {
-      console.error("Email sending failed:", emailErr);
-      console.log("Email failed, but here's the OTP for testing:", rawOtp);
+      console.error("❌ Email sending failed:", emailErr);
+      console.log("⚠️ Email failed, but here's the OTP for testing:", rawOtp);
     });
 
     // Return immediately without waiting for email
