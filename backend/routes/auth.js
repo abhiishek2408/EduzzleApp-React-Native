@@ -38,33 +38,30 @@ router.post("/register", createRateLimiter({ max: 6 }), async (req, res) => {
       },
     });
 
+    // Save user first for faster response
+    await user.save();
+
+    // Send email asynchronously (don't wait for it)
     const html = `
       <p>Hello ${name},</p>
       <p>Your verification OTP is: <strong>${rawOtp}</strong></p>
       <p>It expires in ${OTP_EXPIRES_MIN} minutes.</p>
     `;
 
-    try {
-      await sendEmail({
-        to: user.email,
-        subject: "Verify your email - OTP",
-        html,
-      });
+    // Send email in background without blocking response
+    sendEmail({
+      to: user.email,
+      subject: "Verify your email - OTP",
+      html,
+    }).then(() => {
       console.log("✅ OTP email sent successfully to:", user.email);
-      console.log("🔑 OTP Code (for testing):", rawOtp); // For development only
-    } catch (emailErr) {
+      console.log("🔑 OTP Code (for testing):", rawOtp);
+    }).catch((emailErr) => {
       console.error("❌ Email sending failed:", emailErr);
-      // Still save user and return OTP for development
       console.log("⚠️ Email failed, but here's the OTP for testing:", rawOtp);
-      await user.save();
-      return res.status(201).json({
-        message: "Registered. Email failed, check server logs for OTP (dev only).",
-        userId: user._id,
-        email: user.email,
-      });
-    }
+    });
 
-    await user.save();
+    // Return immediately without waiting for email
     return res.status(201).json({
       message: "Registered successfully. Check your email for OTP.",
       userId: user._id,
