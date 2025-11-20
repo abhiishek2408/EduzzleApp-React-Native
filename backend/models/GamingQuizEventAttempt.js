@@ -10,8 +10,8 @@ const answerSchema = new mongoose.Schema({
 
 const gamingQuizEventAttemptSchema = new mongoose.Schema(
   {
-    eventId: { type: mongoose.Schema.Types.ObjectId, ref: "GamingQuizEvent", required: true, index: true },
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true },
+    eventId: { type: mongoose.Schema.Types.ObjectId, ref: "GamingQuizEvent", required: true },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     teamId: { type: mongoose.Schema.Types.ObjectId, ref: "Team" },
 
     startedAt: { type: Date, default: Date.now },
