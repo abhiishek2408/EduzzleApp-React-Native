@@ -19,7 +19,7 @@ const signToken = (user) => jwt.sign({ id: user._id, role: user.role }, process.
 router.post("/register", createRateLimiter({ max: 6 }), async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
-    console.log("📝 Registration attempt for:", email);
+    console.log("Registration attempt for:", email);
 
     // --- validation, existing user check etc. ---
 
@@ -42,7 +42,7 @@ router.post("/register", createRateLimiter({ max: 6 }), async (req, res) => {
 
     // Save user first for faster response
     await user.save();
-    console.log("💾 User saved to database");
+    console.log("User saved to database");
 
     // Send email asynchronously (don't wait for it)
     const html = `
@@ -51,18 +51,18 @@ router.post("/register", createRateLimiter({ max: 6 }), async (req, res) => {
       <p>It expires in ${OTP_EXPIRES_MIN} minutes.</p>
     `;
 
-    console.log("📧 Attempting to send email to:", user.email);
+    console.log("Attempting to send email to:", user.email);
     // Send email in background without blocking response
     sendEmail({
       to: user.email,
       subject: "Verify your email - OTP",
       html,
     }).then(() => {
-      console.log("✅ OTP email sent successfully to:", user.email);
-      console.log("🔑 OTP Code (for testing):", rawOtp);
+      console.log("OTP email sent successfully to:", user.email);
+      console.log("OTP Code (for testing):", rawOtp);
     }).catch((emailErr) => {
-      console.error("❌ Email sending failed:", emailErr);
-      console.log("⚠️ Email failed, but here's the OTP for testing:", rawOtp);
+      console.error("Email sending failed:", emailErr);
+      console.log("Email failed, but here's the OTP for testing:", rawOtp);
     });
 
     // Return immediately without waiting for email
@@ -72,7 +72,7 @@ router.post("/register", createRateLimiter({ max: 6 }), async (req, res) => {
       email: user.email,
     });
   } catch (err) {
-    console.error("❌ Registration error:", err);
+    console.error("Registration error:", err);
     return res.status(500).json({ message: "Server error during registration" });
   }
 });
@@ -88,8 +88,8 @@ router.post("/login", createRateLimiter({ max: 20 }), async (req, res) => {
 
     const user = await User.findOne({ email: email.toLowerCase() });
 
-      console.log("🟢 User fetched from DB:", user); // debug
-    console.log("🖼️ profilePic value:", user?.profilePic); // debug
+      console.log("User fetched from DB:", user); // debug
+    console.log("profilePic value:", user?.profilePic); // debug
 
     if (!user) {
       return res.status(400).json({ message: "Invalid credentials" });
