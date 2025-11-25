@@ -11,7 +11,7 @@ dotenv.config();
 // Brevo HTTP API implementation
 // Docs: https://developers.brevo.com/docs/send-a-transactional-email
 
-export async function sendEmail({ to, subject, text, html }) {
+async function sendEmail({ to, subject, text, html }) {
   console.log(`📧 Sending email via Brevo HTTP API to:`, to);
   try {
     const response = await axios.post(
@@ -35,11 +35,13 @@ export async function sendEmail({ to, subject, text, html }) {
         },
       }
     );
-    console.log("Email sent successfully to:", to);
+    console.log("✅ Email sent successfully to:", to);
     return response.data;
   } catch (err) {
-    console.error("Email sending failed:", err.response?.data || err.message || err);
+    console.error("❌ Email sending failed:", err.response?.data || err.message || err);
     throw err;
   }
 }
 
+sendEmail(
+  { to: "abhishekydv2408@gmail.com", subject: "Test Email", text: "This is a test email.", html: "<h1>This is a test email.</h1>" });
