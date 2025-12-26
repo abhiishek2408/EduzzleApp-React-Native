@@ -1,11 +1,19 @@
 import React, { useEffect, useState, useContext } from "react";
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Dimensions } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Dimensions, StyleSheet } from "react-native";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { LinearGradient } from "expo-linear-gradient";
+import GamingEventsSectionSkeleton from "../components/GamingEventsSectionSkeleton";
 
 const API_BASE = "https://eduzzleapp-react-native.onrender.com/api";
-const THEME = "#a21caf";
+const THEME_ACCENT = "#f3c999";
+const THEME_DARK = "#4a044e";
+
+const { width: screenWidth } = Dimensions.get("window");
+const CARD_WIDTH = screenWidth * 0.90; 
+const CARD_MARGIN = 12;
 
 export default function GamingEventsSection({ navigation }) {
   const { user } = useContext(AuthContext);
@@ -23,124 +31,155 @@ export default function GamingEventsSection({ navigation }) {
       const combined = [...(liveRes.data || []), ...(upcomingRes.data || [])];
       setEvents(combined.slice(0, 6));
     } catch (e) {
-      console.error("GamingEvents fetch error", e?.response?.data || e.message);
+      console.error("GamingEvents fetch error", e?.message);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchEvents();
-  }, []);
-
-  // ticking clock for countdowns across cards (efficient single interval)
+  useEffect(() => { fetchEvents(); }, []);
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, []);
 
-  if (loading) return <ActivityIndicator color={THEME} style={{ marginVertical: 8 }} />;
+  if (loading) return <GamingEventsSectionSkeleton />;
   if (!events.length) return null;
 
-  const EventCard = ({ item, width }) => {
-    const nowDt = new Date(now);
-    const start = new Date(item.startTime);
-    const end = new Date(item.endTime);
-    const status = nowDt < start ? "Upcoming" : nowDt > end ? "Completed" : "Live";
-
-    let remainingMs = 0;
-    if (status === "Upcoming") remainingMs = start - nowDt;
-    else if (status === "Live") remainingMs = end - nowDt;
-    const hh = Math.max(0, Math.floor(remainingMs / 1000 / 3600));
-    const mm = Math.max(0, Math.floor((remainingMs / 1000 % 3600) / 60));
-    const ss = Math.max(0, Math.floor(remainingMs / 1000 % 60));
-    const countdown = status === "Completed" ? "Completed" : `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}:${String(ss).padStart(2, "0")}`;
-
-    const subtitle = status === "Upcoming"
-      ? `Starts ${start.toLocaleString()}`
-      : status === "Live"
-      ? `Ends ${end.toLocaleTimeString()}`
-      : `Ended ${end.toLocaleString()}`;
-    return (
-      <TouchableOpacity style={[styles.card, { width }]} onPress={() => navigation.navigate("GamingEventDetail", { eventId: item._id })}>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <Ionicons name="trophy-outline" size={22} color={THEME} />
-          <Text style={styles.title} numberOfLines={1}>{item.title}</Text>
-        </View>
-        <Text style={styles.subtitle} numberOfLines={2}>{subtitle}</Text>
-        <View style={styles.countdownRow}>
-          <Text style={styles.countdownLabel}>{status === "Live" ? "Ends in" : status === "Upcoming" ? "Starts in" : "Status"}</Text>
-          <Text style={[styles.countdownValue, status === "Live" ? styles.liveText : status === "Upcoming" ? styles.upcomingText : styles.completedText]}>{countdown}</Text>
-        </View>
-        <View style={styles.metaRow}>
-          <Text style={styles.badge}>Q: {item.totalQuestions}</Text>
-          <Text style={[styles.badge, { backgroundColor: "#eef2ff", color: "#4338ca" }]}>{item.difficulty}</Text>
-          <Text style={[styles.badge, { backgroundColor: status === "Live" ? "#dcfce7" : "#fef9c3", color: "#065f46" }]}>{status}</Text>
-        </View>
-      </TouchableOpacity>
-    );
-  };
-
   return (
-    <View style={styles.container}>
+    <View style={styles.sectionContainer}>
       <View style={styles.headerRow}>
-        <Text style={styles.sectionTitle}>Gaming Events</Text>
-        <TouchableOpacity onPress={() => navigation.navigate("GamingEventsList")} style={{ backgroundColor: "transparent" }}> 
-          <Text style={[styles.viewAll, { backgroundColor: "transparent" }]}>View all →</Text>
+        <View style={styles.titleGroup}>
+          <View style={styles.iconContainer}>
+            <Ionicons name="trophy-sharp" size={20} color="#701a75" />
+          </View>
+          <View>
+            <Text style={styles.mainTitle}>Gaming Events</Text>
+            <Text style={styles.subTitle}>Play & Win Rewards</Text>
+          </View>
+        </View>
+        <TouchableOpacity 
+          onPress={() => navigation.navigate("GamingEventsScreen")}
+          style={styles.viewAllBtn}
+        >
+          <Text style={styles.viewAllText}>VIEW ALL</Text>
         </TouchableOpacity>
       </View>
-      <EventsCarousel data={events} renderItem={EventCard} />
+
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false} 
+        contentContainerStyle={styles.scrollPadding}
+        snapToInterval={CARD_WIDTH + CARD_MARGIN}
+        decelerationRate="fast"
+        disableIntervalMomentum={true}
+      >
+        {events.map((item) => {
+          const nowDt = new Date(now);
+          const start = new Date(item.startTime);
+          const end = new Date(item.endTime);
+          const status = nowDt < start ? "Upcoming" : nowDt > end ? "Completed" : "Live";
+          
+          let remainingMs = status === "Upcoming" ? start - nowDt : status === "Live" ? end - nowDt : 0;
+          const hh = Math.max(0, Math.floor(remainingMs / 1000 / 3600));
+          const mm = Math.max(0, Math.floor((remainingMs / 1000 % 3600) / 60));
+          const ss = Math.max(0, Math.floor(remainingMs / 1000 % 60));
+          const countdown = `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}:${String(ss).padStart(2, "0")}`;
+
+          return (
+            <TouchableOpacity
+              key={item._id}
+              activeOpacity={0.9}
+              onPress={() => navigation.navigate("GamingEventDetail", { eventId: item._id })}
+              style={[styles.cardWrapper, { width: CARD_WIDTH }]}
+            >
+              <LinearGradient
+                colors={status === "Live" ? ["#4a044e", "#701a75"] : ["#701a75", "#2e1065"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.cardGradient}
+              >
+                {/* 🔹 Top Row - Less Margin */}
+                <View style={styles.cardTop}>
+                  <View style={[styles.statusBadge, { backgroundColor: status === "Live" ? "#ef4444" : "rgba(255,255,255,0.15)" }]}>
+                    {status === "Live" && <View style={styles.pulseDot} />}
+                    <Text style={styles.statusText}>{status}</Text>
+                  </View>
+                  <View style={styles.entryCostBadge}>
+                    <MaterialCommunityIcons name="database" size={12} color={THEME_ACCENT} />
+                    <Text style={styles.entryCostText}>{item.entryCostCoins || 'FREE'}</Text>
+                  </View>
+                </View>
+
+                {/* 🔹 Event Title - Compact Bottom Margin */}
+                <Text style={styles.eventTitle} numberOfLines={1}>{item.title}</Text>
+                
+                {/* 🔹 Info Box - Less Padding */}
+                <View style={styles.infoGlassBox}>
+                  <View style={styles.infoItem}>
+                    <Text style={styles.infoLabel}>{status === "Live" ? "ENDS IN" : "STARTS IN"}</Text>
+                    <Text style={styles.infoValue}>{countdown}</Text>
+                  </View>
+                  <View style={styles.verticalDivider} />
+                  <View style={styles.infoItem}>
+                    <Text style={styles.infoLabel}>QUESTS</Text>
+                    <Text style={styles.infoValue}>{item.totalQuestions}</Text>
+                  </View>
+                </View>
+
+                {/* 🔹 Action Button - Reduced Top Margin */}
+                <View style={styles.actionBtn}>
+                  <Text style={styles.actionBtnText}>ENTER TOURNAMENT</Text>
+                  <Ionicons name="chevron-forward-circle" size={16} color={THEME_DARK} />
+                </View>
+              </LinearGradient>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
     </View>
   );
 }
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
-const CARD_HORIZONTAL_MARGIN = 12;
-const CARD_WIDTH = SCREEN_WIDTH - CARD_HORIZONTAL_MARGIN * 2; // full width look
-
-function EventsCarousel({ data, renderItem }) {
-  return (
-    <FlatList
-      data={data}
-      keyExtractor={(i) => i._id}
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      snapToInterval={CARD_WIDTH + CARD_HORIZONTAL_MARGIN}
-      decelerationRate="fast"
-      contentContainerStyle={{ paddingHorizontal: CARD_HORIZONTAL_MARGIN }}
-      renderItem={({ item }) => (
-        <View style={{ marginRight: CARD_HORIZONTAL_MARGIN }}>
-          {renderItem({ item, width: CARD_WIDTH })}
-        </View>
-      )}
-    />
-  );
-}
-
 const styles = StyleSheet.create({
-  container: { marginTop: 4, marginBottom: 10 },
-  headerRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 6, marginBottom: 6 },
-  sectionTitle: { fontSize: 18, fontWeight: "800", color: "#2d0c57" },
-  viewAll: { color: THEME, fontWeight: "700" },
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: 14,
-    padding: 12,
-    marginHorizontal: 0,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
+  sectionContainer: { marginTop: 8, marginBottom: 15 },
+  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, marginBottom: 12 },
+  titleGroup: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  iconContainer: { backgroundColor: '#fdf4ff', padding: 8, borderRadius: 12 },
+  mainTitle: { fontSize: 18, fontWeight: '900', color: '#1e1b4b' },
+  subTitle: { fontSize: 11, color: '#701a75', fontWeight: '700', marginTop: -2 },
+  viewAllBtn: { backgroundColor: '#f3e8ff', paddingVertical: 6, paddingHorizontal: 12, borderRadius: 20 },
+  viewAllText: { fontSize: 10, fontWeight: '900', color: '#701a75' },
+  
+  scrollPadding: { paddingLeft: 20, paddingRight: 20, paddingBottom: 5 },
+  cardWrapper: { marginRight: CARD_MARGIN, elevation: 6, shadowColor: '#4a044e', shadowOpacity: 0.25, shadowRadius: 10, borderRadius: 24 },
+  cardGradient: { borderRadius: 24, padding: 15, paddingBottom: 15 }, 
+  
+  cardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  statusBadge: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10 },
+  pulseDot: { width: 5, height: 5, borderRadius: 2.5, backgroundColor: '#fff', marginRight: 5 },
+  statusText: { color: '#fff', fontSize: 10, fontWeight: '900', textTransform: 'uppercase' },
+  entryCostBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.1)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 10 },
+  entryCostText: { color: THEME_ACCENT, fontSize: 11, fontWeight: '900', marginLeft: 4 },
+  
+  eventTitle: { color: '#fff', fontSize: 19, fontWeight: '900', letterSpacing: 0.3, marginBottom: 10 },
+  
+  infoGlassBox: { flexDirection: 'row', backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: 15, padding: 10, alignItems: 'center' },
+  infoItem: { flex: 1, alignItems: 'center' },
+  infoLabel: { color: '#e9d5ff', fontSize: 9, fontWeight: '900', marginBottom: 1 },
+  infoValue: { color: THEME_ACCENT, fontSize: 16, fontWeight: '900', letterSpacing: 0.5 },
+  verticalDivider: { width: 1, height: 25, backgroundColor: 'rgba(255,255,255,0.1)' },
+  
+  actionBtn: { 
+    backgroundColor: THEME_ACCENT, 
+    height: 44, 
+    borderRadius: 14, 
+    flexDirection: 'row', 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    gap: 6,
+    marginTop: 12, // Reduced from 20 to 12
     elevation: 3,
   },
-  title: { marginLeft: 8, fontSize: 16, fontWeight: "800", color: "#1f2937" },
-  subtitle: { marginTop: 4, fontSize: 12, color: "#6b7280" },
-  countdownRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 8 },
-  countdownLabel: { color: "#6b7280", fontWeight: "700" },
-  countdownValue: { fontWeight: "900" },
-  liveText: { color: "#065f46" },
-  upcomingText: { color: THEME },
-  completedText: { color: "#9ca3af" },
-  metaRow: { flexDirection: "row", gap: 8, marginTop: 10 },
-  badge: { paddingVertical: 4, paddingHorizontal: 8, backgroundColor: "#f3e8ff", color: "#6b21a8", borderRadius: 10, fontSize: 12, fontWeight: "700" },
+  actionBtnText: { color: THEME_DARK, fontWeight: '900', fontSize: 13, letterSpacing: 0.4 }
 });

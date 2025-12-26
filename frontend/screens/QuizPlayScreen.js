@@ -61,7 +61,7 @@ export default function QuizScreen() {
 
   const questionStartTime = useRef(null);
 
-  // ---- Start Quiz ----
+
   const startQuiz = async (id) => {
     resetRetries();
     setScore(0);

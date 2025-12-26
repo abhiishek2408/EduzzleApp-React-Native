@@ -1,9 +1,11 @@
 import React, { useEffect, useState, useContext } from "react";
 import { View, Text, ActivityIndicator, StyleSheet, Animated, Alert } from "react-native";
+import DailyQuestSkeleton from "../components/DailyQuestSkeleton";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
 import { LinearGradient } from "expo-linear-gradient";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { Ionicons } from "@expo/vector-icons";
 
 const API_BASE = "https://eduzzleapp-react-native.onrender.com/api";
 const DAILY_TARGET = 5; // Target quizzes per day
@@ -44,7 +46,9 @@ export default function DailyQuest({ navigation }) {
     fetchData();
   }, [user?._id]);
 
-  if (loading) return <ActivityIndicator size="small" color="#a21caf" style={{ marginVertical: 12 }} />;
+  if (loading) {
+    return <DailyQuestSkeleton />;
+  }
 
   const progressPercentage = Math.min((quest.quizzesAttemptedToday / DAILY_TARGET) * 100, 100);
   const progressWidth = progressAnim.interpolate({
@@ -52,120 +56,113 @@ export default function DailyQuest({ navigation }) {
     outputRange: ['0%', '100%'],
   });
 
-  return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <MaterialCommunityIcons name="trophy-award" size={28} color="#a21caf" />
-        <Text style={styles.title}>Daily Quest</Text>
+    return (
+      <View className="px-4 mb-3">
+
+        <View className="flex-row items-center gap-2 mt-2 mb-1 px-2">
+          <Ionicons name="calendar-outline" size={28} color="#a21caf" />
+          <Text className="text-[18px] font-extrabold font-[Inter] bg-gradient-to-r from-violet-700 via-fuchsia-500 to-pink-500 text-transparent bg-clip-text drop-shadow-md tracking-wide">Daily Quest</Text>
+        </View>
+         
+        {/* Decorative Dots and Icon */}
+        <View className="flex-row justify-center items-center mb-2">
+          {[...Array(7)].map((_, i) => (
+            <View
+              key={i}
+              className={
+                `w-2 h-2 rounded-full mx-1 ` +
+                (i % 3 === 0
+                  ? 'bg-fuchsia-400'
+                  : i % 3 === 1
+                  ? 'bg-violet-400'
+                  : 'bg-pink-300')
+              }
+            />
+          ))}
+          <MaterialCommunityIcons name="star-four-points" size={18} color="#a21caf" style={{ marginLeft: 8, marginRight: 2 }} />
+        </View>
+        {/* Daily Quest Card */}
+<View className="rounded-3xl p-[2px] bg-gray-100">
+
+  <LinearGradient
+    colors={["#701a75", "#a21caf", "#c026d3"]}
+    start={{ x: 0, y: 0 }}
+    end={{ x: 1, y: 1 }}
+    style={{
+      borderRadius: 24,
+      padding: 20,
+      overflow: "hidden", // 🔴 VERY IMPORTANT
+    }}
+  >
+
+    {/* 🔮 PATTERN OVERLAY */}
+    <View
+      pointerEvents="none"
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        opacity: 0.07,
+        backgroundColor: "transparent",
+      }}
+    >
+      {/* Dots using repeated Views */}
+      {Array.from({ length: 40 }).map((_, i) => (
+        <View
+          key={i}
+          style={{
+            position: "absolute",
+            width: 6,
+            height: 6,
+            borderRadius: 2,
+            backgroundColor: "#ffffff",
+            top: Math.random() * 300,
+            left: Math.random() * 300,
+          }}
+        />
+      ))}
+    </View>
+
+    <View>
+
+      <View className="flex-row items-center mb-4 space-x-2">
+        <MaterialCommunityIcons name="fire" size={26} color="#ffd166" />
+        <Text className="text-white font-extrabold text-lg font-[Inter]">
+          {streak.currentStreak || 0} Day Streak
+        </Text>
       </View>
 
-      <LinearGradient
-        colors={['#fdf4ff', '#fae8ff']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.card}
-      >
-        <View style={styles.streakContainer}>
-          <MaterialCommunityIcons name="fire" size={24} color="#ff6b35" />
-          <Text style={styles.streakText}>{streak.currentStreak || 0} Day Streak</Text>
-        </View>
+      <Text className="text-purple-100 font-semibold mb-2 font-[Inter]">
+        Complete <Text className="text-white font-bold">{DAILY_TARGET}</Text> quizzes today!
+      </Text>
 
-        <Text style={styles.questText}>Complete {DAILY_TARGET} quizzes today!</Text>
-        <Text style={styles.questValue}>{quest.quizzesAttemptedToday} / {DAILY_TARGET}</Text>
+      <Text className="text-white text-4xl font-extrabold mb-4 font-[Inter]">
+        {quest.quizzesAttemptedToday}/{DAILY_TARGET}
+      </Text>
 
-        {/* Animated Progress Bar */}
-        <View style={styles.progressBarContainer}>
-          <Animated.View style={[styles.progressBarFill, { width: progressWidth }]}>
-            <LinearGradient
-              colors={['#a21caf', '#c026d3', '#e879f9']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.progressGradient}
-            />
-          </Animated.View>
-        </View>
-        
-        <Text style={styles.progressText}>{progressPercentage.toFixed(0)}% Complete</Text>
+      {/* Progress Track */}
+      <View className="h-3 bg-white/25 rounded-full overflow-hidden my-3">
+        <Animated.View style={{ width: progressWidth, height: "100%" }}>
+          <LinearGradient
+            colors={["#fde68a", "#facc15", "#f59e0b"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={{ flex: 1 }}
+          />
+        </Animated.View>
+      </View>
 
-        {quest.completedToday && (
-          <View style={styles.completedBadge}>
-            <MaterialCommunityIcons name="check-circle" size={20} color="#10b981" />
-            <Text style={styles.completedText}>Quest Completed! 🎉</Text>
-          </View>
-        )}
-      </LinearGradient>
+      <Text className="text-center text-purple-100 font-bold text-sm font-[Inter]">
+        {progressPercentage.toFixed(0)}% Complete
+      </Text>
+
     </View>
-  );
-}
 
-const styles = StyleSheet.create({
-  container: { paddingHorizontal: 16, marginBottom: 12 },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-    gap: 8,
-  },
-  title: { fontSize: 22, fontWeight: "800", color: "#2d0c57" },
-  card: {
-    borderRadius: 16,
-    padding: 18,
-    marginBottom: 12,
-    shadowColor: "#a21caf",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  streakContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-    gap: 6,
-  },
-  streakText: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#ff6b35",
-  },
-  questText: { fontSize: 14, color: "#666", marginBottom: 6 },
-  questValue: { fontSize: 32, color: "#a21caf", fontWeight: "900", marginBottom: 12 },
-  progressBarContainer: {
-    height: 12,
-    backgroundColor: "#e5e7eb",
-    borderRadius: 20,
-    overflow: "hidden",
-    marginVertical: 10,
-  },
-  progressBarFill: {
-    height: "100%",
-    borderRadius: 20,
-  },
-  progressGradient: {
-    flex: 1,
-    borderRadius: 20,
-  },
-  progressText: {
-    fontSize: 13,
-    color: "#6b7280",
-    fontWeight: "600",
-    textAlign: "center",
-    marginTop: 4,
-  },
-  completedBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 12,
-    backgroundColor: "#d1fae5",
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-    gap: 6,
-  },
-  completedText: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: "#10b981",
-  },
-});
+  </LinearGradient>
+</View>
+</View>
+
+    );
+}

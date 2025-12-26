@@ -1,8 +1,10 @@
 import { useContext, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useRoute, useNavigation } from "@react-navigation/native";
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, ActivityIndicator } from "react-native";
+import { StyleSheet, View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
+import axios from "axios";
 
+const API_URL = 'https://eduzzleapp-react-native.onrender.com';
 
 export default function VerifyOtp() {
   const { verifyOtp } = useContext(AuthContext);
@@ -10,6 +12,7 @@ export default function VerifyOtp() {
   const route = useRoute();
   const { userId, email } = route.params || {};
   const [otp, setOtp] = useState("");
+  const [resending, setResending] = useState(false);
 
   const submit = async () => {
     try {
@@ -17,10 +20,27 @@ export default function VerifyOtp() {
       if (data?.token) {
         navigation.navigate("UserDashboard");
       } else {
-        alert(data?.message || "Verification failed");
+        Alert.alert("Error", data?.message || "Verification failed");
       }
     } catch (err) {
-      alert(err?.response?.data?.message || "Error verifying OTP");
+      Alert.alert("Error", err?.response?.data?.message || "Error verifying OTP");
+    }
+  };
+
+  const resend = async () => {
+    if (!email) {
+      Alert.alert("Error", "Email not found. Please register again.");
+      return;
+    }
+
+    try {
+      setResending(true);
+      const response = await axios.post(`${API_URL}/api/auth/resend-otp`, { email });
+      Alert.alert("Success", response.data.message || "OTP has been resent to your email");
+    } catch (err) {
+      Alert.alert("Error", err?.response?.data?.message || "Failed to resend OTP");
+    } finally {
+      setResending(false);
     }
   };
 
@@ -43,8 +63,12 @@ export default function VerifyOtp() {
         <Text style={styles.buttonText}>Verify</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.linkButton} onPress={resend}>
-        <Text style={styles.linkText}>Resend OTP</Text>
+      <TouchableOpacity style={styles.linkButton} onPress={resend} disabled={resending}>
+        {resending ? (
+          <ActivityIndicator size="small" color="#007BFF" />
+        ) : (
+          <Text style={styles.linkText}>Resend OTP</Text>
+        )}
       </TouchableOpacity>
     </View>
   );
@@ -56,40 +80,58 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     justifyContent: "center",
-    backgroundColor: "#fff",
+    backgroundColor: "#fef9ff",
   },
   heading: {
-    fontSize: 24,
-    marginBottom: 20,
-    fontWeight: "bold",
+    fontSize: 28,
+    marginBottom: 30,
+    fontWeight: "900",
     textAlign: "center",
+    color: "#2d0c57",
   },
   input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 15,
+    borderWidth: 2,
+    borderColor: "#e9d5ff",
+    backgroundColor: "#fff",
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 20,
     textAlign: "center",
-    fontSize: 18,
-    letterSpacing: 5,
+    fontSize: 22,
+    letterSpacing: 8,
+    fontWeight: "700",
+    color: "#2d0c57",
+    shadowColor: "#a21caf",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   button: {
-    backgroundColor: "#007BFF",
-    padding: 15,
-    borderRadius: 8,
+    backgroundColor: "#a21caf",
+    padding: 16,
+    borderRadius: 12,
     alignItems: "center",
+    shadowColor: "#a21caf",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 5,
   },
   buttonText: {
     color: "#fff",
-    fontWeight: "bold",
+    fontWeight: "800",
+    fontSize: 16,
+    letterSpacing: 0.5,
   },
   linkButton: {
-    marginTop: 15,
+    marginTop: 20,
     alignItems: "center",
+    paddingVertical: 10,
   },
   linkText: {
-    color: "#007BFF",
-    fontSize: 14,
+    color: "#a21caf",
+    fontSize: 15,
+    fontWeight: "700",
   },
 });

@@ -1,155 +1,32 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert, StatusBar, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, StatusBar, ScrollView } from 'react-native';
 import Svg, { Rect, Defs, LinearGradient, Stop, Circle } from 'react-native-svg';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
-// Added an 'icon' for better visual distinction
+// Import puzzles from Puzzles folder
+
+
 const gamesList = [
-  { id: 1, name: 'Bubble Sort Puzzle', icon: '🔢' },
-  { id: 2, name: 'Linked List Puzzle', icon: '🔗' },
-  { id: 3, name: 'Stack Quiz', icon: '📦' },
+  { id: 1, name: 'Bubble Sort Puzzle', icon: '🔢', screen: 'BubbleSortPuzzleScreen' },
+  { id: 2, name: 'Linked List Puzzle', icon: '🔗', screen: 'LinkedListPuzzleScreen' },
+  { id: 3, name: 'Stack Quiz', icon: '📦', screen: 'StackQuizScreen' },
+  { id: 4, name: 'Binary Tree Puzzle', icon: '🌲', screen: 'BinaryTreePuzzleScreen' },
 ];
 
-// ------------------ Inner Components (No change needed) ------------------ //
-
-const BubbleSortPuzzle = () => {
-  const generateRandomArray = () => {
-    const arr = [];
-    while (arr.length < 4) {
-      const num = Math.floor(Math.random() * 9) + 1;
-      if (!arr.includes(num)) arr.push(num);
-    }
-    return arr;
-  };
-
-  const [array, setArray] = useState(generateRandomArray());
-  const [sorted, setSorted] = useState(false);
-
-  const isSorted = (arr) => arr.every((v, i, a) => i === 0 || a[i - 1] <= v);
-
-  const swap = (index) => {
-    if (index < array.length - 1) {
-      let newArray = [...array];
-      [newArray[index], newArray[index + 1]] = [newArray[index + 1], newArray[index]];
-      setArray(newArray);
-      if (isSorted(newArray)) {
-        setSorted(true);
-        Alert.alert("🎉 Puzzle Solved!", "You've successfully sorted the array!");
-      }
-    }
-  };
-
-  const resetGame = () => {
-    setArray(generateRandomArray());
-    setSorted(false);
-  };
-
-  return (
-    <>
-      <Text style={styles.instruction}>
-        Tap the <Text style={styles.highlight}>🔽 arrow</Text> to swap numbers and sort them!
-      </Text>
-      <View style={styles.blockContainer}>
-        {array.map((num, index) => (
-          <View key={index} style={[styles.block, sorted && styles.blockSorted]}>
-            <Text style={styles.blockText}>{num}</Text>
-            {index < array.length - 1 && (
-              <TouchableOpacity style={styles.swapButton} onPress={() => swap(index)} disabled={sorted}>
-                <Text style={styles.swapText}>🔽</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        ))}
-      </View>
-      {sorted && (
-        <View style={styles.sortedMessageContainer}>
-          <Text style={styles.success}>✅ Awesome! You did it!</Text>
-          <TouchableOpacity style={styles.playAgainButton} onPress={resetGame}>
-            <Text style={styles.playAgainText}>🔁 Play Again</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-    </>
-  );
-};
-
-const LinkedListPuzzle = () => {
-  const initialNodes = ['A', 'B', 'C', 'D'];
-  const [nodes, setNodes] = useState(initialNodes);
-
-  const shuffleNodes = () => {
-    let shuffled = [...nodes].sort(() => Math.random() - 0.5);
-    setNodes(shuffled);
-  };
-
-  return (
-    <>
-      <Text style={styles.instruction}>
-        Arrange nodes in correct order: <Text style={styles.highlight}>A → B → C → D</Text>
-      </Text>
-      <View style={styles.blockContainer}>
-        {nodes.map((node, index) => (
-          <View key={index} style={styles.block}>
-            <Text style={styles.blockText}>{node}</Text>
-          </View>
-        ))}
-      </View>
-      <TouchableOpacity style={styles.playAgainButton} onPress={shuffleNodes}>
-        <Text style={styles.playAgainText}>🔀 Shuffle Nodes</Text>
-      </TouchableOpacity>
-    </>
-  );
-};
-
-const StackQuiz = () => {
-  const questions = [
-    { question: 'Push 5 onto stack', action: 'push', value: 5 },
-    { question: 'Push 3 onto stack', action: 'push', value: 3 },
-    { question: 'Pop top value', action: 'pop' },
-  ];
-  const [stack, setStack] = useState([]);
-  const [step, setStep] = useState(0);
-
-  const handleNext = () => {
-    if (step >= questions.length) return;
-    const q = questions[step];
-    let newStack = [...stack];
-    if (q.action === 'push') newStack.push(q.value);
-    else if (q.action === 'pop') newStack.pop();
-    setStack(newStack);
-    setStep(step + 1);
-  };
-
-  return (
-    <>
-      <Text style={styles.instruction}>Follow the stack operations step by step:</Text>
-      <View style={styles.blockContainer}>
-        {stack.map((item, index) => (
-          <View key={index} style={styles.block}>
-            <Text style={styles.blockText}>{item}</Text>
-          </View>
-        ))}
-      </View>
-      {step < questions.length ? (
-        <TouchableOpacity style={styles.playAgainButton} onPress={handleNext}>
-          <Text style={styles.playAgainText}>{questions[step].question}</Text>
-        </TouchableOpacity>
-      ) : (
-        <Text style={{ marginTop: 20, fontSize: 20, color: '#6A1B9A', textAlign: 'center' }}>🎉 Stack operations complete!</Text>
-      )}
-    </>
-  );
-};
+// ...existing code...
 
 // ------------------ Main Screen ------------------ //
 
-export default function PlayScreen() {
+export default function PlayScreen({ navigation }) {
   const [selectedGame, setSelectedGame] = useState(null);
 
-  const renderGame = () => {
-    if (!selectedGame) return null;
-    if (selectedGame.id === 1) return <BubbleSortPuzzle />;
-    if (selectedGame.id === 2) return <LinkedListPuzzle />;
-    if (selectedGame.id === 3) return <StackQuiz />;
+
+  const handleGamePress = (game) => {
+    if (game.screen) {
+      navigation.navigate(game.screen);
+    } else {
+      setSelectedGame(game);
+    }
   };
 
   return (
@@ -175,11 +52,19 @@ export default function PlayScreen() {
         </Svg>
       </View>
 
-      <ScrollView contentContainerStyle={{ padding: 20, flexGrow: 1 }}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        {/* Header (simple, no card) */}
+        {!selectedGame && (
+          <View style={styles.simpleHeader}>
+            <MaterialCommunityIcons name="gamepad-variant" size={22} color="#a21caf" style={{ marginRight: 8 }} />
+            <Text style={[styles.simpleHeaderTitle, { marginLeft: 6 }]}>Play Puzzles</Text>
+          </View>
+        )}
+
         {/* Game Cards - Decreased Height */}
         {!selectedGame &&
           gamesList.map((game) => (
-            <TouchableOpacity key={game.id} style={styles.card} onPress={() => setSelectedGame(game)}>
+            <TouchableOpacity key={game.id} style={styles.card} onPress={() => handleGamePress(game)}>
               <Text style={styles.cardIcon}>{game.icon}</Text> 
               <View style={styles.cardContent}>
                 <Text style={styles.cardText}>{game.name}</Text>
@@ -211,6 +96,76 @@ export default function PlayScreen() {
 // ------------------ Styles ------------------ //
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#ffffff' },
+  scrollContent: {
+    padding: 20,
+    paddingTop: 50,
+    paddingBottom: 100,
+    flexGrow: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+    marginBottom: 24,
+    borderRadius: 16,
+    gap: 12,
+    shadowColor: '#a21caf',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: '900',
+    color: '#4A148C',
+  },
+  simpleHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+    paddingHorizontal: 2,
+  },
+  simpleHeaderTitle: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#4A148C',
+  },
+  headerSubtitle: {
+    fontSize: 13,
+    color: '#6A1B9A',
+    marginTop: 2,
+    fontWeight: '600',
+  },
+  headerCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 18,
+    marginBottom: 24,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#f0e5f5',
+    backgroundColor: 'rgba(255,255,255,0.92)',
+    shadowColor: '#6A1B9A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  headerIconWrap: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: '#F3E5F5',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+    borderWidth: 1,
+    borderColor: '#f1d7ff',
+  },
   title: {
     fontSize: 28,
     fontWeight: '700', 

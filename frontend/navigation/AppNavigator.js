@@ -8,9 +8,11 @@ import LoginScreen from "../screens/LoginScreen";
 import ForgotPasswordScreen from "../screens/ForgotPasswordScreen";
 import ResetPasswordScreen from "../screens/ResetPasswordScreen";
 import VerifyOTPScreen from "../screens/VerifyOTPScreen";
+import StackQuizScreen from "../screens/Puzzles/StackQuiz";
+import LinkedListPuzzleScreen from "../screens/Puzzles/LinkedListPuzzle";
+import BubbleSortPuzzleScreen from "../screens/Puzzles/BubbleSortPuzzle";
+import BinaryTreePuzzleScreen from "../screens/Puzzles/BinaryTreePuzzle";
 import { AuthContext } from "../context/AuthContext";
-
-
 
 const Stack = createStackNavigator();
 
@@ -23,7 +25,13 @@ export default function AppNavigator() {
         role === "admin" ? (
           <Stack.Screen name="AdminDashboard" component={AdminDashboard} />
         ) : (
-          <Stack.Screen name="UserDashboard" component={UserDashboard} />
+          <>
+            <Stack.Screen name="UserDashboard" component={UserDashboard} />
+            <Stack.Screen name="StackQuizScreen" component={StackQuizScreen} />
+            <Stack.Screen name="LinkedListPuzzleScreen" component={LinkedListPuzzleScreen} />
+            <Stack.Screen name="BubbleSortPuzzleScreen" component={BubbleSortPuzzleScreen} />
+            <Stack.Screen name="BinaryTreePuzzleScreen" component={BinaryTreePuzzleScreen} />
+          </>
         )
       ) : (
         <>

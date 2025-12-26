@@ -177,7 +177,7 @@ export const AuthProvider = ({ children }) => {
                 `https://eduzzleapp-react-native.onrender.com/api/streaks/daily-login/${parsedUser._id}`
               ).then(response => {
                 if (response?.data?.success) {
-                  console.log("✅ Daily login streak updated on app load");
+                 // console.log("✅ Daily login streak updated on app load");
                   // Refresh user to get updated coins
                   axios.get("https://eduzzleapp-react-native.onrender.com/api/auth/me", {
                     headers: { Authorization: `Bearer ${savedToken}` }

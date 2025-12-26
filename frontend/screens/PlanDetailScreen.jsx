@@ -6,8 +6,8 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
-  ActivityIndicator,
 } from "react-native";
+import CardSkeleton from "../components/CardSkeleton";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
 
@@ -51,7 +51,7 @@ const PlanDetailScreen = ({ route, navigation }) => {
   if (loading) {
     return (
       <View style={styles.loaderContainer}>
-        <ActivityIndicator size="large" color="#a21caf" />
+        <CardSkeleton />
       </View>
     );
   }
@@ -117,5 +117,5 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: "center",
   },
-  buttonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
+  buttonText: { color: "#fff", fontWeight: "bold", fontSize: 16, },
 });

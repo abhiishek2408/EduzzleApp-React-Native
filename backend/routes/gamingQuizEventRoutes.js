@@ -1,3 +1,17 @@
+// Check if user has completed a specific event
+router.get("/check-completed/:eventId/:userId", async (req, res) => {
+  try {
+    const { eventId, userId } = req.params;
+    const attempt = await GamingQuizEventAttempt.findOne({ eventId, userId, finishedAt: { $ne: null } });
+    if (attempt) {
+      return res.json({ completed: true, attemptId: attempt._id });
+    } else {
+      return res.json({ completed: false });
+    }
+  } catch (e) {
+    res.status(500).json({ message: "Failed to check completion", error: e.message });
+  }
+});
 // routes/gamingQuizEventRoutes.js
 import express from "express";
 import mongoose from "mongoose";

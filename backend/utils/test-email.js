@@ -3,7 +3,7 @@ import { sendEmail } from "./email.js";
 (async () => {
   try {
     await sendEmail({
-      to: "abhishekydv2408@gmail.com",
+      to: "yabhi7392@gmail.com",
       subject: "Test Email - Eduzzle App",
       html: `
         <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9;">
