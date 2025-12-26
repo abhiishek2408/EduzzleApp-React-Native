@@ -31,7 +31,7 @@ export default function GamingEventsSection({ navigation }) {
       ]);
       const combined = [...(liveRes.data || []), ...(upcomingRes.data || [])].slice(0, 6);
       setEvents(combined);
-      // Fetch completion status for each event
+      
       if (user && user._id) {
         const checks = await Promise.all(
           combined.map(ev =>
@@ -86,14 +86,14 @@ export default function GamingEventsSection({ navigation }) {
         contentContainerStyle={styles.scrollPadding}
         snapToInterval={CARD_WIDTH + CARD_MARGIN}
         decelerationRate="fast"
-        disableIntervalMomentum={true}
       >
         {events.map((item) => {
           const nowDt = new Date(now);
           const start = new Date(item.startTime);
           const end = new Date(item.endTime);
-          const status = nowDt < start ? "Upcoming" : nowDt > end ? "Completed" : "Live";
+          const status = nowDt < start ? "Upcoming" : nowDt > end ? "Closed" : "Live";
           const isCompleted = completedMap[item._id];
+          
           let remainingMs = status === "Upcoming" ? start - nowDt : status === "Live" ? end - nowDt : 0;
           const hh = Math.max(0, Math.floor(remainingMs / 1000 / 3600));
           const mm = Math.max(0, Math.floor((remainingMs / 1000 % 3600) / 60));
@@ -104,19 +104,24 @@ export default function GamingEventsSection({ navigation }) {
             <TouchableOpacity
               key={item._id}
               activeOpacity={0.9}
-              onPress={() => !isCompleted && navigation.navigate("GamingEventDetail", { eventId: item._id })}
-              style={[styles.cardWrapper, { width: CARD_WIDTH, opacity: isCompleted ? 0.7 : 1 }]}
+              onPress={() => navigation.navigate("GamingEventDetail", { eventId: item._id })}
+              style={[styles.cardWrapper, { width: CARD_WIDTH }]}
             >
               <LinearGradient
-                colors={isCompleted ? ["#64748b", "#334155"] : status === "Live" ? ["#4a044e", "#701a75"] : ["#701a75", "#2e1065"]}
+                colors={status === "Live" ? ["#4a044e", "#701a75"] : ["#701a75", "#2e1065"]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={styles.cardGradient}
               >
+                {/* Badge Top Section */}
                 <View style={styles.cardTop}>
-                  <View style={[styles.statusBadge, { backgroundColor: isCompleted ? "#22c55e" : status === "Live" ? "#ef4444" : "rgba(255,255,255,0.15)" }]}> 
-                    {isCompleted ? <Ionicons name="checkmark-done" size={12} color="#fff" style={{marginRight: 5}} /> : status === "Live" && <View style={styles.pulseDot} />}
-                    <Text style={styles.statusText}>{isCompleted ? "Completed" : status}</Text>
+                  <View style={[styles.statusBadge, { backgroundColor: isCompleted ? "#10b981" : status === "Live" ? "#ef4444" : "rgba(255,255,255,0.15)" }]}> 
+                    {isCompleted ? (
+                      <Ionicons name="medal" size={12} color="#fff" style={{marginRight: 4}} />
+                    ) : (
+                      status === "Live" && <View style={styles.pulseDot} />
+                    )}
+                    <Text style={styles.statusText}>{isCompleted ? "FINISHED" : status}</Text>
                   </View>
                   <View style={styles.entryCostBadge}>
                     <MaterialCommunityIcons name="database" size={12} color={THEME_ACCENT} />
@@ -126,33 +131,44 @@ export default function GamingEventsSection({ navigation }) {
 
                 <Text style={styles.eventTitle} numberOfLines={1}>{item.title}</Text>
 
-                {/* Info Box or Completed UI */}
-                {isCompleted ? (
-                  <View style={[styles.infoGlassBox, { justifyContent: 'center', alignItems: 'center' }]}> 
-                    <Ionicons name="trophy" size={28} color="#facc15" style={{marginBottom: 4}} />
-                    <Text style={{color:'#fff', fontWeight:'bold', fontSize:15, marginTop:2}}>You have completed this event!</Text>
-                  </View>
-                ) : (
-                  <View style={styles.infoGlassBox}>
-                    <View style={styles.infoItem}>
-                      <Text style={styles.infoLabel}>{status === "Live" ? "ENDS IN" : "STARTS IN"}</Text>
-                      <Text style={styles.infoValue}>{countdown}</Text>
+                {/* Info Box / Completion Content */}
+                <View style={[styles.infoGlassBox, isCompleted && styles.completedGlassBox]}>
+                  {isCompleted ? (
+                    <View style={styles.completedContent}>
+                      <View style={styles.trophyIconContainer}>
+                         <Ionicons name="trophy" size={22} color={THEME_ACCENT} />
+                      </View>
+                      <View>
+                        <Text style={styles.completedText}>You've participated!</Text>
+                        <Text style={styles.completedSubText}>Check results in detail view</Text>
+                      </View>
                     </View>
-                    <View style={styles.verticalDivider} />
-                    <View style={styles.infoItem}>
-                      <Text style={styles.infoLabel}>QUESTS</Text>
-                      <Text style={styles.infoValue}>{item.totalQuestions}</Text>
-                    </View>
-                  </View>
-                )}
+                  ) : (
+                    <>
+                      <View style={styles.infoItem}>
+                        <Text style={styles.infoLabel}>{status === "Live" ? "ENDS IN" : "STARTS IN"}</Text>
+                        <Text style={styles.infoValue}>{status === "Closed" ? "00:00:00" : countdown}</Text>
+                      </View>
+                      <View style={styles.verticalDivider} />
+                      <View style={styles.infoItem}>
+                        <Text style={styles.infoLabel}>QUESTS</Text>
+                        <Text style={styles.infoValue}>{item.totalQuestions}</Text>
+                      </View>
+                    </>
+                  )}
+                </View>
 
-                {/* Action Button only if not completed */}
-                {!isCompleted && (
-                  <View style={styles.actionBtn}>
-                    <Text style={styles.actionBtnText}>ENTER TOURNAMENT</Text>
-                    <Ionicons name="chevron-forward-circle" size={16} color={THEME_DARK} />
-                  </View>
-                )}
+                {/* 🔹 Action Button (Always attractive, label changes) */}
+                <View style={[styles.actionBtn, isCompleted && styles.viewResultsBtn]}>
+                  <Text style={[styles.actionBtnText, isCompleted && {color: '#fff'}]}>
+                    {isCompleted ? "VIEW RESULTS" : "ENTER TOURNAMENT"}
+                  </Text>
+                  <Ionicons 
+                    name={isCompleted ? "stats-chart" : "chevron-forward-circle"} 
+                    size={16} 
+                    color={isCompleted ? "#fff" : THEME_DARK} 
+                  />
+                </View>
               </LinearGradient>
             </TouchableOpacity>
           );
@@ -186,6 +202,12 @@ const styles = StyleSheet.create({
   eventTitle: { color: '#fff', fontSize: 19, fontWeight: '900', letterSpacing: 0.3, marginBottom: 10 },
   
   infoGlassBox: { flexDirection: 'row', backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: 15, padding: 10, alignItems: 'center' },
+  completedGlassBox: { backgroundColor: 'rgba(255,255,255,0.1)', borderWebWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
+  completedContent: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
+  trophyIconContainer: { backgroundColor: 'rgba(0,0,0,0.2)', padding: 8, borderRadius: 12 },
+  completedText: { color: '#fff', fontWeight: '900', fontSize: 14 },
+  completedSubText: { color: '#e9d5ff', fontSize: 10, fontWeight: '600' },
+
   infoItem: { flex: 1, alignItems: 'center' },
   infoLabel: { color: '#e9d5ff', fontSize: 9, fontWeight: '900', marginBottom: 1 },
   infoValue: { color: THEME_ACCENT, fontSize: 16, fontWeight: '900', letterSpacing: 0.5 },
@@ -199,8 +221,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center', 
     alignItems: 'center', 
     gap: 6,
-    marginTop: 12, // Reduced from 20 to 12
+    marginTop: 12,
     elevation: 3,
   },
+  viewResultsBtn: { backgroundColor: 'rgba(255,255,255,0.2)', elevation: 0 },
   actionBtnText: { color: THEME_DARK, fontWeight: '900', fontSize: 13, letterSpacing: 0.4 }
 });

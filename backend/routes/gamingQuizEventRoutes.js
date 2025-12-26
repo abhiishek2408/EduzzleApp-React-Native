@@ -230,20 +230,38 @@ router.get("/:id/analytics", async (req, res) => {
   try {
     const eventId = new mongoose.Types.ObjectId(req.params.id);
     const [summary] = await GamingQuizEventAttempt.aggregate([
-      { $match: { eventId } },
-      {
-        $group: {
+      { $match: { eventId, disqualified: false, finishedAt: { $ne: null } } },
+      { $addFields: {
+          correctCount: { $ifNull: ["$correctCount", 0] },
+          wrongCount: { $ifNull: ["$wrongCount", 0] },
+          score: { $ifNull: ["$score", 0] },
+          durationSec: { $ifNull: ["$durationSec", 0] }
+        }
+      },
+      { $addFields: {
+          totalAnswered: { $add: ["$correctCount", "$wrongCount"] }
+        }
+      },
+      { $group: {
           _id: "$eventId",
           participants: { $sum: 1 },
           avgScore: { $avg: "$score" },
           avgDuration: { $avg: "$durationSec" },
-          avgAccuracy: { $avg: { $divide: ["$correctCount", { $add: ["$correctCount", "$wrongCount"] }] } },
-        },
-      },
+          avgAccuracy: {
+            $avg: {
+              $cond: [
+                { $gt: ["$totalAnswered", 0] },
+                { $divide: ["$correctCount", "$totalAnswered"] },
+                null
+              ]
+            }
+          }
+        }
+      }
     ]);
     res.json(summary || { participants: 0, avgScore: 0, avgDuration: 0, avgAccuracy: 0 });
   } catch (e) {
-    res.status(500).json({ message: "Failed to fetch analytics" });
+    res.status(500).json({ message: "Failed to fetch analytics", error: e.message });
   }
 });
 
