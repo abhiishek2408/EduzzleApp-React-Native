@@ -1,3 +1,12 @@
+// routes/gamingQuizEventRoutes.js
+import express from "express";
+import mongoose from "mongoose";
+import GamingQuizEvent from "../models/GamingQuizEvent.js";
+import GamingQuizEventAttempt from "../models/GamingQuizEventAttempt.js";
+import User from "../models/User.js";
+
+const router = express.Router();
+
 // Check if user has completed a specific event
 router.get("/check-completed/:eventId/:userId", async (req, res) => {
   try {
@@ -12,14 +21,6 @@ router.get("/check-completed/:eventId/:userId", async (req, res) => {
     res.status(500).json({ message: "Failed to check completion", error: e.message });
   }
 });
-// routes/gamingQuizEventRoutes.js
-import express from "express";
-import mongoose from "mongoose";
-import GamingQuizEvent from "../models/GamingQuizEvent.js";
-import GamingQuizEventAttempt from "../models/GamingQuizEventAttempt.js";
-import User from "../models/User.js";
-
-const router = express.Router();
 
 // Utility: is event active
 function isWithinWindow(event) {

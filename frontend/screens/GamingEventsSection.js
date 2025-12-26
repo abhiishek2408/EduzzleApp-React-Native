@@ -20,6 +20,7 @@ export default function GamingEventsSection({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [events, setEvents] = useState([]);
   const [now, setNow] = useState(Date.now());
+  const [completedMap, setCompletedMap] = useState({});
 
   const fetchEvents = async () => {
     setLoading(true);
@@ -28,8 +29,21 @@ export default function GamingEventsSection({ navigation }) {
         axios.get(`${API_BASE}/gaming-events?scope=live`),
         axios.get(`${API_BASE}/gaming-events?scope=upcoming`),
       ]);
-      const combined = [...(liveRes.data || []), ...(upcomingRes.data || [])];
-      setEvents(combined.slice(0, 6));
+      const combined = [...(liveRes.data || []), ...(upcomingRes.data || [])].slice(0, 6);
+      setEvents(combined);
+      // Fetch completion status for each event
+      if (user && user._id) {
+        const checks = await Promise.all(
+          combined.map(ev =>
+            axios.get(`${API_BASE}/gaming-events/check-completed/${ev._id}/${user._id}`)
+              .then(res => ({ id: ev._id, completed: res.data.completed }))
+              .catch(() => ({ id: ev._id, completed: false }))
+          )
+        );
+        const map = {};
+        checks.forEach(c => { map[c.id] = c.completed; });
+        setCompletedMap(map);
+      }
     } catch (e) {
       console.error("GamingEvents fetch error", e?.message);
     } finally {
@@ -79,7 +93,7 @@ export default function GamingEventsSection({ navigation }) {
           const start = new Date(item.startTime);
           const end = new Date(item.endTime);
           const status = nowDt < start ? "Upcoming" : nowDt > end ? "Completed" : "Live";
-          
+          const isCompleted = completedMap[item._id];
           let remainingMs = status === "Upcoming" ? start - nowDt : status === "Live" ? end - nowDt : 0;
           const hh = Math.max(0, Math.floor(remainingMs / 1000 / 3600));
           const mm = Math.max(0, Math.floor((remainingMs / 1000 % 3600) / 60));
@@ -90,20 +104,19 @@ export default function GamingEventsSection({ navigation }) {
             <TouchableOpacity
               key={item._id}
               activeOpacity={0.9}
-              onPress={() => navigation.navigate("GamingEventDetail", { eventId: item._id })}
-              style={[styles.cardWrapper, { width: CARD_WIDTH }]}
+              onPress={() => !isCompleted && navigation.navigate("GamingEventDetail", { eventId: item._id })}
+              style={[styles.cardWrapper, { width: CARD_WIDTH, opacity: isCompleted ? 0.7 : 1 }]}
             >
               <LinearGradient
-                colors={status === "Live" ? ["#4a044e", "#701a75"] : ["#701a75", "#2e1065"]}
+                colors={isCompleted ? ["#64748b", "#334155"] : status === "Live" ? ["#4a044e", "#701a75"] : ["#701a75", "#2e1065"]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={styles.cardGradient}
               >
-                {/* 🔹 Top Row - Less Margin */}
                 <View style={styles.cardTop}>
-                  <View style={[styles.statusBadge, { backgroundColor: status === "Live" ? "#ef4444" : "rgba(255,255,255,0.15)" }]}>
-                    {status === "Live" && <View style={styles.pulseDot} />}
-                    <Text style={styles.statusText}>{status}</Text>
+                  <View style={[styles.statusBadge, { backgroundColor: isCompleted ? "#22c55e" : status === "Live" ? "#ef4444" : "rgba(255,255,255,0.15)" }]}> 
+                    {isCompleted ? <Ionicons name="checkmark-done" size={12} color="#fff" style={{marginRight: 5}} /> : status === "Live" && <View style={styles.pulseDot} />}
+                    <Text style={styles.statusText}>{isCompleted ? "Completed" : status}</Text>
                   </View>
                   <View style={styles.entryCostBadge}>
                     <MaterialCommunityIcons name="database" size={12} color={THEME_ACCENT} />
@@ -111,27 +124,35 @@ export default function GamingEventsSection({ navigation }) {
                   </View>
                 </View>
 
-                {/* 🔹 Event Title - Compact Bottom Margin */}
                 <Text style={styles.eventTitle} numberOfLines={1}>{item.title}</Text>
-                
-                {/* 🔹 Info Box - Less Padding */}
-                <View style={styles.infoGlassBox}>
-                  <View style={styles.infoItem}>
-                    <Text style={styles.infoLabel}>{status === "Live" ? "ENDS IN" : "STARTS IN"}</Text>
-                    <Text style={styles.infoValue}>{countdown}</Text>
-                  </View>
-                  <View style={styles.verticalDivider} />
-                  <View style={styles.infoItem}>
-                    <Text style={styles.infoLabel}>QUESTS</Text>
-                    <Text style={styles.infoValue}>{item.totalQuestions}</Text>
-                  </View>
-                </View>
 
-                {/* 🔹 Action Button - Reduced Top Margin */}
-                <View style={styles.actionBtn}>
-                  <Text style={styles.actionBtnText}>ENTER TOURNAMENT</Text>
-                  <Ionicons name="chevron-forward-circle" size={16} color={THEME_DARK} />
-                </View>
+                {/* Info Box or Completed UI */}
+                {isCompleted ? (
+                  <View style={[styles.infoGlassBox, { justifyContent: 'center', alignItems: 'center' }]}> 
+                    <Ionicons name="trophy" size={28} color="#facc15" style={{marginBottom: 4}} />
+                    <Text style={{color:'#fff', fontWeight:'bold', fontSize:15, marginTop:2}}>You have completed this event!</Text>
+                  </View>
+                ) : (
+                  <View style={styles.infoGlassBox}>
+                    <View style={styles.infoItem}>
+                      <Text style={styles.infoLabel}>{status === "Live" ? "ENDS IN" : "STARTS IN"}</Text>
+                      <Text style={styles.infoValue}>{countdown}</Text>
+                    </View>
+                    <View style={styles.verticalDivider} />
+                    <View style={styles.infoItem}>
+                      <Text style={styles.infoLabel}>QUESTS</Text>
+                      <Text style={styles.infoValue}>{item.totalQuestions}</Text>
+                    </View>
+                  </View>
+                )}
+
+                {/* Action Button only if not completed */}
+                {!isCompleted && (
+                  <View style={styles.actionBtn}>
+                    <Text style={styles.actionBtnText}>ENTER TOURNAMENT</Text>
+                    <Ionicons name="chevron-forward-circle" size={16} color={THEME_DARK} />
+                  </View>
+                )}
               </LinearGradient>
             </TouchableOpacity>
           );
