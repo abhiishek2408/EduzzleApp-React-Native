@@ -2,32 +2,47 @@
 import mongoose from 'mongoose';
 
 
+
 const MCQSchema = new mongoose.Schema({
   question: {
     text: { type: String, required: true },
-    images: [{ type: String }], // Array of image URLs
-    latex: { type: String }, // Optional LaTeX for math
+    images: [{ type: String }],
+    latex: { type: String },
   },
   options: [
     {
       text: { type: String, required: true },
       image: { type: String },
       latex: { type: String },
-      isCorrect: { type: Boolean }, // Optional for multi-correct
+      isCorrect: { type: Boolean },
     }
   ],
-  answer: { type: String, required: true }, // Could be index, value, or array for multi-correct
+  answer: { type: String, required: true },
   solution: {
     text: { type: String },
     images: [{ type: String }],
     latex: { type: String },
-    video: { type: String }, // Optional video explanation
+    video: { type: String },
   },
-  subject: { type: String, required: true },
-  course: { type: String, required: true },
-  syllabus: { type: String, required: true },
-  category: { type: String, required: true },
-  topic: { type: String, required: true },
+  course: {
+    name: { type: String, required: true },
+    subjects: [
+      {
+        name: { type: String, required: true },
+        syllabus: [
+          {
+            name: { type: String, required: true },
+            categories: [
+              {
+                name: { type: String, required: true },
+                topics: [{ type: String }]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
   tags: [{ type: String }],
   difficulty: { type: String, enum: ["easy", "medium", "hard"], default: "medium" },
   explanation: { type: String },

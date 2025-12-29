@@ -72,6 +72,7 @@ const StackScreens = ({ route }) => {
       <Stack.Screen name="PendingRequests" component={PendingRequestsScreen} />
       <Stack.Screen name="SentRequests" component={SentRequestsScreen} />
       <Stack.Screen name="MCQCategoriesScreen" component={MCQCategoriesScreen} />
+      <Stack.Screen name="MCQListScreen" component={require("./MCQListScreen").default} />
     </Stack.Navigator>
   );
 };

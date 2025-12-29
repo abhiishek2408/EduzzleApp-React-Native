@@ -4,54 +4,100 @@ import MCQ from '../models/MCQ.js';
 const router = express.Router();
 
 // Get all subjects
-router.get('/subjects', async (req, res) => {
-  try {
-    const subjects = await MCQ.distinct('subject');
-    res.json({ success: true, subjects });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
 
-// Get all courses for a subject
+// Get all courses
 router.get('/courses', async (req, res) => {
   try {
-    const { subject } = req.query;
-    const courses = await MCQ.find(subject ? { subject } : {}).distinct('course');
+    const courses = await MCQ.distinct('course.name');
     res.json({ success: true, courses });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
 });
 
-// Get all syllabuses for a course
-router.get('/syllabus', async (req, res) => {
+// Get all subjects for a course
+router.get('/subjects', async (req, res) => {
   try {
     const { course } = req.query;
-    const syllabus = await MCQ.find(course ? { course } : {}).distinct('syllabus');
-    res.json({ success: true, syllabus });
+    if (!course) return res.json({ success: true, subjects: [] });
+    const docs = await MCQ.find({ 'course.name': course }, { 'course.subjects': 1 });
+    const subjectsSet = new Set();
+    docs.forEach(doc => {
+      doc.course.subjects.forEach(subj => subjectsSet.add(subj.name));
+    });
+    res.json({ success: true, subjects: Array.from(subjectsSet) });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
 });
 
-// Get all categories for a syllabus
+// Get all syllabus for a subject in a course
+router.get('/syllabus', async (req, res) => {
+  try {
+    const { course, subject } = req.query;
+    if (!course || !subject) return res.json({ success: true, syllabus: [] });
+    const docs = await MCQ.find({ 'course.name': course, 'course.subjects.name': subject }, { 'course.subjects.$': 1 });
+    const syllabusSet = new Set();
+    docs.forEach(doc => {
+      doc.course.subjects.forEach(subj => {
+        if (subj.name === subject) {
+          subj.syllabus.forEach(syl => syllabusSet.add(syl.name));
+        }
+      });
+    });
+    res.json({ success: true, syllabus: Array.from(syllabusSet) });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Get all categories for a syllabus in a subject in a course
 router.get('/categories', async (req, res) => {
   try {
-    const { syllabus } = req.query;
-    const categories = await MCQ.find(syllabus ? { syllabus } : {}).distinct('category');
-    res.json({ success: true, categories });
+    const { course, subject, syllabus } = req.query;
+    if (!course || !subject || !syllabus) return res.json({ success: true, categories: [] });
+    const docs = await MCQ.find({ 'course.name': course, 'course.subjects.name': subject, 'course.subjects.syllabus.name': syllabus }, { 'course.subjects.$': 1 });
+    const categoriesSet = new Set();
+    docs.forEach(doc => {
+      doc.course.subjects.forEach(subj => {
+        if (subj.name === subject) {
+          subj.syllabus.forEach(syl => {
+            if (syl.name === syllabus) {
+              syl.categories.forEach(cat => categoriesSet.add(cat.name));
+            }
+          });
+        }
+      });
+    });
+    res.json({ success: true, categories: Array.from(categoriesSet) });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
 });
 
-// Get all topics for a category
+// Get all topics for a category in a syllabus in a subject in a course
 router.get('/topics', async (req, res) => {
   try {
-    const { category } = req.query;
-    const topics = await MCQ.find(category ? { category } : {}).distinct('topic');
-    res.json({ success: true, topics });
+    const { course, subject, syllabus, category } = req.query;
+    if (!course || !subject || !syllabus || !category) return res.json({ success: true, topics: [] });
+    const docs = await MCQ.find({ 'course.name': course, 'course.subjects.name': subject, 'course.subjects.syllabus.name': syllabus, 'course.subjects.syllabus.categories.name': category }, { 'course.subjects.$': 1 });
+    const topicsSet = new Set();
+    docs.forEach(doc => {
+      doc.course.subjects.forEach(subj => {
+        if (subj.name === subject) {
+          subj.syllabus.forEach(syl => {
+            if (syl.name === syllabus) {
+              syl.categories.forEach(cat => {
+                if (cat.name === category && Array.isArray(cat.topics)) {
+                  cat.topics.forEach(topic => topicsSet.add(topic));
+                }
+              });
+            }
+          });
+        }
+      });
+    });
+    res.json({ success: true, topics: Array.from(topicsSet) });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -59,15 +105,17 @@ router.get('/topics', async (req, res) => {
 
 
 // Get MCQs by advanced filters
+
+// Get MCQs by advanced filters (nested)
 router.get('/', async (req, res) => {
   try {
-    const { subject, course, syllabus, category, topic, tags, difficulty, isActive, q, limit = 50, skip = 0 } = req.query;
+    const { course, subject, syllabus, category, topic, tags, difficulty, isActive, q, limit = 50, skip = 0 } = req.query;
     const filter = {};
-    if (subject) filter.subject = subject;
-    if (course) filter.course = course;
-    if (syllabus) filter.syllabus = syllabus;
-    if (category) filter.category = category;
-    if (topic) filter.topic = topic;
+    if (course) filter['course.name'] = course;
+    if (subject) filter['course.subjects.name'] = subject;
+    if (syllabus) filter['course.subjects.syllabus.name'] = syllabus;
+    if (category) filter['course.subjects.syllabus.categories.name'] = category;
+    if (topic) filter['course.subjects.syllabus.categories.topics'] = topic;
     if (tags) filter.tags = { $in: Array.isArray(tags) ? tags : [tags] };
     if (difficulty) filter.difficulty = difficulty;
     if (isActive !== undefined) filter.isActive = isActive === 'true';

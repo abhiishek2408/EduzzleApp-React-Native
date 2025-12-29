@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
-
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, StyleSheet } from 'react-native';
 import { API_URL } from '../config/api';
 import axios from 'axios';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const MCQCategoriesScreen = ({ navigation }) => {
   const [subjects, setSubjects] = useState([]);
@@ -17,212 +18,194 @@ const MCQCategoriesScreen = ({ navigation }) => {
   const [selectedTopic, setSelectedTopic] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Fetch subjects on mount
+
+  // Fetch all courses on mount
   useEffect(() => {
-    setLoading(true);
-    axios.get(`${API_URL}/api/mcqs/subjects`).then(res => {
-      setSubjects(res.data.subjects || []);
-      setLoading(false);
-    });
+    fetchData('courses', setCourses);
   }, []);
 
-  // Fetch courses when subject changes
-  useEffect(() => {
-    if (selectedSubject) {
-      setLoading(true);
-      axios.get(`${API_URL}/api/mcqs/courses?subject=${selectedSubject}`).then(res => {
-        setCourses(res.data.courses || []);
-        setLoading(false);
-      });
-    } else {
-      setCourses([]);
-      setSelectedCourse(null);
+  const fetchData = async (endpoint, setter, params = "") => {
+    setLoading(true);
+    try {
+      const res = await axios.get(`${API_URL}/api/mcqs/${endpoint}${params}`);
+      setter(res.data[endpoint] || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
-  }, [selectedSubject]);
-
-  // Fetch syllabus when course changes
-  useEffect(() => {
-    if (selectedCourse) {
-      setLoading(true);
-      axios.get(`${API_URL}/api/mcqs/syllabus?course=${selectedCourse}`).then(res => {
-        setSyllabus(res.data.syllabus || []);
-        setLoading(false);
-      });
-    } else {
-      setSyllabus([]);
-      setSelectedSyllabus(null);
-    }
-  }, [selectedCourse]);
-
-  // Fetch categories when syllabus changes
-  useEffect(() => {
-    if (selectedSyllabus) {
-      setLoading(true);
-      axios.get(`${API_URL}/api/mcqs/categories?syllabus=${selectedSyllabus}`).then(res => {
-        setCategories(res.data.categories || []);
-        setLoading(false);
-      });
-    } else {
-      setCategories([]);
-      setSelectedCategory(null);
-    }
-  }, [selectedSyllabus]);
-
-  // Fetch topics when category changes
-  useEffect(() => {
-    if (selectedCategory) {
-      setLoading(true);
-      axios.get(`${API_URL}/api/mcqs/topics?category=${selectedCategory}`).then(res => {
-        setTopics(res.data.topics || []);
-        setLoading(false);
-      });
-    } else {
-      setTopics([]);
-      setSelectedTopic(null);
-    }
-  }, [selectedCategory]);
-
-  const handleBrowseMCQs = () => {
-    navigation.navigate('MCQListScreen', {
-      subject: selectedSubject,
-      course: selectedCourse,
-      syllabus: selectedSyllabus,
-      category: selectedCategory,
-      topic: selectedTopic,
-    });
   };
 
-  return (
-    <ScrollView style={{ flex: 1, backgroundColor: '#fff', padding: 16 }}>
-      <Text style={{ fontSize: 22, fontWeight: 'bold', marginBottom: 16 }}>Browse MCQs</Text>
-      {loading && <ActivityIndicator size="small" color="#a21caf" />}
-      <Text style={{ fontWeight: 'bold', marginTop: 10 }}>Subject</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 8 }}>
-        {subjects.map(subj => (
+  // When course changes, fetch subjects
+  useEffect(() => {
+    if (selectedCourse) fetchData('subjects', setSubjects, `?course=${selectedCourse}`);
+    else setSubjects([]);
+    setSelectedSubject(null);
+    setSelectedSyllabus(null);
+    setSelectedCategory(null);
+    setSelectedTopic(null);
+  }, [selectedCourse]);
+
+  // When subject changes, fetch syllabus
+  useEffect(() => {
+    if (selectedCourse && selectedSubject) fetchData('syllabus', setSyllabus, `?course=${selectedCourse}&subject=${selectedSubject}`);
+    else setSyllabus([]);
+    setSelectedSyllabus(null);
+    setSelectedCategory(null);
+    setSelectedTopic(null);
+  }, [selectedSubject]);
+
+  // When syllabus changes, fetch categories
+  useEffect(() => {
+    if (selectedCourse && selectedSubject && selectedSyllabus) fetchData('categories', setCategories, `?course=${selectedCourse}&subject=${selectedSubject}&syllabus=${selectedSyllabus}`);
+    else setCategories([]);
+    setSelectedCategory(null);
+    setSelectedTopic(null);
+  }, [selectedSyllabus]);
+
+  // When category changes, fetch topics
+  useEffect(() => {
+    if (selectedCourse && selectedSubject && selectedSyllabus && selectedCategory) fetchData('topics', setTopics, `?course=${selectedCourse}&subject=${selectedSubject}&syllabus=${selectedSyllabus}&category=${selectedCategory}`);
+    else setTopics([]);
+    setSelectedTopic(null);
+  }, [selectedCategory]);
+
+  const RenderPillList = ({ title, data, selectedValue, onSelect, icon }) => (
+    <View style={styles.sectionContainer}>
+      <View style={styles.sectionHeader}>
+        <MaterialCommunityIcons name={icon} size={18} color="#a21caf" />
+        <Text style={styles.sectionTitle}>{title}</Text>
+      </View>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+        {data.map((item) => (
           <TouchableOpacity
-            key={subj}
-            style={{
-              backgroundColor: selectedSubject === subj ? '#a21caf' : '#f3e8ff',
-              padding: 10,
-              borderRadius: 10,
-              marginRight: 8,
-            }}
-            onPress={() => {
-              setSelectedSubject(subj);
-              setSelectedCourse(null);
-              setSelectedSyllabus(null);
-              setSelectedCategory(null);
-              setSelectedTopic(null);
-            }}
+            key={item}
+            onPress={() => onSelect(item)}
+            activeOpacity={0.7}
+            style={[
+              styles.pill,
+              selectedValue === item ? styles.pillSelected : styles.pillUnselected
+            ]}
           >
-            <Text style={{ color: selectedSubject === subj ? '#fff' : '#701a75', fontWeight: 'bold' }}>{subj}</Text>
+            <Text style={[styles.pillText, selectedValue === item ? styles.textSelected : styles.textUnselected]}>
+              {item}
+            </Text>
+            {selectedValue === item && (
+              <MaterialCommunityIcons name="check-circle" size={14} color="#fff" style={{marginLeft: 5}} />
+            )}
           </TouchableOpacity>
         ))}
       </ScrollView>
-      {selectedSubject && <>
-        <Text style={{ fontWeight: 'bold', marginTop: 10 }}>Course</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 8 }}>
-          {courses.map(course => (
-            <TouchableOpacity
-              key={course}
-              style={{
-                backgroundColor: selectedCourse === course ? '#a21caf' : '#f3e8ff',
-                padding: 10,
-                borderRadius: 10,
-                marginRight: 8,
-              }}
-              onPress={() => {
-                setSelectedCourse(course);
-                setSelectedSyllabus(null);
-                setSelectedCategory(null);
-                setSelectedTopic(null);
-              }}
-            >
-              <Text style={{ color: selectedCourse === course ? '#fff' : '#701a75', fontWeight: 'bold' }}>{course}</Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </>}
-      {selectedCourse && <>
-        <Text style={{ fontWeight: 'bold', marginTop: 10 }}>Syllabus</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 8 }}>
-          {syllabus.map(syl => (
-            <TouchableOpacity
-              key={syl}
-              style={{
-                backgroundColor: selectedSyllabus === syl ? '#a21caf' : '#f3e8ff',
-                padding: 10,
-                borderRadius: 10,
-                marginRight: 8,
-              }}
-              onPress={() => {
-                setSelectedSyllabus(syl);
-                setSelectedCategory(null);
-                setSelectedTopic(null);
-              }}
-            >
-              <Text style={{ color: selectedSyllabus === syl ? '#fff' : '#701a75', fontWeight: 'bold' }}>{syl}</Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </>}
-      {selectedSyllabus && <>
-        <Text style={{ fontWeight: 'bold', marginTop: 10 }}>Category</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 8 }}>
-          {categories.map(cat => (
-            <TouchableOpacity
-              key={cat}
-              style={{
-                backgroundColor: selectedCategory === cat ? '#a21caf' : '#f3e8ff',
-                padding: 10,
-                borderRadius: 10,
-                marginRight: 8,
-              }}
-              onPress={() => {
-                setSelectedCategory(cat);
-                setSelectedTopic(null);
-              }}
-            >
-              <Text style={{ color: selectedCategory === cat ? '#fff' : '#701a75', fontWeight: 'bold' }}>{cat}</Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </>}
-      {selectedCategory && <>
-        <Text style={{ fontWeight: 'bold', marginTop: 10 }}>Topic</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 8 }}>
-          {topics.map(topic => (
-            <TouchableOpacity
-              key={topic}
-              style={{
-                backgroundColor: selectedTopic === topic ? '#a21caf' : '#f3e8ff',
-                padding: 10,
-                borderRadius: 10,
-                marginRight: 8,
-              }}
-              onPress={() => setSelectedTopic(topic)}
-            >
-              <Text style={{ color: selectedTopic === topic ? '#fff' : '#701a75', fontWeight: 'bold' }}>{topic}</Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </>}
-      <TouchableOpacity
-        style={{
-          backgroundColor: '#a21caf',
-          padding: 16,
-          borderRadius: 12,
-          alignItems: 'center',
-          marginTop: 20,
-          opacity: selectedSubject && selectedCourse && selectedSyllabus && selectedCategory && selectedTopic ? 1 : 0.5,
-        }}
-        disabled={!(selectedSubject && selectedCourse && selectedSyllabus && selectedCategory && selectedTopic)}
-        onPress={handleBrowseMCQs}
-      >
-        <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>Browse MCQs</Text>
-      </TouchableOpacity>
-    </ScrollView>
+    </View>
+  );
+
+  const isAllSelected = selectedSubject && selectedCourse && selectedSyllabus && selectedCategory && selectedTopic;
+
+  return (
+    <View style={{ flex: 1, backgroundColor: '#fff' }}>
+      {/* --- HEADER --- */}
+      <LinearGradient colors={['#7c3aed', '#a21caf']} style={styles.topHeader}>
+        <Text style={styles.headerTitle}>Curated MCQs</Text>
+        <Text style={styles.headerSubtitle}>Pick your path and start testing</Text>
+      </LinearGradient>
+
+      <ScrollView style={styles.body} showsVerticalScrollIndicator={false}>
+        {loading && <ActivityIndicator size="large" color="#a21caf" style={{ marginVertical: 10 }} />}
+
+        <RenderPillList 
+          title="Subject" icon="book-open-variant" data={subjects} 
+          selectedValue={selectedSubject} 
+          onSelect={(val) => { setSelectedSubject(val); setSelectedCourse(null); setSelectedSyllabus(null); setSelectedCategory(null); setSelectedTopic(null); }} 
+        />
+
+        {selectedSubject && (
+          <RenderPillList 
+            title="Course" icon="school" data={courses} 
+            selectedValue={selectedCourse} 
+            onSelect={(val) => { setSelectedCourse(val); setSelectedSyllabus(null); setSelectedCategory(null); setSelectedTopic(null); }} 
+          />
+        )}
+
+        {selectedCourse && (
+          <RenderPillList 
+            title="Syllabus" icon="format-list-bulleted" data={syllabus} 
+            selectedValue={selectedSyllabus} 
+            onSelect={(val) => { setSelectedSyllabus(val); setSelectedCategory(null); setSelectedTopic(null); }} 
+          />
+        )}
+
+        {selectedSyllabus && (
+          <RenderPillList 
+            title="Category" icon="shape" data={categories} 
+            selectedValue={selectedCategory} 
+            onSelect={(val) => { setSelectedCategory(val); setSelectedTopic(null); }} 
+          />
+        )}
+
+        {selectedCategory && (
+          <RenderPillList 
+            title="Topic" icon="target" data={topics} 
+            selectedValue={selectedTopic} 
+            onSelect={setSelectedTopic} 
+          />
+        )}
+
+        <View style={{ height: 100 }} />
+      </ScrollView>
+
+      {/* --- FLOATING ACTION BUTTON --- */}
+      <View style={styles.footer}>
+        <TouchableOpacity
+          disabled={!isAllSelected}
+          onPress={() => navigation.navigate('MCQListScreen', { subject: selectedSubject, course: selectedCourse, syllabus: selectedSyllabus, category: selectedCategory, topic: selectedTopic })}
+          activeOpacity={0.8}
+        >
+          <LinearGradient
+            colors={isAllSelected ? ['#4a044e', '#701a75'] : ['#e2e8f0', '#cbd5e1']}
+            style={styles.browseBtn}
+          >
+            <Text style={styles.browseBtnText}>Explore MCQs</Text>
+            <MaterialCommunityIcons name="arrow-right" size={20} color="#fff" />
+          </LinearGradient>
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  topHeader: { padding: 25, borderBottomLeftRadius: 30, borderBottomRightRadius: 30, paddingTop: 50 },
+  headerTitle: { fontSize: 24, fontWeight: '900', color: '#fff' },
+  headerSubtitle: { fontSize: 13, color: '#f5d0fe', fontWeight: '600' },
+  body: { paddingHorizontal: 20 },
+  sectionContainer: { marginTop: 20 },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+  sectionTitle: { fontSize: 16, fontWeight: '800', color: '#1e293b', marginLeft: 8 },
+  scrollContent: { paddingRight: 20 },
+  pill: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 15,
+    marginRight: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1.5,
+  },
+  pillUnselected: { backgroundColor: '#fdf4ff', borderColor: '#fae8ff' },
+  pillSelected: { backgroundColor: '#a21caf', borderColor: '#701a75', elevation: 4 },
+  pillText: { fontSize: 14, fontWeight: '700' },
+  textUnselected: { color: '#701a75' },
+  textSelected: { color: '#fff' },
+  footer: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: 20, backgroundColor: 'rgba(255,255,255,0.9)' },
+  browseBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    borderRadius: 20,
+    gap: 10,
+  },
+  browseBtnText: { color: '#fff', fontSize: 16, fontWeight: '900' }
+});
 
 export default MCQCategoriesScreen;
