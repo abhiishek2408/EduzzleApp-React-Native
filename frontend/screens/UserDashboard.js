@@ -27,6 +27,7 @@ import FullGlobalLeaderboard from "./FullGlobalLeaderboard";
 import ChangePasswordScreen from "./ChangePasswordScreen";
 import VisualPuzzlesScreen from "./VisualPuzzlesScreen";
 import LogicChallengesScreen from "./LogicChallengesScreen";
+import MCQCategoriesScreen from "./MCQCategoriesScreen";
 import GeneralTriviaScreen from "./GeneralTriviaScreen";
 import GamingEventLeaderboard from "./GamingEventLeaderboard";
 import PendingRequestsScreen from './PendingRequestsScreen';
@@ -70,6 +71,7 @@ const StackScreens = ({ route }) => {
       <Stack.Screen name="GamingEventLeaderboard" component={GamingEventLeaderboard} />
       <Stack.Screen name="PendingRequests" component={PendingRequestsScreen} />
       <Stack.Screen name="SentRequests" component={SentRequestsScreen} />
+      <Stack.Screen name="MCQCategoriesScreen" component={MCQCategoriesScreen} />
     </Stack.Navigator>
   );
 };

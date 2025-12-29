@@ -1,4 +1,5 @@
-const mongoose = require('mongoose');
+
+import mongoose from 'mongoose';
 
 
 const MCQSchema = new mongoose.Schema({
@@ -39,4 +40,5 @@ const MCQSchema = new mongoose.Schema({
   },
 }, { timestamps: true });
 
-module.exports = mongoose.model('MCQ', MCQSchema);
+const MCQ = mongoose.model('MCQ', MCQSchema);
+export default MCQ;
