@@ -1,6 +1,7 @@
-const express = require('express');
+
+import express from 'express';
+import MCQ from '../models/MCQ.js';
 const router = express.Router();
-const MCQ = require('../models/MCQ');
 
 // Get all subjects
 router.get('/subjects', async (req, res) => {
@@ -111,4 +112,4 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

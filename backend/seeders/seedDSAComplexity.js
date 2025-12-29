@@ -1,11 +1,10 @@
 
-import dotenv from 'dotenv';
-import path from 'path';
-import mongoose from 'mongoose';
-import MCQ from '../models/MCQ.js';
-import { connectDB } from '../config/db.js';
 
-dotenv.config({ path: path.resolve(path.dirname(new URL(import.meta.url).pathname), '../.env') });
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+import MCQ from "../models/MCQ.js";
+
+dotenv.config();
 
 const mcqs = [
       {
@@ -401,11 +400,17 @@ const mcqs = [
 ];
 
 async function seed() {
-  await connectDB();
-  await MCQ.deleteMany({ topic: 'Time Complexity', course: 'DSA' });
-  await MCQ.insertMany(mcqs);
-  console.log('Seeded DSA Time and Complexity MCQs!');
-  mongoose.disconnect();
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log("✅ MongoDB connected...");
+    await MCQ.deleteMany({ topic: 'Time Complexity', course: 'DSA' });
+    await MCQ.insertMany(mcqs);
+    console.log('Seeded DSA Time and Complexity MCQs!');
+    process.exit();
+  } catch (error) {
+    console.error("❌ Error seeding MCQs:", error);
+    process.exit(1);
+  }
 }
 
 seed();
