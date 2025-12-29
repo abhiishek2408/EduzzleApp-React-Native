@@ -1,7 +1,8 @@
 import React, { useRef } from "react";
-import { View, Text, ScrollView, TouchableOpacity, Dimensions } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Dimensions, StyleSheet } from "react-native";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from 'expo-linear-gradient';
 
 const { width } = Dimensions.get('window');
 
@@ -15,8 +16,8 @@ const RecommendedPuzzlesSection = ({ navigation }) => {
       puzzleId: 'stack-basics',
       icon: "layers-triple",
       title: 'Stack Quiz',
-      desc: 'Master stack logic',
-      color: '#7C3AED', // Violet
+      desc: 'Master stack LIFO logic',
+      color: '#7C3AED', 
       badge: 'Popular',
       time: '5 min',
     },
@@ -26,8 +27,8 @@ const RecommendedPuzzlesSection = ({ navigation }) => {
       puzzleId: 'linked-list',
       icon: "link-variant",
       title: 'Linked List',
-      desc: 'Connect the nodes',
-      color: '#0D9488', // Teal
+      desc: 'Connect the data nodes',
+      color: '#0D9488', 
       time: '7 min',
     },
     {
@@ -36,8 +37,9 @@ const RecommendedPuzzlesSection = ({ navigation }) => {
       puzzleId: 'bubble-sort',
       icon: "sort-variant",
       title: 'Bubble Sort',
-      desc: 'Order the chaos',
-      color: '#CA8A04', // Yellow/Gold
+      desc: 'Order the array chaos',
+      color: '#CA8A04', 
+      badge: 'New',
       time: '6 min',
     },
     {
@@ -46,95 +48,104 @@ const RecommendedPuzzlesSection = ({ navigation }) => {
       puzzleId: 'binary-tree',
       icon: "file-tree",
       title: 'Binary Tree',
-      desc: 'Traverse the roots',
-      color: '#DB2777', // Pink
+      desc: 'Traverse the root paths',
+      color: '#DB2777', 
       time: '8 min',
     },
   ];
 
   return (
-    <View className="mt-6 mb-4">
-      {/* Header Section */}
-      <View className="flex-row justify-between items-end mb-4 px-0">
-        <View>
-          <View className="flex-row items-center gap-1">
-            <Ionicons name="pricetag" size={28} color="#a21caf" style={{ marginLeft: 8 }} />
-            <Text className="text-[18px] font-extrabold font-[Inter] bg-gradient-to-r from-violet-700 via-fuchsia-500 to-pink-500 text-transparent bg-clip-text drop-shadow-md tracking-wide">Recommended</Text>
+    <View className="mt-8 mb-6">
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, marginBottom: 12, marginTop: 10 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 0 }}>
+          <View style={{ backgroundColor: '#fdf4ff', padding: 8, borderRadius: 12, marginRight: 10 }}>
+            <Ionicons name="extension-puzzle-outline" size={20} color="#701a75" />
+          </View>
+          <View>
+            <Text style={{ fontSize: 18, fontWeight: '900', color: '#1e1b4b' }}>Recommended</Text>
+            <Text style={{ fontSize: 11, color: '#701a75', fontWeight: '700', marginTop: -2 }}>Handpicked for you</Text>
           </View>
         </View>
-        <TouchableOpacity className="bg-[#faf5ff] px-3 py-1.5 rounded-full border border-[#e9d5ff] flex-row items-center" style={{ alignSelf: 'flex-start' }}>
-          <Text className="text-xs font-bold" style={{ color: '#a21caf', marginRight: 4 }}>View All</Text>
-          <MaterialCommunityIcons name="chevron-right" size={18} color="#a21caf" />
-        </TouchableOpacity>
       </View>
 
-      <View className="relative">
-        <ScrollView
-          ref={recommendedScrollRef}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 5, paddingBottom: 10 }}
-          snapToInterval={170} // Card width (160) + gap
-          decelerationRate="fast"
-        >
-          {puzzles.map((puzzle) => (
-            <TouchableOpacity
-              key={puzzle.key}
-              onPress={() => navigation.navigate(puzzle.screen, { puzzleId: puzzle.puzzleId })}
-              activeOpacity={0.9}
-              className="w-40 mr-4 bg-white rounded-3xl p-4 shadow-md border border-slate-100 overflow-hidden"
-              style={{ elevation: 5 }}
-            >
-              {/* Decorative Background Blob */}
-              <View 
-                className="absolute -top-10 -right-10 w-24 h-24 rounded-full opacity-10" 
-                style={{ backgroundColor: puzzle.color }} 
-              />
+      {/* --- Horizontal Scroll List --- */}
+      <ScrollView
+        ref={recommendedScrollRef}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingLeft: 8, paddingRight: 10 }}
+        snapToInterval={180} 
+        decelerationRate="fast"
+      >
+        {puzzles.map((puzzle) => (
+          <TouchableOpacity
+            key={puzzle.key}
+            onPress={() => navigation.navigate(puzzle.screen, { puzzleId: puzzle.puzzleId })}
+            activeOpacity={0.95}
+            style={styles.cardShadow}
+            className="w-[165px] mr-4 bg-white rounded-[32px] p-5 border border-slate-50 overflow-hidden relative"
+          >
+            <View 
+              className="absolute -top-6 -right-6 w-24 h-24 rounded-full opacity-[0.08]" 
+              style={{ backgroundColor: puzzle.color }} 
+            />
 
-              {/* Icon Container */}
+            {puzzle.badge && (
               <View 
-                className="w-12 h-12 rounded-2xl items-center justify-center mb-4"
+                className="absolute top-4 right-4 px-2 py-1 rounded-lg"
                 style={{ backgroundColor: `${puzzle.color}20` }}
               >
-                <MaterialCommunityIcons name={puzzle.icon} size={26} color={puzzle.color} />
-              </View>
-
-              {/* Content */}
-              <View className="mb-3">
-                <Text className="text-[16px] font-bold text-slate-800 leading-5 mb-1" numberOfLines={1}>
-                  {puzzle.title}
-                </Text>
-                <Text className="text-[11px] text-slate-500 font-medium leading-4" numberOfLines={2}>
-                  {puzzle.desc}
+                <Text className="text-[9px] font-black" style={{ color: puzzle.color }}>
+                  {puzzle.badge}
                 </Text>
               </View>
+            )}
 
-              {/* Footer Metadata */}
-              <View className="flex-row items-center justify-between mt-auto">
-                <View className="flex-row items-center bg-slate-50 px-2 py-1 rounded-lg">
-                  <Ionicons name="time-outline" size={12} color="#64748b" />
-                  <Text className="text-[10px] font-bold text-slate-500 ml-1">{puzzle.time}</Text>
-                </View>
-                
-                <View className="bg-slate-900 rounded-full p-1.5">
-                    <Ionicons name="play" size={12} color="white" />
-                </View>
+            {/* Icon Box */}
+            <LinearGradient
+              colors={[`${puzzle.color}30`, `${puzzle.color}10`]}
+              style={{ width: 56, height: 56, borderRadius: 18, alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}
+            >
+              <MaterialCommunityIcons name={puzzle.icon} size={30} color={puzzle.color} />
+            </LinearGradient>
+
+            {/* Content */}
+            <View className="mb-4">
+              <Text className="text-[17px] font-black text-slate-800 mb-1" numberOfLines={1}>
+                {puzzle.title}
+              </Text>
+              <Text className="text-[11px] text-slate-400 font-bold leading-4" numberOfLines={2}>
+                {puzzle.desc}
+              </Text>
+            </View>
+
+            {/* Footer Row */}
+            <View className="flex-row items-center justify-between mt-auto">
+              <View className="flex-row items-center">
+                <MaterialCommunityIcons name="clock-outline" size={13} color="#94a3b8" />
+                <Text className="text-[11px] font-black text-slate-500 ml-1">{puzzle.time}</Text>
               </View>
-
-              {/* Badge */}
-              {puzzle.badge && (
-                <View className="absolute top-3 right-3 bg-amber-400 px-2 py-0.5 rounded-md transform rotate-3">
-                  <Text className="text-[8px] font-black text-amber-900 uppercase">
-                    {puzzle.badge}
-                  </Text>
-                </View>
-              )}
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
+              
+              <View className="bg-slate-900 w-8 h-8 rounded-full items-center justify-center shadow-md">
+                <Ionicons name="play" size={14} color="#fff" style={{ marginLeft: 2 }} />
+              </View>
+            </View>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  cardShadow: {
+    shadowColor: "#6b21a8",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 15,
+    elevation: 8,
+    marginBottom: 20, 
+  }
+});
 
 export default RecommendedPuzzlesSection;

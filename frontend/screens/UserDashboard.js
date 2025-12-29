@@ -29,6 +29,8 @@ import VisualPuzzlesScreen from "./VisualPuzzlesScreen";
 import LogicChallengesScreen from "./LogicChallengesScreen";
 import GeneralTriviaScreen from "./GeneralTriviaScreen";
 import GamingEventLeaderboard from "./GamingEventLeaderboard";
+import PendingRequestsScreen from './PendingRequestsScreen';
+import SentRequestsScreen from './SentRequestsScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -66,6 +68,8 @@ const StackScreens = ({ route }) => {
       <Stack.Screen name="LogicChallengesScreen" component={LogicChallengesScreen} />
       <Stack.Screen name="GeneralTriviaScreen" component={GeneralTriviaScreen} />
       <Stack.Screen name="GamingEventLeaderboard" component={GamingEventLeaderboard} />
+      <Stack.Screen name="PendingRequests" component={PendingRequestsScreen} />
+      <Stack.Screen name="SentRequests" component={SentRequestsScreen} />
     </Stack.Navigator>
   );
 };

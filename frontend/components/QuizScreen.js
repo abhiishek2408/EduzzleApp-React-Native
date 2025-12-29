@@ -51,11 +51,11 @@ export function QuizScreen({ navigation, user, route }) {
     <View className="mb-6 mx-3">
       {/* HEADER */}
       <View className="flex-row justify-between items-center px-0 mb-2">
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 0, marginLeft: 20 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 0, marginLeft: 12 }}>
           <View style={{ backgroundColor: '#fdf4ff', padding: 8, borderRadius: 12, marginRight: 10 }}>
-            <Ionicons name="flame-outline" size={20} color="#701a75" />
+            <Ionicons name="star-outline" size={20} color="#701a75" />
           </View>
-          <View style={{marginRight: 8}}>
+          <View style={{marginRight: 16}}>
             <Text style={{ fontSize: 18, fontWeight: '900', color: '#1e1b4b' }}>Popular Challenges</Text>
             <Text style={{ fontSize: 11, color: '#701a75', fontWeight: '700', marginTop: -2 }}>Try trending quizzes</Text>
           </View>

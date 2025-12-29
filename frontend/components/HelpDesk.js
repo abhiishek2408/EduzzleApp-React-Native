@@ -4,116 +4,188 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  ScrollView,
-  Animated,
+  LayoutAnimation,
+  Platform,
+  UIManager,
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { LinearGradient } from 'expo-linear-gradient';
+
+// Smooth animation enable for Android
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 const HelpDesk = () => {
   const [expandedIndex, setExpandedIndex] = useState(null);
 
   const faqs = [
-    {
-      question: "How do I start a quiz?",
-      answer: "Browse the available quizzes on the home screen and tap on any quiz card. Then click 'Start Quiz' to begin. You can choose from different difficulty levels: Easy, Medium, or Hard.",
-      icon: "play-circle-outline"
-    },
-    {
-      question: "What are coins and how do I earn them?",
-      answer: "Coins are rewards you earn by completing quizzes and daily quests. Use coins to unlock premium features, special badges, and exclusive content. Complete more quizzes to earn more coins!",
-      icon: "circle-multiple"
-    },
-    {
-      question: "How does the leaderboard work?",
-      answer: "The leaderboard ranks players based on total points earned from quiz attempts. There are two types: Friends Leaderboard (only your friends) and Global Leaderboard (all users). Complete more quizzes and score higher to climb the ranks!",
-      icon: "trophy-outline"
-    },
-    {
-      question: "What are daily quests?",
-      answer: "Daily quests are challenges that reset every day. Complete 5 quizzes in a day to earn bonus rewards and maintain your streak. Longer streaks unlock special badges and achievements!",
-      icon: "calendar-check"
-    },
-    {
-      question: "How do I add friends?",
-      answer: "Go to the Friends screen from the navigation menu. Search for users by name or email, send friend requests, and once accepted, compete with them on the Friends Leaderboard!",
-      icon: "account-multiple-plus"
-    },
-    {
-      question: "What are puzzle challenges?",
-      answer: "Puzzle challenges are interactive learning experiences including Stack Quiz, Bubble Sort, Linked List, and Binary Tree puzzles. They help you understand data structures and algorithms through hands-on practice.",
-      icon: "puzzle-outline"
-    },
-    {
-      question: "Can I retry a quiz?",
-      answer: "Yes! You can attempt any quiz multiple times to improve your score. Your best score will be recorded. Each attempt helps you learn and master the content.",
-      icon: "refresh"
-    },
-    {
-      question: "What are gaming events?",
-      answer: "Gaming events are special time-limited quiz competitions with exclusive rewards. Join live events to compete with other players and earn unique badges and bonus points!",
-      icon: "tournament"
-    },
+    { question: "How do I start a quiz?", answer: "Browse the available quizzes on the home screen and tap on any quiz card. Then click 'Start Quiz' to begin.", icon: "play-circle" },
+    { question: "What are coins?", answer: "Coins are rewards earned by completing quizzes and quests. Use them to unlock badges and premium features.", icon: "dots-hexagon" },
+    { question: "Leaderboard rules?", answer: "Rankings are based on total points. Higher quiz scores help you climb Friends and Global ranks.", icon: "trophy" },
+    { question: "Daily quests?", answer: "Challenges that reset every 24 hours. Complete 5 quizzes to maintain your streak and earn bonus XP!", icon: "calendar-star" },
+    { question: "How to add friends?", answer: "Search users by name in the Friends screen and send requests to compete together.", icon: "account-group" },
   ];
 
   const toggleExpand = (index) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setExpandedIndex(expandedIndex === index ? null : index);
   };
 
   return (
-    <View className="my-1">
-      <View className="flex-row items-center gap-3 mb-4 px-1 py-3 rounded-2xl">
-        <MaterialCommunityIcons name="help-circle" size={28} color="#a21caf" style={{ marginLeft: 8 }} />
-        <Text className="text-[18px] font-extrabold bg-gradient-to-r from-violet-700 via-fuchsia-500 to-pink-500 text-transparent bg-clip-text drop-shadow-md tracking-wide">Help Desk: FAQs</Text>
-      </View>
-
-      <View className="space-y-4">
-        {faqs.map((faq, index) => (
-          <View key={index} className="bg-white rounded-2xl shadow-md border border-gray-200/60 mx-2 mb-1 border-[0.5px]">
-            <TouchableOpacity
-              className="flex-row justify-between items-center px-5 py-4"
-              onPress={() => toggleExpand(index)}
-              activeOpacity={0.7}
-            >
-              <View className="flex-row items-center flex-1 gap-4">
-                <View className="w-10 h-10 rounded-full bg-violet-50 border border-violet-200 justify-center items-center">
-                  <MaterialCommunityIcons 
-                    name={faq.icon} 
-                    size={22} 
-                    color="#a21caf" 
-                  />
-                </View>
-                <Text className="text-[16px] font-bold text-gray-800 flex-1">{faq.question}</Text>
-              </View>
-              <MaterialCommunityIcons
-                name={expandedIndex === index ? "chevron-up" : "chevron-down"}
-                size={26}
-                color="#a21caf"
-              />
-            </TouchableOpacity>
-
-            {expandedIndex === index && (
-              <View className="px-5 pb-4 pt-1 pl-16">
-                <Text className="text-[15px] text-gray-500 leading-6">{faq.answer}</Text>
-              </View>
-            )}
+    <View style={styles.container}>
+      {/* HEADER (PuzzleScreen style) */}
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 12 }}>
+          <View style={{ backgroundColor: '#fdf4ff', padding: 8, borderRadius: 12, marginRight: 10 }}>
+            <MaterialCommunityIcons name="help-circle" size={20} color="#701a75" />
           </View>
-        ))}
+          <View style={{ marginRight: 28 }}>
+            <Text style={{ fontSize: 18, fontWeight: '900', color: '#1e1b4b' }}>Help Desk</Text>
+            <Text style={{ fontSize: 11, color: '#701a75', fontWeight: '700', marginTop: -2 }}>Frequently Asked Questions</Text>
+          </View>
+        </View>
       </View>
 
-        <View className="flex-row items-center bg-white px-6 py-5 rounded-2xl mt-4 border border-gray-200/60 border-[0.5px] shadow-sm relative overflow-hidden">
-        <View className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-violet-300 via-fuchsia-200 to-pink-200 rounded-l-2xl opacity-70" />
-        <MaterialCommunityIcons name="email-outline" size={24} color="#a21caf" style={{ marginLeft: 6, marginRight: 2 }} />
-        <Text className="text-[15px] text-gray-700 flex-1 font-medium">
-          Still have questions? Contact us at{' '}
-          <Text className="text-violet-700 font-bold">support@eduzzle.com</Text>
-        </Text>
+      {/* --- FAQ Accordion List --- */}
+      <View style={styles.faqList}>
+        {faqs.map((faq, index) => {
+          const isExpanded = expandedIndex === index;
+          return (
+            <View key={index} style={[styles.faqCard, isExpanded && styles.activeCard]}>
+              <TouchableOpacity
+                onPress={() => toggleExpand(index)}
+                activeOpacity={0.7}
+                style={styles.faqHeader}
+              >
+                {/* Updated Icon Box style to match your request (#fdf4ff) */}
+                <View style={styles.iconBox}>
+                  <MaterialCommunityIcons name={faq.icon} size={22} color="#701a75" />
+                </View>
+                
+                <Text style={[styles.questionText, isExpanded && { color: '#701a75' }]}>
+                  {faq.question}
+                </Text>
+
+                <MaterialCommunityIcons
+                  name={isExpanded ? "minus-circle-outline" : "plus-circle-outline"}
+                  size={22}
+                  color={isExpanded ? "#701a75" : "#cbd5e1"}
+                />
+              </TouchableOpacity>
+
+              {isExpanded && (
+                <View style={styles.answerContainer}>
+                  <View style={styles.divider} />
+                  <Text style={styles.answerText}>{faq.answer}</Text>
+                </View>
+              )}
+            </View>
+          );
+        })}
       </View>
 
+      {/* --- Support Footer --- */}
+      <LinearGradient
+        colors={['#4a044e', '#701a75']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.supportCard}
+      >
+        <MaterialCommunityIcons name="email-fast-outline" size={24} color="#f5d0fe" />
+        <View style={styles.supportTextContent}>
+          <Text style={styles.supportTitle}>Still need help?</Text>
+          <Text style={styles.supportEmail}>support@eduzzle.com</Text>
+        </View>
+        <TouchableOpacity style={styles.contactBtn}>
+           <Text style={styles.contactBtnText}>Email Us</Text>
+        </TouchableOpacity>
+      </LinearGradient>
     </View>
-    
   );
 };
 
+const styles = StyleSheet.create({
+  container: { paddingHorizontal: 12, marginVertical: 15 },
+  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 },
+  headerTitleContainer: { flexDirection: 'row', alignItems: 'center' },
+  headerIconBg: { padding: 6, borderRadius: 10, marginRight: 10 },
+  titleText: { fontSize: 18, fontWeight: '900', color: '#1e293b', letterSpacing: -0.5 },
 
+  faqList: { gap: 10 },
+  faqCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+    overflow: 'hidden',
+    // Soft Shadow
+    elevation: 3,
+    shadowColor: '#a21caf',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+  },
+  activeCard: {
+    borderColor: '#fae8ff',
+    backgroundColor: '#fdf4ff', // Light purple tint when open
+  },
+  faqHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 14,
+  },
+  iconBox: {
+    width: 40,
+    height: 40,
+    backgroundColor: '#fdf4ff',
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+    borderWidth: 1,
+    borderColor: '#fae8ff',
+  },
+  questionText: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#334155',
+  },
+  answerContainer: {
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+    paddingLeft: 66, // Align text with question (after icon)
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#fae8ff',
+    marginBottom: 10,
+  },
+  answerText: {
+    fontSize: 14,
+    color: '#64748b',
+    lineHeight: 20,
+    fontWeight: '500',
+  },
+
+  supportCard: {
+    marginTop: 20,
+    borderRadius: 24,
+    padding: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  supportTextContent: { flex: 1, marginLeft: 12 },
+  supportTitle: { color: '#f5d0fe', fontSize: 12, fontWeight: '700', textTransform: 'uppercase' },
+  supportEmail: { color: '#ffffff', fontSize: 15, fontWeight: '800' },
+  contactBtn: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
+  },
+  contactBtnText: { color: '#fff', fontSize: 12, fontWeight: '800' }
+});
 
 export default HelpDesk;

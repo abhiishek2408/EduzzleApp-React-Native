@@ -73,7 +73,7 @@ export default function GamingEventsSection({ navigation }) {
           </View>
         </View>
         <TouchableOpacity 
-          onPress={() => navigation.navigate("GamingEventsScreen")}
+          onPress={() => navigation.navigate("GamingEventsList")}
           style={styles.viewAllBtn}
         >
           <Text style={styles.viewAllText}>VIEW ALL</Text>

@@ -1,16 +1,9 @@
 import React, { useEffect, useState, useContext } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  ScrollView,
-  ActivityIndicator,
-  TouchableOpacity,
-  RefreshControl,
-} from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import axios from 'axios';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from 'expo-linear-gradient';
 import { AuthContext } from '../context/AuthContext';
 import CardSkeleton from './CardSkeleton';
 
@@ -19,7 +12,6 @@ const GlobalLeaderboard = ({ navigation }) => {
   const API_URL = 'https://eduzzleapp-react-native.onrender.com';
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     fetchLeaderboard();
@@ -36,143 +28,168 @@ const GlobalLeaderboard = ({ navigation }) => {
       console.error('Error fetching global leaderboard:', err?.message);
     } finally {
       setLoading(false);
-      setRefreshing(false);
     }
   };
-
-  const onRefresh = () => {
-    setRefreshing(true);
-    fetchLeaderboard();
-  };
-
-  const getMedalIcon = (rank) => {
-    switch (rank) {
-      case 1:
-        return '🥇';
-      case 2:
-        return '🥈';
-      case 3:
-        return '🥉';
-      default:
-        return `${rank}`;
-    }
-  };
-
-  const getRankColor = (rank) => {
-    switch (rank) {
-      case 1:
-        return '#FFD700';
-      case 2:
-        return '#C0C0C0';
-      case 3:
-        return '#CD7F32';
-      default:
-        return '#6b7280';
-    }
-  };
-
-  const getRankBgColor = (rank) => {
-    switch (rank) {
-      case 1:
-        return '#FFF9E6';
-      case 2:
-        return '#F5F5F5';
-      case 3:
-        return '#FFF4E6';
-      default:
-        return '#FAFAFA';
-    }
-  };
-
-  // Always render the card, but show skeleton inside card if loading
-
-  // Always render the card, but show skeleton or empty state inside
 
   return (
-    <View className="my-6 bg-white">
-      {/* Title and View All outside card */}
-      <View className="flex-row mr-8 gap-9">
-        {loading ? (
-          <>
-            <View className="w-8 h-8 rounded-full bg-gray-200 ml-2" />
-            <View className="h-5 w-40 bg-gray-200 rounded ml-2" />
-          </>
-        ) : (
-          <View className="flex-row items-center gap-2">
-            <MaterialCommunityIcons name="earth" size={32} color="#a21caf" style={{ marginLeft: 8 }} />
-            <Text className="text-[18px] font-extrabold font-[Inter] bg-gradient-to-r from-violet-700 via-fuchsia-500 to-pink-500 text-transparent bg-clip-text drop-shadow-md tracking-wide">Global Leaderboard</Text>
+    <View style={styles.container}>
+      {/* --- 🔥 SAME HEADER AS FRIENDS LEAGUE --- */}
+      <View className="flex-row justify-between items-center mb-4">
+        <View className="flex-row items-center">
+          <View className="bg-fuchsia-100 p-2 rounded-xl mr-3">
+            <MaterialCommunityIcons name="earth" size={20} color="#4a044e" />
           </View>
-        )}
+          <View>
+            <Text className="text-xl font-black text-slate-800 tracking-tight">Global World</Text>
+            <Text className="text-[10px] font-bold text-[#701a75] uppercase">Top Players</Text>
+          </View>
+        </View>
+
         {!loading && leaderboard.length >= 2 && (
           <TouchableOpacity 
             onPress={() => navigation.navigate('FullGlobalLeaderboard')}
-            className="flex-row items-center mr-4 py-1.5 px-3 bg-[#faf5ff] rounded-2xl border border-[#e9d5ff]"
-            style={{ alignSelf: 'flex-start' }}
+            className="bg-fuchsia-50 px-3 py-1.5 rounded-full border border-fuchsia-100"
           >
-            <Text className="text-xs font-bold text-[#a21caf] mr-1">View All</Text>
-            <MaterialCommunityIcons name="chevron-right" size={18} color="#a21caf" />
+            <Text className="text-xs font-black text-fuchsia-700">VIEW ALL</Text>
           </TouchableOpacity>
         )}
       </View>
 
-      <View className="rounded-3xl my-2 px-2 p-5 shadow-lg border border-purple-200 bg-white">
-        <View className="px-2 space-y-8">
-          {loading ? (
-            <CardSkeleton />
-          ) : leaderboard.length === 0 ? (
-            <View className="items-center justify-center py-12 rounded-2xl mx-2 shadow-lg border border-purple-200 bg-white">
-              <MaterialCommunityIcons name="trophy-outline" size={72} color="#ddd" />
-              <Text className="mt-4 text-lg text-gray-400 font-bold">No users found!</Text>
-            </View>
-          ) : (
-            leaderboard.slice(0, 3).map((player, index) => {
+      {/* --- PREMIUM GLOBAL CARD --- */}
+      <View style={styles.mainCard}>
+        {loading ? (
+          <CardSkeleton />
+        ) : leaderboard.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <MaterialCommunityIcons name="trophy-outline" size={48} color="#e2e8f0" />
+            <Text style={styles.emptyText}>No world rankings found!</Text>
+          </View>
+        ) : (
+          <View>
+            {leaderboard.slice(0, 3).map((player, index) => {
               const isCurrentUser = user && player.userId.toString() === user._id.toString();
-              const marginClass = index !== 0 ? 'mt-2' : '';
+              const rank = index + 1;
+
               return (
                 <TouchableOpacity
                   key={player.userId}
-                  activeOpacity={0.9}
-                  className={`flex-row items-center rounded-2xl p-3 border-2 shadow-lg bg-white ${marginClass} ${isCurrentUser ? 'border-purple-400' : 'border-transparent'} ${player.rank <= 3 ? 'border-2' : ''}`}
+                  activeOpacity={0.8}
+                  style={[
+                    styles.rankRow,
+                    isCurrentUser && styles.currentUserRow
+                  ]}
                 >
-                  {/* Left: Rank Medal */}
-                  <View className="w-11 h-11 items-center justify-center rounded-full bg-white" style={player.rank <= 3 ? { backgroundColor: getRankColor(player.rank) + '25' } : {}}>
-                    <Text className="text-2xl font-extrabold drop-shadow-md" style={{ color: getRankColor(player.rank) }}>
-                      {getMedalIcon(player.rank)}
-                    </Text>
-                  </View>
-
-                  {/* Center: Profile Picture */}
-                  <Image
-                    source={{ uri: player.profilePic }}
-                    className={`w-14 h-14 rounded-full ml-3 border-2 shadow-md ${player.rank <= 3 ? '' : 'border-gray-200'}`}
-                    style={player.rank <= 3 ? { borderColor: getRankColor(player.rank), borderWidth: 3 } : { borderColor: '#a21caf', borderWidth: 2 }}
-                  />
-
-                  {/* Right: Name and Points */}
-                  <View className="flex-1 ml-3 flex-row items-center justify-between">
-                    <View className="flex-1">
-                      <Text className="text-lg font-extrabold text-gray-800 mb-1 drop-shadow-md" numberOfLines={1}>
-                        {isCurrentUser ? 'You 🎯' : player.name}
-                      </Text>
-                      <View className="flex-row items-center gap-1">
-                        <MaterialCommunityIcons name="puzzle-outline" size={16} color="#a21caf" />
-                        <Text className="text-sm font-bold text-[#a21caf]">{player.quizzesSolved} solved</Text>
+                  {/* Rank Badge */}
+                  <View style={styles.rankContainer}>
+                    {rank === 1 ? (
+                      <View style={[styles.medalBg, { backgroundColor: '#fef3c7' }]}>
+                        <MaterialCommunityIcons name="crown" size={18} color="#fbbf24" />
                       </View>
-                    </View>
-                    <View className="items-end bg-white px-3 py-1.5 rounded-xl min-w-[55px] shadow-md">
-                      <Text className="text-xl font-extrabold text-purple-600 drop-shadow-md">{player.totalPoints}</Text>
-                      <Text className="text-xs font-bold text-purple-700 -mt-0.5">pts</Text>
+                    ) : rank === 2 ? (
+                      <View style={[styles.medalBg, { backgroundColor: '#f1f5f9' }]}>
+                        <MaterialCommunityIcons name="medal" size={18} color="#94a3b8" />
+                      </View>
+                    ) : rank === 3 ? (
+                      <View style={[styles.medalBg, { backgroundColor: '#ffedd5' }]}>
+                        <MaterialCommunityIcons name="medal" size={18} color="#d97706" />
+                      </View>
+                    ) : (
+                      <Text style={styles.rankText}>{rank}</Text>
+                    )}
+                  </View>
+
+                  {/* Avatar */}
+                  <View style={styles.avatarWrapper}>
+                    <Image source={{ uri: player.profilePic }} style={styles.avatar} />
+                    {isCurrentUser && <View style={styles.onlineDot} />}
+                  </View>
+
+                  {/* Name & Stats */}
+                  <View style={styles.infoContainer}>
+                    <Text style={styles.nameText} numberOfLines={1}>
+                      {isCurrentUser ? "You (🎯)" : player.name}
+                    </Text>
+                    <View style={styles.statsRow}>
+                      <MaterialCommunityIcons name="globe-model" size={12} color="#a21caf" />
+                      <Text style={styles.statsText}>{player.quizzesSolved} Solved</Text>
                     </View>
                   </View>
+
+                  {/* Points Pill (Dark Purple for current user) */}
+                  <LinearGradient
+                    colors={isCurrentUser ? ['#4a044e', '#701a75'] : ['#f8fafc', '#f1f5f9']}
+                    style={styles.pointsPill}
+                  >
+                    <Text style={[styles.pointsValue, isCurrentUser && { color: '#fff' }]}>
+                      {player.totalPoints}
+                    </Text>
+                    <Text style={[styles.ptsLabel, isCurrentUser && { color: '#f5d0fe' }]}>PTS</Text>
+                  </LinearGradient>
                 </TouchableOpacity>
               );
-            })
-          )}
-        </View>
+            })}
+          </View>
+        )}
       </View>
     </View>
   );
 };
 
+const styles = StyleSheet.create({
+  container: { paddingHorizontal: 20, marginVertical: 10 },
+  mainCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 30,
+    padding: 10,
+    elevation: 6,
+    shadowColor: '#a21caf',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.1,
+    shadowRadius: 15,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+    minWidth: 320, // Increased width for card
+    alignSelf: 'center',
+    width: '97%', // Make card a bit wider
+  },
+  rankRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+    borderRadius: 22,
+    marginBottom: 6,
+  },
+  currentUserRow: {
+    backgroundColor: '#fdf4ff',
+    borderWidth: 1,
+    borderColor: '#fae8ff',
+  },
+  rankContainer: { width: 40, alignItems: 'center', justifyContent: 'center' },
+  medalBg: { width: 32, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  rankText: { fontSize: 16, fontWeight: '900', color: '#cbd5e1' },
+  
+  avatarWrapper: { position: 'relative' },
+  avatar: { width: 50, height: 50, borderRadius: 25, backgroundColor: '#f8fafc', borderWidth: 2, borderColor: '#fff' },
+  onlineDot: { position: 'absolute', bottom: 2, right: 2, width: 12, height: 12, borderRadius: 6, backgroundColor: '#22c55e', borderWidth: 2, borderColor: '#fff' },
+
+  infoContainer: { flex: 1, marginLeft: 12 },
+  nameText: { fontSize: 16, fontWeight: '800', color: '#1e293b' },
+  statsRow: { flexDirection: 'row', alignItems: 'center', marginTop: 2 },
+  statsText: { fontSize: 11, fontWeight: '700', color: '#94a3b8', marginLeft: 4 },
+
+  pointsPill: { 
+    paddingHorizontal: 12, 
+    paddingVertical: 8, 
+    borderRadius: 16, 
+    alignItems: 'center', 
+    minWidth: 65,
+    justifyContent: 'center'
+  },
+  pointsValue: { fontSize: 15, fontWeight: '900', color: '#1e293b' },
+  ptsLabel: { fontSize: 8, fontWeight: '900', color: '#94a3b8', marginTop: -2 },
+
+  emptyContainer: { padding: 40, alignItems: 'center' },
+  emptyText: { color: '#94a3b8', fontWeight: '700', marginTop: 12, textAlign: 'center' }
+});
 
 export default GlobalLeaderboard;

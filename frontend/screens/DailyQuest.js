@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from "react";
-import { View, Text, ActivityIndicator, StyleSheet, Animated, Alert } from "react-native";
+import { View, Text, StyleSheet, Animated, Alert, Dimensions } from "react-native";
 import DailyQuestSkeleton from "../components/DailyQuestSkeleton";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
@@ -7,8 +7,9 @@ import { LinearGradient } from "expo-linear-gradient";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { Ionicons } from "@expo/vector-icons";
 
+const { width } = Dimensions.get('window');
 const API_BASE = "https://eduzzleapp-react-native.onrender.com/api";
-const DAILY_TARGET = 5; // Target quizzes per day
+const DAILY_TARGET = 5;
 
 export default function DailyQuest({ navigation }) {
   const { user } = useContext(AuthContext);
@@ -23,32 +24,26 @@ export default function DailyQuest({ navigation }) {
     try {
       const questRes = await axios.get(`${API_BASE}/daily-quests/${user._id}`);
       const streakRes = await axios.get(`${API_BASE}/streaks/${user._id}`);
+      setQuest(questRes.data || { quizzesAttemptedToday: 0, completedToday: false });
+      setStreak(streakRes.data?.streak || { currentStreak: 0 });
 
-      setQuest(questRes.data || { quizzesAttemptedToday: 0, completedToday: false, streak: 0 });
-      setStreak(streakRes.data?.streak || { currentStreak: 0, longestStreak: 0 });
-
-      // Animate progress bar
       const progress = Math.min((questRes.data?.quizzesAttemptedToday || 0) / DAILY_TARGET, 1);
-      Animated.timing(progressAnim, {
+      Animated.spring(progressAnim, {
         toValue: progress,
-        duration: 1000,
+        tension: 20,
+        friction: 7,
         useNativeDriver: false,
       }).start();
     } catch (err) {
-      console.error("DailyQuest fetch error:", err?.response?.data || err.message || err);
-      Alert.alert("Error", "Could not load daily quest data");
+      console.error("DailyQuest error:", err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, [user?._id]);
+  useEffect(() => { fetchData(); }, [user?._id]);
 
-  if (loading) {
-    return <DailyQuestSkeleton />;
-  }
+  if (loading) return <DailyQuestSkeleton />;
 
   const progressPercentage = Math.min((quest.quizzesAttemptedToday / DAILY_TARGET) * 100, 100);
   const progressWidth = progressAnim.interpolate({
@@ -56,113 +51,168 @@ export default function DailyQuest({ navigation }) {
     outputRange: ['0%', '100%'],
   });
 
-    return (
-      <View className="px-4 mb-3">
-
-        <View className="flex-row items-center gap-2 mt-2 mb-1 px-2">
-          <Ionicons name="calendar-outline" size={28} color="#a21caf" />
-          <Text className="text-[18px] font-extrabold font-[Inter] bg-gradient-to-r from-violet-700 via-fuchsia-500 to-pink-500 text-transparent bg-clip-text drop-shadow-md tracking-wide">Daily Quest</Text>
+  return (
+    <View style={styles.container}>
+      {/* --- Section Header --- */}
+      <View style={styles.headerRow}>
+        <View style={styles.headerTitleContainer}>
+          <View style={styles.iconContainer}>
+            <MaterialCommunityIcons name="fire" size={20} color="#701a75" />
+          </View>
+          <View>
+            <Text style={styles.mainTitle}>Daily Quest</Text>
+            <Text style={styles.subTitle}>Complete daily challenges</Text>
+          </View>
         </View>
-         
-        {/* Decorative Dots and Icon */}
-        <View className="flex-row justify-center items-center mb-2">
-          {[...Array(7)].map((_, i) => (
-            <View
-              key={i}
-              className={
-                `w-2 h-2 rounded-full mx-1 ` +
-                (i % 3 === 0
-                  ? 'bg-fuchsia-400'
-                  : i % 3 === 1
-                  ? 'bg-violet-400'
-                  : 'bg-pink-300')
-              }
-            />
-          ))}
-          <MaterialCommunityIcons name="star-four-points" size={18} color="#a21caf" style={{ marginLeft: 8, marginRight: 2 }} />
+       
+
+        <View style={styles.streakBadge}>
+          <MaterialCommunityIcons name="fire" size={16} color="#701a75" />
+          <Text style={styles.streakText}>{streak.currentStreak || 0}d</Text>
         </View>
-        {/* Daily Quest Card */}
-<View className="rounded-3xl p-[2px] bg-gray-100">
-
-  <LinearGradient
-    colors={["#701a75", "#a21caf", "#c026d3"]}
-    start={{ x: 0, y: 0 }}
-    end={{ x: 1, y: 1 }}
-    style={{
-      borderRadius: 24,
-      padding: 20,
-      overflow: "hidden", // 🔴 VERY IMPORTANT
-    }}
-  >
-
-    {/* 🔮 PATTERN OVERLAY */}
-    <View
-      pointerEvents="none"
-      style={{
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        opacity: 0.07,
-        backgroundColor: "transparent",
-      }}
-    >
-      {/* Dots using repeated Views */}
-      {Array.from({ length: 40 }).map((_, i) => (
-        <View
-          key={i}
-          style={{
-            position: "absolute",
-            width: 6,
-            height: 6,
-            borderRadius: 2,
-            backgroundColor: "#ffffff",
-            top: Math.random() * 300,
-            left: Math.random() * 300,
-          }}
-        />
-      ))}
-    </View>
-
-    <View>
-
-      <View className="flex-row items-center mb-4 space-x-2">
-        <MaterialCommunityIcons name="fire" size={26} color="#ffd166" />
-        <Text className="text-white font-extrabold text-lg font-[Inter]">
-          {streak.currentStreak || 0} Day Streak
-        </Text>
       </View>
 
-      <Text className="text-purple-100 font-semibold mb-2 font-[Inter]">
-        Complete <Text className="text-white font-bold">{DAILY_TARGET}</Text> quizzes today!
-      </Text>
+      {/* --- Main Quest Card --- */}
+      <View style={styles.questCard}>
+        <LinearGradient
+           colors={["#4a044e", "#701a75"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.cardGradient}
+        >
+          {/* Abstract Background Shapes */}
+          <View style={styles.circleOverlay} />
+          
+          <View style={styles.cardContent}>
+            <View>
+              <Text style={styles.questSubtitle}>Goal: Solve {DAILY_TARGET} Puzzles</Text>
+              <View style={styles.counterRow}>
+                <Text style={styles.currentCount}>{quest.quizzesAttemptedToday}</Text>
+                <Text style={styles.targetCount}>/{DAILY_TARGET}</Text>
+              </View>
+            </View>
 
-      <Text className="text-white text-4xl font-extrabold mb-4 font-[Inter]">
-        {quest.quizzesAttemptedToday}/{DAILY_TARGET}
-      </Text>
+            <View style={styles.iconCircle}>
+                <MaterialCommunityIcons 
+                    name={quest.completedToday ? "trophy-award" : "sword-cross"} 
+                    size={32} 
+                    color="#fde68a" 
+                />
+            </View>
+          </View>
 
-      {/* Progress Track */}
-      <View className="h-3 bg-white/25 rounded-full overflow-hidden my-3">
-        <Animated.View style={{ width: progressWidth, height: "100%" }}>
-          <LinearGradient
-            colors={["#fde68a", "#facc15", "#f59e0b"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={{ flex: 1 }}
-          />
-        </Animated.View>
+          {/* Progress Section */}
+          <View style={styles.progressContainer}>
+            <View style={styles.track}>
+              <Animated.View style={[styles.fill, { width: progressWidth }]}>
+                <LinearGradient
+                  colors={["#fde68a", "#fbbf24"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={{ flex: 1 }}
+                />
+              </Animated.View>
+            </View>
+            <View style={styles.progressFooter}>
+               <Text style={styles.progressLabel}>
+                 {quest.completedToday ? "Quest Completed!" : `${Math.round(progressPercentage)}% toward today's reward`}
+               </Text>
+               <MaterialCommunityIcons name="gift" size={16} color="#fde68a" />
+            </View>
+          </View>
+        </LinearGradient>
       </View>
-
-      <Text className="text-center text-purple-100 font-bold text-sm font-[Inter]">
-        {progressPercentage.toFixed(0)}% Complete
-      </Text>
-
     </View>
-
-  </LinearGradient>
-</View>
-</View>
-
-    );
+  );
 }
+
+const styles = StyleSheet.create({
+  container: { paddingHorizontal: 20, marginBottom: 20 },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    marginBottom: 12,
+  },
+  headerTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+
+  mainTitle: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: '#1e1b4b',
+  },
+  subTitle: {
+    fontSize: 11,
+    color: '#701a75',
+    fontWeight: '700',
+    marginTop: -2,
+  },
+  streakBadge: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    backgroundColor: '#fdf4ff', 
+    paddingHorizontal: 10, 
+    borderRadius: 12, 
+    padding:4,
+
+  },
+  streakText: { fontSize: 13, fontWeight: '800', color: '#701a75', marginLeft: 4 },
+  
+  questCard: {
+    borderRadius: 28,
+    overflow: 'hidden',
+    elevation: 8,
+    shadowColor: '#7c3aed',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.2,
+    shadowRadius: 15,
+  },
+  cardGradient: { padding: 22, position: 'relative' },
+  circleOverlay: {
+    position: 'absolute',
+    right: -20,
+    top: -20,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+  },
+  cardContent: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center',
+    marginBottom: 20
+  },
+  questSubtitle: { color: 'rgba(255,255,255,0.7)', fontSize: 13, fontWeight: '700', marginBottom: 4 },
+  counterRow: { flexDirection: 'row', alignItems: 'baseline' },
+  currentCount: { color: '#fff', fontSize: 38, fontWeight: '900' },
+  targetCount: { color: 'rgba(255,255,255,0.5)', fontSize: 20, fontWeight: '700', marginLeft: 2 },
+  
+  iconCircle: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+  },
+
+  progressContainer: { marginTop: 5 },
+  track: { 
+    height: 10, 
+    backgroundColor: 'rgba(0,0,0,0.2)', 
+    borderRadius: 5, 
+    overflow: 'hidden',
+    marginBottom: 10
+  },
+  fill: { height: '100%', borderRadius: 5 },
+  progressFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  progressLabel: { color: '#e9d5ff', fontSize: 12, fontWeight: '700' }
+});

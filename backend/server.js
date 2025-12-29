@@ -271,6 +271,7 @@ app.use("/api/streaks", streakRoutes);
 app.use("/api/leaderboard", leaderboardRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/mcqs", require("./routes/mcqRoutes"));
 // 3️⃣ Update GamingQuizEvent status every minute
 cron.schedule("* * * * *", async () => {
   try {

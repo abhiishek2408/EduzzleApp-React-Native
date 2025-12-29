@@ -19,7 +19,7 @@ import Svg, {
   Path,
 } from "react-native-svg";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
-import QuizCard, { QuizCardSection } from "../components/QuizCard";
+import QuizCard, { QuizScreen } from "../components/QuizScreen";
 import { Ionicons } from "@expo/vector-icons";
 import { AuthContext } from "../context/AuthContext";
 import { useRoute } from "@react-navigation/native";
@@ -52,11 +52,12 @@ const categories = [
     link: "VisualPuzzlesScreen",
   },
   {
-    name: "Logic Challenges",
-    icon: "location-outline",
-    color: "#FFEAF2",
-    iconColor: "#EC4899",
-    link: "LogicChallengesScreen",
+    name: "MCQ Bank",
+    icon: "help-circle-outline",
+    color: "#E0F2FE",
+    iconColor: "#0EA5E9",
+    link: "MCQCategoriesScreen",
+    // This screen should allow users to browse MCQs subject-wise, course-wise, syllabus-wise, category-wise, and topic-wise.
   },
   
   {
@@ -94,17 +95,20 @@ export default function HomeScreen({ navigation }) {
       <ScrollView className="flex-grow pb-10">
         <LogoHeader />
 
-        <View className="flex-row items-center mb-4 mt-6 pl-4">
-          <View className="flex-row items-center gap-2 pl-0 ml-0">
-            <Ionicons name="trophy-outline" size={28} color="#a21caf" />
-            <Text className="text-[18px] font-extrabold bg-gradient-to-r from-violet-700 via-fuchsia-500 to-pink-500 text-transparent bg-clip-text drop-shadow-md tracking-wide">
-              Game Categories
-            </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, marginBottom: 12, marginTop: 10 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 0 }}>
+            <View style={{ backgroundColor: '#fdf4ff', padding: 8, borderRadius: 12, marginRight: 10 }}>
+              <Ionicons name="rocket-outline" size={20} color="#701a75" />
+            </View>
+            <View>
+              <Text style={{ fontSize: 18, fontWeight: '900', color: '#1e1b4b' }}>Game Categories</Text>
+              <Text style={{ fontSize: 11, color: '#701a75', fontWeight: '700', marginTop: -2 }}>Choose your challenge</Text>
+            </View>
           </View>
         </View>
 
         {/* Categories Grid */}
-        <View className="flex-row flex-wrap justify-between px-2">
+        <View className="flex-row flex-wrap justify-between px-6">
           {categories.map((item, index) => (
             <TouchableOpacity
               key={index}
@@ -124,7 +128,7 @@ export default function HomeScreen({ navigation }) {
         </View>
 
         {/* Quiz Section - logic moved to QuizCard.js */}
-        <QuizCardSection navigation={navigation} user={user} route={route} />
+        <QuizScreen navigation={navigation} user={user} route={route} />
 
         {/* Daily Quest */}
         <DailyQuest navigation={navigation} />

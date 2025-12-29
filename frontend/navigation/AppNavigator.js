@@ -12,6 +12,7 @@ import StackQuizScreen from "../screens/Puzzles/StackQuiz";
 import LinkedListPuzzleScreen from "../screens/Puzzles/LinkedListPuzzle";
 import BubbleSortPuzzleScreen from "../screens/Puzzles/BubbleSortPuzzle";
 import BinaryTreePuzzleScreen from "../screens/Puzzles/BinaryTreePuzzle";
+import FriendsScreen from '../screens/FriendsScreen.jsx';
 import { AuthContext } from "../context/AuthContext";
 
 const Stack = createStackNavigator();
@@ -31,6 +32,7 @@ export default function AppNavigator() {
             <Stack.Screen name="LinkedListPuzzleScreen" component={LinkedListPuzzleScreen} />
             <Stack.Screen name="BubbleSortPuzzleScreen" component={BubbleSortPuzzleScreen} />
             <Stack.Screen name="BinaryTreePuzzleScreen" component={BinaryTreePuzzleScreen} />
+            <Stack.Screen name="FriendsScreen" component={FriendsScreen} />
           </>
         )
       ) : (
