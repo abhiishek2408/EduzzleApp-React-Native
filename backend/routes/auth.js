@@ -268,7 +268,8 @@ router.post("/forgot-password", createRateLimiter({ max: 6 }), async (req, res) 
     const html = `<p>Your password reset OTP is: <strong>${rawOtp}</strong></p><p>It expires in ${OTP_EXPIRES_MIN} minutes.</p>`;
     await sendEmail({ to: user.email, subject: "Password Reset OTP", html });
 
-    return res.json({ message: "Password reset OTP sent to your email" });
+    // Return userId in response for frontend
+    return res.json({ message: "Password reset OTP sent to your email", userId: user._id });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Server error" });

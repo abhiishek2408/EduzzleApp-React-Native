@@ -86,7 +86,7 @@ export default function Login() {
           
           {/* Logo Section */}
           <View style={styles.logoContainer}>
-            <LinearGradient colors={['#4a044e','#701a75', '#4a044e']} style={styles.logoCircle}>
+            <LinearGradient colors={['#4a044e','#701a75', '#a21caf']} style={styles.logoCircle}>
               <Ionicons name="lock-open" size={40} color="#fff" />
             </LinearGradient>
             <Text style={styles.heading}>Welcome Back</Text>
@@ -136,7 +136,7 @@ export default function Login() {
 
           <TouchableOpacity activeOpacity={0.8} style={styles.button} onPress={submit}>
             <LinearGradient 
-                colors={['#4a044e','#701a75', '#4a044e']} 
+                colors={['#4a044e','#701a75', '#a21caf']} 
                 start={{x: 0, y: 0}} end={{x: 1, y: 0}} 
                 style={styles.gradientButton}
             >
@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
     marginBottom: 25,
   },
   forgotText: {
-    color: "#4a044e",
+    color: "#a21caf",
     fontSize: 14,
     fontWeight: "700",
   },

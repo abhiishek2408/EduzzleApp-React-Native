@@ -1,4 +1,3 @@
-
 import React, { useContext, useState, useRef, useEffect } from "react";
 import {
   StyleSheet,
@@ -25,7 +24,7 @@ export default function ResetPasswordScreen() {
   const { resetPassword } = useContext(AuthContext);
   const navigation = useNavigation();
   const route = useRoute();
-  const { email } = route.params || {};
+  const { email, userId } = route.params || {};
   
   const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -50,7 +49,7 @@ export default function ResetPasswordScreen() {
     }
     setLoading(true);
     try {
-      const data = await resetPassword(email, otp, newPassword);
+      const data = await resetPassword(userId, otp, newPassword);
       if (data?.message) {
         alert(data.message);
         navigation.navigate("Login");

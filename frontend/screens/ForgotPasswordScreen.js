@@ -45,7 +45,8 @@ export default function ForgotPasswordScreen() {
       const data = await forgotPassword(email);
       if (data?.message) {
         alert(data.message);
-        navigation.navigate("ResetPassword", { email });
+        // Pass userId to ResetPassword screen
+        navigation.navigate("ResetPassword", { email, userId: data.userId });
       }
     } catch (err) {
       alert(err?.response?.data?.message || "Failed to send reset OTP");
