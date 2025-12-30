@@ -280,20 +280,23 @@ router.post("/forgot-password", createRateLimiter({ max: 6 }), async (req, res) 
  */
 router.post("/reset-password", createRateLimiter({ max: 8 }), async (req, res) => {
   try {
-    const { userId, token, newPassword } = req.body;
-    if (!userId || !token || !newPassword) return res.status(400).json({ message: "Missing data" });
+    const { userId, otp, newPassword } = req.body;
+    if (!userId || !otp || !newPassword) return res.status(400).json({ message: "Missing data" });
 
-    const hashed = crypto.createHash("sha256").update(token).digest("hex");
-    const user = await User.findOne({
-      _id: userId,
-      resetPasswordToken: hashed,
-      resetPasswordExpires: { $gt: new Date() }
-    });
-    if (!user) return res.status(400).json({ message: "Invalid or expired token" });
+    const user = await User.findById(userId);
+    if (!user || !user.resetPasswordOtp || !user.resetPasswordOtp.code) {
+      return res.status(400).json({ message: "Invalid or expired OTP" });
+    }
+    if (user.resetPasswordOtp.expiresAt < new Date()) {
+      return res.status(400).json({ message: "OTP expired" });
+    }
+    const hashedOtp = crypto.createHash("sha256").update(otp).digest("hex");
+    if (hashedOtp !== user.resetPasswordOtp.code) {
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
 
     user.password = newPassword;
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpires = undefined;
+    user.resetPasswordOtp = undefined;
     await user.save();
 
     return res.json({ message: "Password reset successful" });
