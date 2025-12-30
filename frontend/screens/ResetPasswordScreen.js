@@ -47,6 +47,12 @@ export default function ResetPasswordScreen() {
       alert("Please fill in both OTP and New Password");
       return;
     }
+    if (!userId) {
+      alert("User ID missing. Please restart the password reset process from Forgot Password.");
+      console.log("[ResetPasswordScreen] userId is missing! route.params:", route.params);
+      return;
+    }
+    console.log("[ResetPasswordScreen] userId:", userId);
     setLoading(true);
     try {
       const data = await resetPassword(userId, otp, newPassword);

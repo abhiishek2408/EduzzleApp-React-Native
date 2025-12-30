@@ -43,8 +43,13 @@ export default function ForgotPasswordScreen() {
     setLoading(true);
     try {
       const data = await forgotPassword(email);
+      console.log("[ForgotPasswordScreen] forgotPassword response:", data);
       if (data?.message) {
         alert(data.message);
+        if (!data.userId) {
+          alert("No userId returned from backend. Please check backend /forgot-password response.");
+          return;
+        }
         // Pass userId to ResetPassword screen
         navigation.navigate("ResetPassword", { email, userId: data.userId });
       }
