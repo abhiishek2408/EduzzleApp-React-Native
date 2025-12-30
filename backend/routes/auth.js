@@ -286,13 +286,20 @@ router.post("/reset-password", createRateLimiter({ max: 8 }), async (req, res) =
 
     const user = await User.findById(userId);
     if (!user || !user.resetPasswordOtp || !user.resetPasswordOtp.code) {
+      console.log("[RESET PASSWORD] No user or OTP found for userId:", userId);
       return res.status(400).json({ message: "Invalid or expired OTP" });
     }
+    console.log("[RESET PASSWORD] Received OTP:", otp);
+    console.log("[RESET PASSWORD] Expected expiry:", user.resetPasswordOtp.expiresAt, "Current:", new Date());
     if (user.resetPasswordOtp.expiresAt < new Date()) {
+      console.log("[RESET PASSWORD] OTP expired");
       return res.status(400).json({ message: "OTP expired" });
     }
     const hashedOtp = crypto.createHash("sha256").update(otp).digest("hex");
+    console.log("[RESET PASSWORD] Hashed received OTP:", hashedOtp);
+    console.log("[RESET PASSWORD] Stored OTP hash:", user.resetPasswordOtp.code);
     if (hashedOtp !== user.resetPasswordOtp.code) {
+      console.log("[RESET PASSWORD] OTP mismatch");
       return res.status(400).json({ message: "Invalid OTP" });
     }
 

@@ -1,4 +1,45 @@
 import React, { useContext, useState, useRef, useEffect } from "react";
+// Custom Animated Modal
+function AnimatedModal({ visible, message, onClose, type = "error" }) {
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    if (visible) {
+      Animated.timing(fadeAnim, { toValue: 1, duration: 300, useNativeDriver: true }).start();
+    } else {
+      Animated.timing(fadeAnim, { toValue: 0, duration: 200, useNativeDriver: true }).start();
+    }
+  }, [visible]);
+  if (!visible) return null;
+  return (
+    <Animated.View style={{
+      position: 'absolute',
+      top: 0, left: 0, right: 0, bottom: 0,
+      backgroundColor: 'rgba(0,0,0,0.25)',
+      justifyContent: 'center', alignItems: 'center',
+      opacity: fadeAnim,
+      zIndex: 1000
+    }}>
+      <View style={{
+        backgroundColor: '#fff',
+        borderRadius: 22,
+        padding: 28,
+        alignItems: 'center',
+        minWidth: 260,
+        shadowColor: '#701a75',
+        shadowOpacity: 0.18,
+        shadowRadius: 18,
+        shadowOffset: { width: 0, height: 8 },
+        elevation: 10
+      }}>
+        <Ionicons name={type === 'success' ? 'checkmark-circle' : 'alert-circle'} size={54} color={type === 'success' ? '#22c55e' : '#f43f5e'} style={{ marginBottom: 10 }} />
+        <Text style={{ fontSize: 17, color: '#4a044e', fontWeight: '700', textAlign: 'center', marginBottom: 18 }}>{message}</Text>
+        <TouchableOpacity onPress={onClose} style={{ backgroundColor: type === 'success' ? '#22c55e' : '#f43f5e', borderRadius: 12, paddingVertical: 8, paddingHorizontal: 28 }}>
+          <Text style={{ color: '#fff', fontWeight: '700', fontSize: 15 }}>OK</Text>
+        </TouchableOpacity>
+      </View>
+    </Animated.View>
+  );
+}
 import {
   StyleSheet,
   View,
@@ -21,6 +62,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 const { width } = Dimensions.get("window");
 
 export default function ResetPasswordScreen() {
+    const [modal, setModal] = useState({ visible: false, message: '', type: 'error' });
   const { resetPassword } = useContext(AuthContext);
   const navigation = useNavigation();
   const route = useRoute();
@@ -44,11 +86,11 @@ export default function ResetPasswordScreen() {
 
   const submit = async () => {
     if (!otp || !newPassword) {
-      alert("Please fill in both OTP and New Password");
+      setModal({ visible: true, message: "Please fill in both OTP and New Password", type: 'error' });
       return;
     }
     if (!userId) {
-      alert("User ID missing. Please restart the password reset process from Forgot Password.");
+      setModal({ visible: true, message: "User ID missing. Please restart the password reset process from Forgot Password.", type: 'error' });
       console.log("[ResetPasswordScreen] userId is missing! route.params:", route.params);
       return;
     }
@@ -57,11 +99,14 @@ export default function ResetPasswordScreen() {
     try {
       const data = await resetPassword(userId, otp, newPassword);
       if (data?.message) {
-        alert(data.message);
-        navigation.navigate("Login");
+        setModal({ visible: true, message: data.message, type: 'success' });
+        setTimeout(() => {
+          setModal({ visible: false, message: '', type: 'success' });
+          navigation.navigate("Login");
+        }, 1200);
       }
     } catch (err) {
-      alert(err?.response?.data?.message || "Password reset failed");
+      setModal({ visible: true, message: err?.response?.data?.message || "Password reset failed", type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -69,6 +114,12 @@ export default function ResetPasswordScreen() {
 
   return (
     <LinearGradient colors={['#fdf4ff', '#fae8ff', '#f5d0fe']} style={styles.container}>
+      <AnimatedModal
+        visible={modal.visible}
+        message={modal.message}
+        type={modal.type}
+        onClose={() => setModal({ ...modal, visible: false })}
+      />
       <StatusBar barStyle="dark-content" />
       <KeyboardAvoidingView 
         behavior={Platform.OS === "ios" ? "padding" : "height"}
