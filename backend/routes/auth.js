@@ -256,10 +256,10 @@ router.post("/forgot-password", createRateLimiter({ max: 6 }), async (req, res) 
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) return res.status(400).json({ message: "No account with that email" });
 
-    // Generate 6-digit OTP
+    // Generate 6-digit OTP for password reset (reuse otp field)
     const rawOtp = Math.floor(100000 + Math.random() * 900000).toString();
     const hashedOtp = crypto.createHash("sha256").update(rawOtp).digest("hex");
-    user.resetPasswordOtp = {
+    user.otp = {
       code: hashedOtp,
       expiresAt: new Date(Date.now() + OTP_EXPIRES_MIN * 60 * 1000)
     };
@@ -287,26 +287,26 @@ router.post("/reset-password", createRateLimiter({ max: 8 }), async (req, res) =
     if (!userId || !otp || !newPassword) return res.status(400).json({ message: "Missing data" });
 
     const user = await User.findById(userId);
-    if (!user || !user.resetPasswordOtp || !user.resetPasswordOtp.code) {
+    if (!user || !user.otp || !user.otp.code) {
       console.log("[RESET PASSWORD] No user or OTP found for userId:", userId);
       return res.status(400).json({ message: "Invalid or expired OTP" });
     }
     console.log("[RESET PASSWORD] Received OTP:", otp);
-    console.log("[RESET PASSWORD] Expected expiry:", user.resetPasswordOtp.expiresAt, "Current:", new Date());
-    if (user.resetPasswordOtp.expiresAt < new Date()) {
+    console.log("[RESET PASSWORD] Expected expiry:", user.otp.expiresAt, "Current:", new Date());
+    if (user.otp.expiresAt < new Date()) {
       console.log("[RESET PASSWORD] OTP expired");
       return res.status(400).json({ message: "OTP expired" });
     }
     const hashedOtp = crypto.createHash("sha256").update(otp).digest("hex");
     console.log("[RESET PASSWORD] Hashed received OTP:", hashedOtp);
-    console.log("[RESET PASSWORD] Stored OTP hash:", user.resetPasswordOtp.code);
-    if (hashedOtp !== user.resetPasswordOtp.code) {
+    console.log("[RESET PASSWORD] Stored OTP hash:", user.otp.code);
+    if (hashedOtp !== user.otp.code) {
       console.log("[RESET PASSWORD] OTP mismatch");
       return res.status(400).json({ message: "Invalid OTP" });
     }
 
     user.password = newPassword;
-    user.resetPasswordOtp = undefined;
+    user.otp = undefined;
     await user.save();
 
     return res.json({ message: "Password reset successful" });
