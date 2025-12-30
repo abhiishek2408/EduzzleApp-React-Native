@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#f1f5f9',
     elevation: 4,
-    shadowColor: '#a21caf',
+    shadowColor: '#4a044e',
     shadowOpacity: 0.1,
     shadowRadius: 10,
   },

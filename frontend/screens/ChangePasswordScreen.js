@@ -114,7 +114,7 @@ export default function ChangePasswordScreen({ navigation }) {
               <Ionicons
                 name={showCurrent ? 'eye-outline' : 'eye-off-outline'}
                 size={22}
-                color="#a21caf"
+                color="#4a044e"
               />
             </TouchableOpacity>
           </View>
@@ -136,7 +136,7 @@ export default function ChangePasswordScreen({ navigation }) {
               <Ionicons
                 name={showNew ? 'eye-outline' : 'eye-off-outline'}
                 size={22}
-                color="#a21caf"
+                color="#4a044e"
               />
             </TouchableOpacity>
           </View>
@@ -159,7 +159,7 @@ export default function ChangePasswordScreen({ navigation }) {
               <Ionicons
                 name={showConfirm ? 'eye-outline' : 'eye-off-outline'}
                 size={22}
-                color="#a21caf"
+                color="#4a044e"
               />
             </TouchableOpacity>
           </View>
@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#e9d5ff',
     paddingHorizontal: 15,
-    shadowColor: '#a21caf',
+    shadowColor: '#4a044e',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -266,12 +266,12 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   button: {
-    backgroundColor: '#a21caf',
+    backgroundColor: '#4a044e',
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
     marginTop: 10,
-    shadowColor: '#a21caf',
+    shadowColor: '#4a044e',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 6,

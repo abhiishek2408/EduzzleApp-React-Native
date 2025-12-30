@@ -7,7 +7,7 @@ import { sendEmail } from "./email.js";
       subject: "Test Email - Eduzzle App",
       html: `
         <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9;">
-          <h1 style="color: #a21caf;">🎉 Email is Working!</h1>
+          <h1 style="color: #4a044e;">🎉 Email is Working!</h1>
           <p>Your Eduzzle email service is configured correctly.</p>
           <p>You can now send OTP emails to any user.</p>
         </div>

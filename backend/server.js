@@ -334,11 +334,11 @@ cron.schedule("0 9 * * *", async () => {
 
       const emailContent = `
         <div style="font-family:Arial;padding:15px;background:#f9f9f9;">
-          <h2 style="color:#a21caf;">Renew Your Eduzzle Premium Plan</h2>
+          <h2 style="color:#4a044e;">Renew Your Eduzzle Premium Plan</h2>
           <p>Hi <b>${user.name}</b>,</p>
           <p>Your <b>${planName}</b> subscription is expiring on <b>${expiryDate}</b>.</p>
           <p>Renew now to continue enjoying uninterrupted premium access!</p>
-          <a href="https://yourappdomain.com/renew" style="display:inline-block;margin-top:10px;padding:10px 20px;background:#a21caf;color:#fff;text-decoration:none;border-radius:8px;">Renew Now</a>
+          <a href="https://yourappdomain.com/renew" style="display:inline-block;margin-top:10px;padding:10px 20px;background:#4a044e;color:#fff;text-decoration:none;border-radius:8px;">Renew Now</a>
           <p style="margin-top:15px;color:#555;">Thank you for being part of Eduzzle ❤️</p>
         </div>
       `;

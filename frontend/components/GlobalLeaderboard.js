@@ -110,7 +110,7 @@ const GlobalLeaderboard = ({ navigation }) => {
                       {isCurrentUser ? "You (🎯)" : player.name}
                     </Text>
                     <View style={styles.statsRow}>
-                      <MaterialCommunityIcons name="globe-model" size={12} color="#a21caf" />
+                      <MaterialCommunityIcons name="globe-model" size={12} color="#4a044e" />
                       <Text style={styles.statsText}>{player.quizzesSolved} Solved</Text>
                     </View>
                   </View>
@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     padding: 10,
     elevation: 6,
-    shadowColor: '#a21caf',
+    shadowColor: '#4a044e',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.1,
     shadowRadius: 15,

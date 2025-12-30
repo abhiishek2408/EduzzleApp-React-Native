@@ -56,32 +56,16 @@ const LogoHeader = () => {
               zIndex: 10,
             }}
           >
-            <Ionicons 
-              name="extension-puzzle" 
-              size={36} 
-              color="#f3c999" 
-              style={{ 
-                position: 'absolute', 
-                opacity: 0.4, 
-                transform: [{ scale: 1.2 }],
-                shadowColor: "#f3c999",
-                shadowRadius: 15,
-              }} 
-            />
-            <Ionicons 
-              name="extension-puzzle" 
-              size={34} 
-              color="#f3c999" 
-              style={{ position: 'absolute', top: 2, left: 1 }} 
-            />
+          
             <Ionicons 
               name="extension-puzzle" 
               size={34} 
               color="#fff" 
               style={{ 
                 position: 'absolute',
-                transform: [{ rotate: '-6deg' }],
-                textShadowColor: '#f3c999',
+                top: 0,
+                left: 6,
+                textShadowColor: '#4a044e',
                 textShadowRadius: 10,
               }} 
             />
@@ -90,18 +74,14 @@ const LogoHeader = () => {
             
           {/* 📝 Eduzzle Text Unit */}
           <View style={{ marginLeft: 6 }}> 
-            <View style={{ position: 'relative', height: 40, justifyContent: 'center' }}>
-              <Text style={{ fontSize: 38, fontWeight: '900', color: '#1e0121', letterSpacing: 0.5, position: 'absolute', top: 3, left: 2, opacity: 0.9, fontFamily: Platform.OS === 'ios' ? 'Snell Roundhand' : 'cursive' }}>
-                Eduzzle
-              </Text>
-              <Text style={{ fontSize: 38, fontWeight: '900', color: '#fff', letterSpacing: 0.5, position: 'absolute', top: 0, left: 0, textShadowColor: '#ffa4d0', textShadowRadius: 15, fontFamily: Platform.OS === 'ios' ? 'Snell Roundhand' : 'cursive' }}>
-                Eduzzle
-              </Text>
-              <Text style={{ fontSize: 38, fontWeight: '900', color: '#fff', letterSpacing: 0.5, textShadowColor: 'rgba(255, 255, 255, 0.4)', textShadowRadius: 2, fontFamily: Platform.OS === 'ios' ? 'Snell Roundhand' : 'cursive' }}>
-                Eduzzle
+            <View style={{ height: 48, justifyContent: 'center' }}>
+              {/* Single Eduzzle with 'Edu' colored #f3c999 */}
+              <Text style={{ fontSize: 38, fontWeight: '900', letterSpacing: 0.1, color: '#fff', fontFamily: Platform.OS === 'ios' ? 'Snell Roundhand' : 'cursive' }}>
+                <Text style={{ color: '#f3c999' }}>Edu</Text>
+                <Text style={{ color: '#fff' }}>zzle</Text>
               </Text>
             </View>
-            <Text style={{ fontSize: 11, fontWeight: '800', color: '#f3c999', marginTop: 6, letterSpacing: 0.8, textTransform: 'uppercase' }}>
+            <Text style={{ fontSize: 11, fontWeight: '800', color: '#f3c999', marginTop: 0, letterSpacing: 0.8, textTransform: 'uppercase' }}>
               Puzzle. Play. Progress.
             </Text>
           </View>
@@ -138,7 +118,7 @@ const LogoHeader = () => {
             onChangeText={handleSearch}
           />
           <TouchableOpacity>
-             <Ionicons name="options-outline" size={20} color="#a21caf" />
+             <Ionicons name="options-outline" size={20} color="#4a044e" />
           </TouchableOpacity>
       </View>
 

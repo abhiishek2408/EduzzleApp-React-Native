@@ -7,11 +7,16 @@ import {
   Image,
   ActivityIndicator,
   RefreshControl,
+  TouchableOpacity,
+  Dimensions
 } from "react-native";
 import { AuthContext } from '../context/AuthContext';
 import axios from 'axios';
 import io from 'socket.io-client';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { LinearGradient } from 'expo-linear-gradient';
+
+const { width } = Dimensions.get('window');
 
 function Notification() {
   const { user, token } = useContext(AuthContext);
@@ -20,15 +25,12 @@ function Notification() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Fetch notifications from API
   const fetchNotifications = async () => {
     if (!user?._id || !token) return;
-    
     try {
       const response = await axios.get(`${API_URL}/api/notifications`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      
       if (response.data.success) {
         setNotifications(response.data.notifications);
       }
@@ -40,178 +42,99 @@ function Notification() {
     }
   };
 
-  useEffect(() => {
-    fetchNotifications();
-  }, [user, token]);
+  useEffect(() => { fetchNotifications(); }, [user, token]);
 
   const onRefresh = () => {
     setRefreshing(true);
     fetchNotifications();
   };
 
-  useEffect(() => {
-    if (!user?._id) return;
-
-    const socket = io(API_URL, { query: { userId: user._id } });
-
-    socket.on('friendRequestReceived', ({ from }) => {
-      if (from?._id) {
-        const newNotif = {
-          id: Date.now(),
-          type: 'friendRequest',
-          from: from,
-          message: `${from.name} sent you a friend request`,
-          timestamp: new Date(),
-        };
-        setNotifications(prev => [newNotif, ...prev]);
-      }
-    });
-
-    socket.on('friendRequestAccepted', ({ by }) => {
-      if (by?._id) {
-        const newNotif = {
-          id: Date.now(),
-          type: 'friendAccepted',
-          from: by,
-          message: `${by.name} accepted your friend request`,
-          timestamp: new Date(),
-        };
-        setNotifications(prev => [newNotif, ...prev]);
-      }
-    });
-
-    socket.on('friendRequestRejected', ({ by }) => {
-      if (by?._id) {
-        const newNotif = {
-          id: Date.now(),
-          type: 'friendRejected',
-          from: by,
-          message: `${by.name} rejected your friend request`,
-          timestamp: new Date(),
-        };
-        setNotifications(prev => [newNotif, ...prev]);
-      }
-    });
-
-    socket.on('friendRequestCancelled', ({ by }) => {
-      if (by?._id) {
-        const newNotif = {
-          id: Date.now(),
-          type: 'friendCancelled',
-          from: by,
-          message: `${by.name} cancelled their friend request`,
-          timestamp: new Date(),
-        };
-        setNotifications(prev => [newNotif, ...prev]);
-      }
-    });
-
-    return () => socket.disconnect();
-  }, [user]);
-
-  const getNotificationIcon = (type, metadata) => {
-    // Check for custom icon in metadata
-    if (metadata?.icon) return metadata.icon;
-    
-    switch (type) {
-      case 'welcome':
-        return 'hand-wave';
-      case 'friendRequest':
-        return 'account-plus';
-      case 'friendAccepted':
-        return 'check-circle';
-      case 'friendRejected':
-        return 'close-circle';
-      case 'friendCancelled':
-        return 'cancel';
-      case 'achievement':
-        return 'trophy';
-      case 'system':
-        return 'information';
-      default:
-        return 'bell';
-    }
-  };
-
-  const getNotificationColor = (type, metadata) => {
-    // Check for custom color in metadata
-    if (metadata?.color) return metadata.color;
-    
-    switch (type) {
-      case 'welcome':
-        return '#10b981';
-      case 'friendRequest':
-        return '#a21caf';
-      case 'friendAccepted':
-        return '#10b981';
-      case 'friendRejected':
-        return '#ef4444';
-      case 'friendCancelled':
-        return '#f59e0b';
-      case 'achievement':
-        return '#fbbf24';
-      case 'system':
-        return '#3b82f6';
-      default:
-        return '#6b7280';
-    }
+  // Helper to determine icon and color
+  const getStyleConfig = (type) => {
+    const configs = {
+      welcome: { icon: 'hand-wave', color: '#10b981' },
+      friendRequest: { icon: 'account-plus', color: '#701a75' },
+      friendAccepted: { icon: 'check-decagram', color: '#10b981' },
+      achievement: { icon: 'trophy', color: '#fbbf24' },
+      system: { icon: 'shield-check', color: '#3b82f6' },
+      default: { icon: 'bell', color: '#64748b' }
+    };
+    return configs[type] || configs.default;
   };
 
   const formatTime = (timestamp) => {
-    const now = new Date();
-    const diff = now - new Date(timestamp);
-    const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(diff / 3600000);
-    const days = Math.floor(diff / 86400000);
-
-    if (minutes < 1) return 'Just now';
-    if (minutes < 60) return `${minutes}m ago`;
-    if (hours < 24) return `${hours}h ago`;
-    return `${days}d ago`;
+    const diff = new Date() - new Date(timestamp);
+    const mins = Math.floor(diff / 60000);
+    const hrs = Math.floor(diff / 3600000);
+    if (mins < 1) return 'Just now';
+    if (mins < 60) return `${mins}m ago`;
+    if (hrs < 24) return `${hrs}h ago`;
+    return new Date(timestamp).toLocaleDateString();
   };
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <MaterialCommunityIcons name="bell" size={28} color="#a21caf" />
-        <Text style={styles.headerTitle}>Notifications</Text>
-      </View>
+      {/* --- PREMIUM HEADER --- */}
+      <LinearGradient colors={['#4a044e', '#701a75']} style={styles.header}>
+        <View style={styles.headerTop}>
+          <Text style={styles.headerTitle}>Notifications</Text>
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>{notifications.length} New</Text>
+          </View>
+        </View>
+        <Text style={styles.headerSubtitle}>Stay updated with your learning progress</Text>
+      </LinearGradient>
 
       <ScrollView 
-        style={styles.scrollView} 
-        contentContainerStyle={styles.contentContainer}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#a21caf']} />
-        }
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#701a75']} />}
       >
         {loading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#a21caf" />
-          </View>
+          <View style={styles.centerContainer}><ActivityIndicator size="large" color="#701a75" /></View>
         ) : notifications.length === 0 ? (
-          <View style={styles.emptyState}>
-            <MaterialCommunityIcons name="bell-off-outline" size={64} color="#ddd" />
-            <Text style={styles.emptyText}>No notifications yet</Text>
+          <View style={styles.centerContainer}>
+            <MaterialCommunityIcons name="bell-off-outline" size={80} color="#e2e8f0" />
+            <Text style={styles.emptyText}>All caught up!</Text>
           </View>
         ) : (
-          notifications.map(notif => (
-            <View key={notif._id || notif.id} style={styles.notificationCard}>
-              <View style={[styles.iconContainer, { backgroundColor: getNotificationColor(notif.type, notif.metadata) + '20' }]}>
-                <MaterialCommunityIcons 
-                  name={getNotificationIcon(notif.type, notif.metadata)} 
-                  size={24} 
-                  color={getNotificationColor(notif.type, notif.metadata)} 
-                />
-              </View>
-              <View style={styles.notificationContent}>
-                <Text style={styles.notificationMessage}>{notif.message}</Text>
-                <Text style={styles.notificationTime}>{formatTime(notif.createdAt || notif.timestamp)}</Text>
-              </View>
-              {notif.from?.profilePic && (
-                <Image source={{ uri: notif.from.profilePic }} style={styles.notificationAvatar} />
-              )}
-            </View>
-          ))
+          notifications.map((notif, idx) => {
+            const { icon, color } = getStyleConfig(notif.type);
+            const isUnread = idx < 2; // Logic placeholder for unread status
+
+            return (
+              <TouchableOpacity key={notif._id || notif.id} activeOpacity={0.7} style={[styles.card, isUnread && styles.unreadCard]}>
+                <View style={[styles.iconBox, { backgroundColor: color + '15' }]}>
+                  <MaterialCommunityIcons name={icon} size={24} color={color} />
+                </View>
+
+                <View style={styles.mainContent}>
+                  <View style={styles.cardHeader}>
+                    <Text style={styles.messageText} numberOfLines={2}>{notif.message}</Text>
+                    {isUnread && <View style={styles.dot} />}
+                  </View>
+                  
+                  <Text style={styles.timeText}>{formatTime(notif.createdAt || notif.timestamp)}</Text>
+
+                  {/* ACTION BUTTONS: Only for Friend Requests */}
+                  {notif.type === 'friendRequest' && (
+                    <View style={styles.actionRow}>
+                      <TouchableOpacity style={styles.acceptBtn}>
+                        <Text style={styles.acceptText}>Accept</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity style={styles.declineBtn}>
+                        <Text style={styles.declineText}>Decline</Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </View>
+
+                {notif.from?.profilePic && (
+                  <Image source={{ uri: notif.from.profilePic }} style={styles.avatar} />
+                )}
+              </TouchableOpacity>
+            );
+          })
         )}
       </ScrollView>
     </View>
@@ -219,87 +142,43 @@ function Notification() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fef9ff',
+  container: { flex: 1, backgroundColor: '#f8fafc' },
+  header: { 
+    paddingTop: 60, paddingBottom: 25, paddingHorizontal: 25, 
+    borderBottomLeftRadius: 35, borderBottomRightRadius: 35,
+    elevation: 10, shadowColor: '#4a044e'
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 50,
-    paddingBottom: 16,
-    gap: 12,
+  headerTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  headerTitle: { fontSize: 28, fontWeight: '900', color: '#fff' },
+  headerSubtitle: { color: '#f5d0fe', fontSize: 14, marginTop: 5, fontWeight: '500' },
+  badge: { backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 20 },
+  badgeText: { color: '#fff', fontSize: 12, fontWeight: 'bold' },
+
+  scrollContent: { padding: 20, paddingBottom: 100 },
+  centerContainer: { marginTop: 100, alignItems: 'center' },
+  emptyText: { color: '#94a3b8', fontSize: 18, fontWeight: '600', marginTop: 10 },
+
+  card: {
+    flexDirection: 'row', padding: 16, backgroundColor: '#fff', borderRadius: 20, 
+    marginBottom: 15, alignItems: 'flex-start',
+    borderWidth: 1, borderColor: '#f1f5f9',
+    elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 10
   },
-  headerTitle: {
-    fontSize: 26,
-    fontWeight: '900',
-    color: '#2d0c57',
-  },
-  scrollView: {
-    flex: 1,
-  },
-  contentContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-  },
-  loadingContainer: {
-    paddingVertical: 60,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  emptyState: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 60,
-  },
-  emptyText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: '#999',
-    fontWeight: '500',
-  },
-  notificationCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  iconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  notificationContent: {
-    flex: 1,
-  },
-  notificationMessage: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#2d0c57',
-    marginBottom: 4,
-  },
-  notificationTime: {
-    fontSize: 13,
-    color: '#999',
-  },
-  notificationAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 2,
-    borderColor: '#e879f9',
-  },
+  unreadCard: { borderColor: '#fae8ff', backgroundColor: '#fffaff' },
+  iconBox: { width: 45, height: 45, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
+  mainContent: { flex: 1, marginLeft: 15, marginRight: 10 },
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  messageText: { fontSize: 15, fontWeight: '700', color: '#1e293b', lineHeight: 20 },
+  timeText: { fontSize: 12, color: '#94a3b8', marginTop: 6, fontWeight: '500' },
+  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#701a75', marginTop: 5 },
+
+  avatar: { width: 40, height: 40, borderRadius: 12, borderWidth: 1.5, borderColor: '#f0abfc' },
+
+  actionRow: { flexDirection: 'row', marginTop: 15, gap: 10 },
+  acceptBtn: { backgroundColor: '#701a75', paddingHorizontal: 20, paddingVertical: 8, borderRadius: 10 },
+  acceptText: { color: '#fff', fontSize: 13, fontWeight: 'bold' },
+  declineBtn: { backgroundColor: '#f1f5f9', paddingHorizontal: 20, paddingVertical: 8, borderRadius: 10 },
+  declineText: { color: '#64748b', fontSize: 13, fontWeight: 'bold' },
 });
 
 export default Notification;

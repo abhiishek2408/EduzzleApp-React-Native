@@ -1,20 +1,20 @@
 import React from "react";
+import { View, Text, StyleSheet, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { createStackNavigator } from "@react-navigation/stack";
-import { Text } from "react-native";
+import { createStackNavigator, CardStyleInterpolators } from "@react-navigation/stack";
 
-import LogoHeader from "./LogoHeader";
+// Screen Imports
 import HomeScreen from "./HomeScreen";
 import PlayScreen from "./PlayScreen";
 import ProfileScreen from "./ProfileScreen";
+import FriendsScreen from "./FriendsScreen";
 import QuizPlayScreen from "./QuizPlayScreen";
 import ResultScreen from "./ResultScreen";
 import StackQuiz from "../screens/Puzzles/StackQuiz";
 import LinkedListPuzzle from "../screens/Puzzles/LinkedListPuzzle";
 import BubbleSortPuzzle from "../screens/Puzzles/BubbleSortPuzzle";
 import BinaryTreePuzzle from "../screens/Puzzles/BinaryTreePuzzle";
-import FriendsScreen from "./FriendsScreen";
 import SubscriptionScreen from "./SubscriptionScreen";
 import PlanDetailScreen from "./PlanDetailScreen";
 import QuizzesScreen from "./QuizzesScreen";
@@ -43,7 +43,10 @@ const StackScreens = ({ route }) => {
   return (
     <Stack.Navigator
       initialRouteName={initialScreen}
-      screenOptions={{headerShown:false}}
+      screenOptions={{
+        headerShown: false,
+        cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+      }}
     >
       <Stack.Screen name="StackHome" component={HomeScreen} />
       <Stack.Screen name="StackPlay" component={PlayScreen} />
@@ -81,80 +84,71 @@ const StackScreens = ({ route }) => {
 export default function UserDashboard() {
   return (
     <Tab.Navigator
-      initialRouteName="Home"
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: "#a21caf",
-        tabBarInactiveTintColor: "#666",
-        tabBarStyle: {
-          backgroundColor: "#fff8fc",
-          height: 70,
-          paddingBottom: 52,
-          paddingTop: 8,
-          position: "absolute",
-          bottom: 0,
-          borderTopWidth: 1,
-          borderTopColor: "#f0e5f5",
-          elevation: 8,
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: 0.1,
-          shadowRadius: 3,
-        },
-        // ICON SETUP
-        tabBarIcon: ({ color, size }) => {
+        tabBarActiveTintColor: "#701a75", // Your main purple
+        tabBarInactiveTintColor: "#94a3b8",
+        tabBarStyle: styles.tabBar,
+        tabBarLabelStyle: styles.tabBarLabel,
+        tabBarIcon: ({ focused, color, size }) => {
           let iconName;
-          switch (route.name) {
-            case "Home":
-              iconName = "home-outline";
-              break;
-            case "Play":
-              iconName = "game-controller-outline";
-              break;
-            case "Friends":
-              iconName = "people-outline";
-              break;
-            case "Profile":
-              iconName = "person-outline";
-              break;
-            default:
-              iconName = "ellipse-outline";
+
+          if (route.name === "Home") {
+            iconName = focused ? "home" : "home-outline";
+          } else if (route.name === "Play") {
+            iconName = focused ? "game-controller" : "game-controller-outline";
+          } else if (route.name === "Friends") {
+            iconName = focused ? "people" : "people-outline";
+          } else if (route.name === "Profile") {
+            iconName = focused ? "person" : "person-outline";
           }
+
+          // Return the icon directly
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        // LABEL DISPLAY ONLY WHEN ACTIVE
-        tabBarLabel: ({ focused }) =>
-          focused ? (
-            <Text style={{ color: "#a21caf", fontSize: 12, fontWeight: "600" }}>
-              {route.name}
-            </Text>
-          ) : null,
       })}
     >
-      <Tab.Screen
-        name="Home"
-        component={StackScreens}
+      <Tab.Screen 
+        name="Home" 
+        component={StackScreens} 
         initialParams={{ screen: "StackHome" }}
-        options={{ tabBarStyle: { paddingBottom: 12, height: 70 } }}
       />
-      <Tab.Screen
-        name="Play"
-        component={StackScreens}
+      <Tab.Screen 
+        name="Play" 
+        component={StackScreens} 
         initialParams={{ screen: "StackPlay" }}
-        options={{ tabBarStyle: { paddingBottom: 12, height: 70 } }}
       />
-      <Tab.Screen
-        name="Friends"
-        component={StackScreens}
+      <Tab.Screen 
+        name="Friends" 
+        component={StackScreens} 
         initialParams={{ screen: "StackFriends" }}
-        options={{ tabBarStyle: { paddingBottom: 12, height: 70 } }}
       />
-      <Tab.Screen
-        name="Profile"
-        component={StackScreens}
+      <Tab.Screen 
+        name="Profile" 
+        component={StackScreens} 
         initialParams={{ screen: "StackProfile" }}
-        options={{ tabBarStyle: { paddingBottom: 12, height: 70 } }}
       />
     </Tab.Navigator>
   );
 }
+
+const styles = StyleSheet.create({
+  tabBar: {
+    backgroundColor: "#ffffff",
+    height: 75,
+    borderTopWidth: 1,
+    borderTopColor: "#f1f5f9",
+    paddingBottom: 10,
+    paddingTop: 2,
+    // Add shadow so it's visible
+    elevation: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  tabBarLabel: {
+    fontSize: 12,
+    fontWeight: "700",
+  },
+});

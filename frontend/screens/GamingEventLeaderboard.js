@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 20, padding: 15, marginBottom: 12, elevation: 3, shadowColor: '#4a044e', shadowOpacity: 0.05, shadowRadius: 10 },
   rankText: { fontSize: 15, fontWeight: '900', color: '#94a3b8', width: 30 },
   userInitial: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#f3e8ff', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
-  initialText: { color: '#a21caf', fontWeight: '900', fontSize: 16 },
+  initialText: { color: '#4a044e', fontWeight: '900', fontSize: 16 },
   userInfo: { flex: 1 },
   nameText: { fontSize: 15, fontWeight: '800', color: '#1e293b' },
   durationText: { fontSize: 12, color: '#64748b', marginTop: 2 },

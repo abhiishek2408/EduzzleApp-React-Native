@@ -130,7 +130,7 @@ const FullGlobalLeaderboard = ({ navigation }) => {
             <MaterialCommunityIcons name="star" size={14} color="#fbbf24" />
             <Text style={styles.points}>{item.totalPoints} pts</Text>
             <Text style={styles.divider}>•</Text>
-            <MaterialCommunityIcons name="puzzle" size={14} color="#a21caf" />
+            <MaterialCommunityIcons name="puzzle" size={14} color="#4a044e" />
             <Text style={styles.quizzes}>{item.quizzesSolved} quizzes</Text>
           </View>
         </View>
@@ -143,12 +143,12 @@ const FullGlobalLeaderboard = ({ navigation }) => {
       <View style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color="#a21caf" />
+            <Ionicons name="arrow-back" size={24} color="#4a044e" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Global Leaderboard</Text>
           <View style={{ width: 40 }} />
         </View>
-        <ActivityIndicator size="large" color="#a21caf" style={{ marginTop: 50 }} />
+        <ActivityIndicator size="large" color="#4a044e" style={{ marginTop: 50 }} />
       </View>
     );
   }
@@ -157,7 +157,7 @@ const FullGlobalLeaderboard = ({ navigation }) => {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#a21caf" />
+          <Ionicons name="arrow-back" size={24} color="#4a044e" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Global Leaderboard</Text>
         <View style={{ width: 40 }} />
@@ -175,7 +175,7 @@ const FullGlobalLeaderboard = ({ navigation }) => {
           keyExtractor={(item) => item.userId.toString()}
           contentContainerStyle={styles.listContent}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#a21caf']} />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#4a044e']} />
           }
         />
       )}
@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
   },
   currentUserCard: {
     borderWidth: 2,
-    borderColor: '#a21caf',
+    borderColor: '#4a044e',
   },
   topRankCard: {
     elevation: 6,
@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   youBadge: {
-    backgroundColor: '#a21caf',
+    backgroundColor: '#4a044e',
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 10,
@@ -293,7 +293,7 @@ const styles = StyleSheet.create({
   },
   quizzes: {
     fontSize: 13,
-    color: '#a21caf',
+    color: '#4a044e',
     fontWeight: '600',
     marginLeft: 4,
   },

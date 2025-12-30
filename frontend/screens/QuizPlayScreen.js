@@ -409,7 +409,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     color: "#fff",
-    backgroundColor: "#a21caf",
+    backgroundColor: "#4a044e",
     paddingVertical: 6,
     paddingHorizontal: 16,
     borderRadius: 25,

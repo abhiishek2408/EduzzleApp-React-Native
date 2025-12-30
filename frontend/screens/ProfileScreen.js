@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
   profileBox: { alignItems: 'center', marginTop: 10 },
   avatarWrapper: { width: 110, height: 110, borderRadius: 55, padding: 4, backgroundColor: 'rgba(255,255,255,0.3)' },
   avatar: { width: '100%', height: '100%', borderRadius: 55, borderWidth: 3, borderColor: '#fff' },
-  camBadge: { position: 'absolute', bottom: 0, right: 0, backgroundColor: '#a21caf', padding: 8, borderRadius: 20, borderWidth: 3, borderColor: THEME_DARK },
+  camBadge: { position: 'absolute', bottom: 0, right: 0, backgroundColor: '#4a044e', padding: 8, borderRadius: 20, borderWidth: 3, borderColor: THEME_DARK },
   nameText: { color: '#fff', fontSize: 24, fontWeight: '900', marginTop: 15 },
   emailText: { color: 'rgba(255,255,255,0.7)', fontSize: 14, fontWeight: '600' },
   levelBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.2)', paddingHorizontal: 15, paddingVertical: 6, borderRadius: 20, marginTop: 12 },

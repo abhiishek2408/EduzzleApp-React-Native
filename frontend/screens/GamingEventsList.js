@@ -107,7 +107,7 @@ export default function GamingEventsList({ navigation }) {
                 <Ionicons 
                   name={isCompleted ? "medal-outline" : "time-outline"} 
                   size={14} 
-                  color={(isLive || isCompleted) ? THEME_ACCENT : "#a21caf"} 
+                  color={(isLive || isCompleted) ? THEME_ACCENT : "#4a044e"} 
                 />
                 <Text style={[styles.cardSubtitle, { color: (isLive || isCompleted) ? "#fce7f3" : "#6b7280" }]}>
                   {isCompleted ? "You successfully finished this event" : `${start.toLocaleDateString()} • ${start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
@@ -116,7 +116,7 @@ export default function GamingEventsList({ navigation }) {
 
               <View style={styles.tagsContainer}>
                 <View style={[styles.tag, { backgroundColor: (isLive || isCompleted) ? 'rgba(243, 201, 153, 0.2)' : '#f3e8ff' }]}>
-                  <Text style={[styles.tagText, { color: (isLive || isCompleted) ? THEME_ACCENT : "#a21caf" }]}>
+                  <Text style={[styles.tagText, { color: (isLive || isCompleted) ? THEME_ACCENT : "#4a044e" }]}>
                     {item.totalQuestions} Questions
                   </Text>
                 </View>
@@ -132,7 +132,7 @@ export default function GamingEventsList({ navigation }) {
                <Ionicons 
                 name={isCompleted ? "trophy" : "chevron-forward-circle"} 
                 size={28} 
-                color={(isLive || isCompleted) ? THEME_ACCENT : "#a21caf"} 
+                color={(isLive || isCompleted) ? THEME_ACCENT : "#4a044e"} 
                />
             </View>
           </View>
@@ -141,7 +141,7 @@ export default function GamingEventsList({ navigation }) {
     );
   };
 
-  if (loading) return <ActivityIndicator color="#a21caf" style={{ flex: 1 }} size="large" />;
+  if (loading) return <ActivityIndicator color="#4a044e" style={{ flex: 1 }} size="large" />;
 
   return (
     <View style={styles.container}>

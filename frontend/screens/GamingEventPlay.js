@@ -4,7 +4,7 @@ import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
 
 const API_BASE = "https://eduzzleapp-react-native.onrender.com/api";
-const THEME = "#a21caf";
+const THEME = "#4a044e";
 
 export default function GamingEventPlay({ route, navigation }) {
   const { eventId } = route.params;

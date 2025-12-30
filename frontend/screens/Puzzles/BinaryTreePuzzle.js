@@ -91,7 +91,7 @@ export default function BinaryTreePuzzle() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.header}>
-        <Ionicons name="git-network" size={32} color="#a21caf" />
+        <Ionicons name="git-network" size={32} color="#4a044e" />
         <Text style={styles.title}>Binary Tree Traversal</Text>
       </View>
 
@@ -196,7 +196,7 @@ export default function BinaryTreePuzzle() {
           {/* Success Message */}
           {completed && (
             <View style={styles.successContainer}>
-              <Ionicons name="trophy" size={48} color="#a21caf" />
+              <Ionicons name="trophy" size={48} color="#4a044e" />
               <Text style={styles.successText}>
                 Perfect {traversalType.toUpperCase()} Traversal!
               </Text>
@@ -230,7 +230,7 @@ export default function BinaryTreePuzzle() {
       {/* Principle Box */}
       <View style={styles.infoBox}>
         <View style={styles.infoIconContainer}>
-          <Ionicons name="book" size={18} color="#a21caf" />
+          <Ionicons name="book" size={18} color="#4a044e" />
         </View>
         <Text style={styles.infoText}>
           <Text style={styles.infoBold}>Tree Traversal Principles:</Text> Inorder (Left-Root-Right) gives sorted order in BST. Preorder (Root-Left-Right) is used for tree copying. Postorder (Left-Right-Root) is used for tree deletion.
@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#a21caf',
+    backgroundColor: '#4a044e',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -371,12 +371,12 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 20,
     borderWidth: 2,
-    borderColor: '#a21caf',
+    borderColor: '#4a044e',
   },
   traversalInfoTitle: {
     fontSize: 18,
     fontWeight: '800',
-    color: '#a21caf',
+    color: '#4a044e',
     marginBottom: 4,
     textAlign: 'center',
   },
@@ -417,7 +417,7 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     backgroundColor: '#fdf4ff',
     borderWidth: 3,
-    borderColor: '#a21caf',
+    borderColor: '#4a044e',
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
@@ -441,7 +441,7 @@ const styles = StyleSheet.create({
   treeNodeText: {
     fontSize: 18,
     fontWeight: '800',
-    color: '#a21caf',
+    color: '#4a044e',
   },
   treeNodeTextVisited: {
     color: '#10B981',
@@ -497,12 +497,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 20,
     borderWidth: 2,
-    borderColor: '#a21caf',
+    borderColor: '#4a044e',
   },
   sequenceItemText: {
     fontSize: 16,
     fontWeight: '800',
-    color: '#a21caf',
+    color: '#4a044e',
   },
   successContainer: {
     alignItems: 'center',
@@ -511,12 +511,12 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     marginBottom: 20,
     borderWidth: 2,
-    borderColor: '#a21caf',
+    borderColor: '#4a044e',
   },
   successText: {
     fontSize: 20,
     fontWeight: '800',
-    color: '#a21caf',
+    color: '#4a044e',
     marginTop: 12,
     marginBottom: 8,
     textAlign: 'center',
@@ -541,7 +541,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   restartButton: {
-    backgroundColor: '#a21caf',
+    backgroundColor: '#4a044e',
   },
   backButton: {
     backgroundColor: '#6B7280',
@@ -577,6 +577,6 @@ const styles = StyleSheet.create({
   },
   infoBold: {
     fontWeight: '800',
-    color: '#a21caf',
+    color: '#4a044e',
   },
 });

@@ -29,10 +29,10 @@ import GamingEventsSection from "./GamingEventsSection";
 import FriendsLeaderboard from "../components/FriendsLeaderboard";
 import GlobalLeaderboard from "../components/GlobalLeaderboard";
 import CardSkeleton from "../components/CardSkeleton";
-import PuzzlesScreen from "./PuzzlesScreen";
+import PuzzlesScreen from "./RecommendationScreen";
 import HelpDesk from "../components/HelpDesk";
 import ReviewUs from "../components/ReviewUs";
-import RecommendedPuzzlesSection from "../screens/PuzzlesScreen";
+import RecommendedPuzzlesSection from "./RecommendationScreen";
 
 // ...existing code...
 
@@ -87,7 +87,7 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <View className="flex-1 bg-white">
-      <StatusBar barStyle="light-content" backgroundColor="#a21caf" />
+      <StatusBar barStyle="light-content" backgroundColor="#4a044e" />
 
 
       <View className="absolute inset-0 bg-white" />

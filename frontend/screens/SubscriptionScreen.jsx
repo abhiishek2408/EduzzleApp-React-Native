@@ -8,22 +8,22 @@ import {
   Alert,
   ScrollView,
 } from "react-native";
-import CardSkeleton from "../components/CardSkeleton";
+import SubscriptionSkeleton from "../components/SubscriptionSkeleton";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons"; 
 
-// --- Design Constants ---
-const PRIMARY_COLOR_LIGHT = "#a21caf"; // Original purple
-const PRIMARY_COLOR_DARK = "#7b1fa2"; // Darker purple for gradient
+// --- Updated Theme Constants ---
+const PRIMARY_COLOR_LIGHT = "#701a75"; 
+const PRIMARY_COLOR_DARK = "#4a044e"; 
 const SUCCESS_COLOR = "#4caf50";
-const DISABLED_COLOR = "#ccc";
+const DISABLED_COLOR = "#e2e8f0"; // Light gray as per your request
 const BACKGROUND_GRADIENT_START = "#fef9ff";
 const BACKGROUND_GRADIENT_END = "#f3e5f9";
-const TEXT_COLOR_DARK = "#2c3e50"; // Dark blue/gray for better readability
-const CARD_GRADIENT_LIGHT = "#d946ef";
-const CARD_GRADIENT_DARK = "#a21caf";
+const TEXT_COLOR_DARK = "#2c3e50"; 
+const CARD_GRADIENT_LIGHT = "#701a75"; // Match your theme
+const CARD_GRADIENT_DARK = "#4a044e";  // Match your theme
 
 const SubscriptionScreen = ({ navigation }) => {
   const { token, user } = useContext(AuthContext);
@@ -55,12 +55,11 @@ const SubscriptionScreen = ({ navigation }) => {
   if (loading) {
     return (
       <View style={styles.loaderContainer}>
-        <CardSkeleton />
+        <SubscriptionSkeleton />
       </View>
     );
   }
 
-  // Find current plan details if user has an active subscription
   let currentPlan = null;
   if (user?.subscription?.isActive && user?.subscription?.planId) {
     currentPlan = plans.find((p) => String(p._id) === String(user.subscription.planId));
@@ -75,14 +74,12 @@ const SubscriptionScreen = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* Header Section */}
         <View style={styles.header}>
-          <MaterialCommunityIcons name="crown" size={40} color="#a21caf" />
+          <MaterialCommunityIcons name="crown" size={40} color={PRIMARY_COLOR_LIGHT} />
           <Text style={styles.title}>Premium Plans</Text>
           <Text style={styles.subtitle}>Unlock exclusive features and boost your learning</Text>
         </View>
 
-        {/* Current Plan Display */}
         {user?.subscription?.isActive && (
           (() => {
             const start = user.subscription.startDate ? new Date(user.subscription.startDate) : null;
@@ -92,7 +89,7 @@ const SubscriptionScreen = ({ navigation }) => {
             const planName = currentPlan?.name || "Active Plan";
             return (
               <View style={styles.currentPlanSimple}>
-                <MaterialCommunityIcons name="star-circle" size={22} color="#a21caf" style={{ marginRight: 10 }} />
+                <MaterialCommunityIcons name="star-circle" size={22} color={PRIMARY_COLOR_LIGHT} style={{ marginRight: 10 }} />
                 <View style={{ flex: 1 }}>
                   <Text style={styles.currentPlanLabel}>Current Plan</Text>
                   <Text style={styles.currentPlanValue}>{planName}</Text>
@@ -125,16 +122,14 @@ const SubscriptionScreen = ({ navigation }) => {
             !isCurrentPlan && hasActiveSubscription && styles.dimmedCard,
           ];
 
-          // Determine content colors based on whether the card is active
           const nameColor = isCurrentPlan ? "#fff" : PRIMARY_COLOR_LIGHT;
           const detailColor = isCurrentPlan ? "#f0e0f5" : TEXT_COLOR_DARK;
           const priceColor = isCurrentPlan ? "#fff" : PRIMARY_COLOR_DARK;
 
-          // Render a LinearGradient for the active plan, or a simple View for others
           const CardWrapper = ({ children }) =>
             isCurrentPlan ? (
               <LinearGradient
-                colors={[CARD_GRADIENT_LIGHT, CARD_GRADIENT_DARK]}
+                colors={[CARD_GRADIENT_DARK, CARD_GRADIENT_LIGHT]} // Inverted for depth
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={styles.activePlanGradient}
@@ -148,7 +143,6 @@ const SubscriptionScreen = ({ navigation }) => {
           return (
             <View key={item._id} style={cardStyles}>
               <CardWrapper>
-                {/* Active Badge */}
                 {isCurrentPlan && (
                   <View style={styles.activeBadge}>
                     <MaterialCommunityIcons name="check-circle" size={16} color="#fff" />
@@ -156,12 +150,10 @@ const SubscriptionScreen = ({ navigation }) => {
                   </View>
                 )}
 
-                {/* Plan Name */}
                 <Text style={[styles.planName, { color: nameColor }]}>
                   {item.name}
                 </Text>
 
-                {/* Price and Duration */}
                 <View style={styles.priceContainer}>
                   <Text style={[styles.priceText, { color: priceColor }]}>
                     ₹{item.price}
@@ -171,88 +163,51 @@ const SubscriptionScreen = ({ navigation }) => {
                   </Text>
                 </View>
 
-                {/* Feature List */}
                 <View style={styles.featuresContainer}>
-                  <View style={styles.featureRow}>
-                    <MaterialCommunityIcons 
-                      name="check-circle" 
-                      size={18} 
-                      color={isCurrentPlan ? "#90ee90" : "#4caf50"} 
-                    />
-                    <Text style={[styles.featureText, { color: detailColor }]}>
-                      Unlimited Quiz Access
-                    </Text>
-                  </View>
-                  <View style={styles.featureRow}>
-                    <MaterialCommunityIcons 
-                      name="check-circle" 
-                      size={18} 
-                      color={isCurrentPlan ? "#90ee90" : "#4caf50"} 
-                    />
-                    <Text style={[styles.featureText, { color: detailColor }]}>
-                      Exclusive Gaming Events
-                    </Text>
-                  </View>
-                  <View style={styles.featureRow}>
-                    <MaterialCommunityIcons 
-                      name="check-circle" 
-                      size={18} 
-                      color={isCurrentPlan ? "#90ee90" : "#4caf50"} 
-                    />
-                    <Text style={[styles.featureText, { color: detailColor }]}>
-                      Ad-Free Experience
-                    </Text>
-                  </View>
-                  <View style={styles.featureRow}>
-                    <MaterialCommunityIcons 
-                      name="check-circle" 
-                      size={18} 
-                      color={isCurrentPlan ? "#90ee90" : "#4caf50"} 
-                    />
-                    <Text style={[styles.featureText, { color: detailColor }]}>
-                      Priority Support
-                    </Text>
-                  </View>
+                  {[
+                    "Unlimited Quiz Access",
+                    "Exclusive Gaming Events",
+                    "Ad-Free Experience",
+                    "Priority Support"
+                  ].map((feature, fIdx) => (
+                    <View key={fIdx} style={styles.featureRow}>
+                      <MaterialCommunityIcons 
+                        name="check-circle" 
+                        size={18} 
+                        color={isCurrentPlan ? "#90ee90" : "#4caf50"} 
+                      />
+                      <Text style={[styles.featureText, { color: detailColor }]}>
+                        {feature}
+                      </Text>
+                    </View>
+                  ))}
                 </View>
                 
                 <View style={styles.separator} />
 
-                {/* Action Button/Status */}
                 {isCurrentPlan ? (
-                  <View
-                    style={[
-                      styles.button,
-                      { backgroundColor: SUCCESS_COLOR, marginTop: 15 },
-                    ]}
-                  >
+                  <View style={[styles.button, { backgroundColor: SUCCESS_COLOR, marginTop: 15 }]}>
                     <Text style={styles.buttonText}>
                       Active (Ends: {formattedEndDate})
                     </Text>
                   </View>
                 ) : hasActiveSubscription ? (
-                  <View
-                    style={[
-                      styles.button,
-                      styles.disabledButton,
-                      { marginTop: 15 },
-                    ]}
-                  >
+                  <View style={[styles.button, styles.disabledButton, { marginTop: 15 }]}>
                     <Text style={[styles.buttonText, styles.disabledButtonText]}>
                       Cannot Subscribe
                     </Text>
                   </View>
                 ) : (
                   <TouchableOpacity
-                    style={styles.button}
-                    onPress={() =>
-                      navigation.navigate("PlanDetail", {
-                        plan: item,
-                        userSubscription: user.subscription,
-                      })
-                    }
+                    onPress={() => navigation.navigate("PlanDetail", { plan: item, userSubscription: user.subscription })}
                   >
-                    <MaterialCommunityIcons name="rocket-launch" size={20} color="#fff" style={{ marginRight: 8 }} />
-                    <Text style={styles.buttonText}>Select Plan</Text>
+                    <LinearGradient
+                      colors={[CARD_GRADIENT_DARK, CARD_GRADIENT_LIGHT]}
+                      style={styles.button}
+                    >
+                      <MaterialCommunityIcons name="rocket-launch" size={20} color="#fff" style={{ marginRight: 8 }} />
+                      <Text style={styles.buttonText}>Select Plan</Text>
+                    </LinearGradient>
                   </TouchableOpacity>
                 )}
               </CardWrapper>
@@ -268,10 +223,6 @@ const SubscriptionScreen = ({ navigation }) => {
 export default SubscriptionScreen;
 
 const styles = StyleSheet.create({
-  currentPlanBox: {
-    marginBottom: 18,
-    marginHorizontal: 2,
-  },
   currentPlanSimple: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -280,23 +231,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#f0e5f5',
     marginBottom: 16,
-  },
-  currentPlanGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 16,
-    padding: 16,
-    shadowColor: '#7b1fa2',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.22,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  currentPlanTitle: {
-    fontSize: 18,
-    fontWeight: '900',
-    color: '#fff',
-    letterSpacing: 0.3,
   },
   currentPlanLabel: {
     fontSize: 12,
@@ -308,41 +242,12 @@ const styles = StyleSheet.create({
   currentPlanValue: {
     fontSize: 18,
     fontWeight: '900',
-    color: '#4A148C',
+    color: PRIMARY_COLOR_DARK,
     marginTop: 2,
   },
   currentPlanMeta: {
     marginTop: 2,
     color: '#6b7280',
-    fontSize: 12,
-  },
-  currentPlanMetaLight: {
-    marginTop: 4,
-    color: '#f3e8ff',
-    fontSize: 13,
-  },
-  chipsRow: {
-    flexDirection: 'row',
-    marginTop: 10,
-  },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#ffffff',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 20,
-    marginRight: 10,
-  },
-  chipAlt: {
-    backgroundColor: '#ffffff22',
-    borderWidth: 1,
-    borderColor: '#ffffff66',
-  },
-  chipText: {
-    marginLeft: 6,
-    color: '#4b5563',
-    fontWeight: '700',
     fontSize: 12,
   },
   container: { flex: 1 },
@@ -366,7 +271,7 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     marginTop: 12,
     marginBottom: 8,
-    color: "#a21caf",
+    color: PRIMARY_COLOR_LIGHT,
     textAlign: "center",
   },
   subtitle: {
@@ -382,7 +287,7 @@ const styles = StyleSheet.create({
   planCard: {
     marginBottom: 25,
     borderRadius: 20,
-    shadowColor: "#a21caf",
+    shadowColor: PRIMARY_COLOR_DARK,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.25,
     shadowRadius: 12,
@@ -448,12 +353,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flexDirection: 'row',
     justifyContent: 'center',
-    backgroundColor: PRIMARY_COLOR_LIGHT,
-    shadowColor: PRIMARY_COLOR_DARK,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 6,
     minHeight: 48,
   },
   buttonText: { 
@@ -465,11 +364,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   disabledButton: {
-    backgroundColor: DISABLED_COLOR,
-    shadowColor: 'transparent',
+    backgroundColor: "#cbd5e1",
   },
   disabledButtonText: {
-    color: TEXT_COLOR_DARK,
+    color: "#64748b",
     fontWeight: '700',
   },
   activeBadge: {

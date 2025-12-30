@@ -9,9 +9,8 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon1.png",
-      "resizeMode": "cover",
-      "backgroundColor": "#ffffff"
+      "image": "./assets/splash-gradient.png",
+      "backgroundColor": "#4a044e"
     },
     "ios": {
       "supportsTablet": true
@@ -20,7 +19,7 @@
       "package": "com.abhiishek2408.Eduzzle",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon1.png",
-        "backgroundColor": "#a21caf"
+        "backgroundColor": "#4a044e"
       },
       "edgeToEdgeEnabled": true
     },

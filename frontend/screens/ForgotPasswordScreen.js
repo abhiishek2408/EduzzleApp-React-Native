@@ -5,13 +5,16 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  ImageBackground,
   Animated,
   Dimensions,
+  StatusBar,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigation } from "@react-navigation/native";
-import { Ionicons, FontAwesome } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { LinearGradient } from 'expo-linear-gradient';
 
 const { width } = Dimensions.get("window");
 
@@ -19,25 +22,25 @@ export default function ForgotPasswordScreen() {
   const { forgotPassword } = useContext(AuthContext);
   const navigation = useNavigation();
   const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  // Star animations
-  const star1 = useRef(new Animated.Value(0)).current;
-  const star2 = useRef(new Animated.Value(0)).current;
+  // Entrance Animations
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(20)).current;
 
   useEffect(() => {
-    const floatStar = (star, delay) => {
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(star, { toValue: -20, duration: 2000, delay, useNativeDriver: true }),
-          Animated.timing(star, { toValue: 20, duration: 2000, useNativeDriver: true }),
-        ])
-      ).start();
-    };
-    floatStar(star1, 0);
-    floatStar(star2, 1000);
+    Animated.parallel([
+      Animated.timing(fadeAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
+      Animated.timing(slideAnim, { toValue: 0, duration: 800, useNativeDriver: true }),
+    ]).start();
   }, []);
 
   const submit = async () => {
+    if (!email) {
+      alert("Please enter your email address");
+      return;
+    }
+    setLoading(true);
     try {
       const data = await forgotPassword(email);
       if (data?.message) {
@@ -46,109 +49,187 @@ export default function ForgotPasswordScreen() {
       }
     } catch (err) {
       alert(err?.response?.data?.message || "Failed to send reset OTP");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <View style={styles.container}>
+    <LinearGradient colors={['#fdf4ff', '#fae8ff', '#f5d0fe']} style={styles.container}>
+      <StatusBar barStyle="dark-content" />
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.keyboardView}
+      >
+        <Animated.View style={[styles.card, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
+          
+          {/* Illustration Icon */}
+          <View style={styles.headerSection}>
+            <View style={styles.iconBackground}>
+              <MaterialCommunityIcons name="lock-reset" size={50} color="#701a75" />
+            </View>
+            <Text style={styles.heading}>Reset Password</Text>
+            <Text style={styles.subHeading}>
+              Enter your email and we'll send you an OTP to reset your password.
+            </Text>
+          </View>
 
-      
+          {/* Input Section */}
+          <View style={styles.inputContainer}>
+            <View style={styles.inputWrapper}>
+              <Ionicons name="mail-unread-outline" size={20} color="#701a75" style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                placeholder="email@example.com"
+                placeholderTextColor="#a1a1aa"
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+                keyboardType="email-address"
+              />
+            </View>
+          </View>
 
-      <View style={styles.card}>
-        <Ionicons name="help-circle-outline" size={48} color="#a21caf" style={styles.logo} />
-        <Text style={styles.heading}>Forgot Password</Text>
+          {/* Submit Button */}
+          <TouchableOpacity 
+            activeOpacity={0.8} 
+            style={styles.button} 
+            onPress={submit}
+            disabled={loading}
+          >
+            <LinearGradient 
+                colors={['#4a044e','#701a75', '#4a044e']} 
+                start={{x: 0, y: 0}} end={{x: 1, y: 0}} 
+                style={styles.gradientButton}
+            >
+              <Text style={styles.buttonText}>
+                {loading ? "Sending..." : "Send Reset OTP"}
+              </Text>
+              {!loading && <Ionicons name="paper-plane-outline" size={18} color="#fff" />}
+            </LinearGradient>
+          </TouchableOpacity>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Your email"
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-          keyboardType="email-address"
-        />
-
-        <TouchableOpacity style={styles.button} onPress={submit}>
-          <Text style={styles.buttonText}>Request reset email</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.linkButton}
-          onPress={() => navigation.navigate("Login")}
-        >
-          <Text style={styles.linkText}>Back to Login</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+          {/* Back to Login Link */}
+          <TouchableOpacity
+            style={styles.linkButton}
+            onPress={() => navigation.navigate("Login")}
+          >
+            <View style={styles.backRow}>
+                <Ionicons name="arrow-back" size={16} color="#701a75" />
+                <Text style={styles.linkText}>Back to Login</Text>
+            </View>
+          </TouchableOpacity>
+        </Animated.View>
+      </KeyboardAvoidingView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  keyboardView: {
+    flex: 1,
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
-    backgroundColor: "#fdf6ff",
   },
   card: {
     width: width > 500 ? 400 : "100%",
-    backgroundColor: "#fff8fc",
-    padding: 30,
-    borderRadius: 25,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 8,
-    borderWidth: 2,
-    borderColor: "#ffd6fa",
+    backgroundColor: "rgba(255, 255, 255, 0.95)",
+    padding: 35,
+    borderRadius: 40,
+    shadowColor: "#701a75",
+    shadowOpacity: 0.12,
+    shadowRadius: 25,
+    shadowOffset: { width: 0, height: 15 },
+    elevation: 12,
   },
-  logo: {
-    marginBottom: 10,
+  headerSection: {
+    alignItems: "center",
+    marginBottom: 35,
+  },
+  iconBackground: {
+    width: 100,
+    height: 100,
+    backgroundColor: '#fdf4ff',
+    borderRadius: 50,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#fae8ff',
   },
   heading: {
     fontSize: 26,
-    fontWeight: "bold",
-    color: "#a21caf",
-    marginBottom: 24,
-    fontFamily: "cursive",
+    fontWeight: "900",
+    color: "#4a044e",
+    marginBottom: 10,
+    letterSpacing: -0.5,
+  },
+  subHeading: {
+    fontSize: 14,
+    color: "#71717a",
+    textAlign: 'center',
+    lineHeight: 20,
+    paddingHorizontal: 10,
+  },
+  inputContainer: {
+    width: "100%",
+    marginBottom: 20,
+  },
+  inputWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f8fafc",
+    borderRadius: 20,
+    paddingHorizontal: 15,
+    height: 60,
+    borderWidth: 1.5,
+    borderColor: "#f1f5f9",
+  },
+  inputIcon: {
+    marginRight: 12,
   },
   input: {
-    width: "100%",
-    height: 50,
-    backgroundColor: "#fde8ff",
-    borderRadius: 15,
-    paddingHorizontal: 15,
-    marginBottom: 16,
+    flex: 1,
     fontSize: 16,
     color: "#4c1d95",
-    borderWidth: 1,
-    borderColor: "#f0abfc",
+    fontWeight: "500",
   },
   button: {
-    backgroundColor: "#a21caf",
-    paddingVertical: 14,
-    borderRadius: 20,
     width: "100%",
-    marginBottom: 18,
+    height: 60,
+    borderRadius: 20,
+    overflow: "hidden",
+    marginBottom: 20,
+  },
+  gradientButton: {
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "center",
     alignItems: "center",
+    gap: 12,
   },
   buttonText: {
     color: "#fff",
     fontSize: 17,
-    fontWeight: "600",
+    fontWeight: "800",
+    letterSpacing: 0.5,
   },
   linkButton: {
-    marginTop: 10,
     alignItems: "center",
+    paddingVertical: 10,
+  },
+  backRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
   },
   linkText: {
-    color: "#a855f7",
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  star: {
-    position: "absolute",
+    color: "#701a75",
+    fontSize: 15,
+    fontWeight: "700",
   },
 });

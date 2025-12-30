@@ -56,7 +56,7 @@ export default function LinkedListPuzzle() {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.iconContainer}>
-          <MaterialCommunityIcons name="link-variant" size={28} color="#a21caf" />
+          <MaterialCommunityIcons name="link-variant" size={28} color="#4a044e" />
         </View>
         <Text style={styles.title}>Linked List Puzzle</Text>
       </View>
@@ -64,13 +64,13 @@ export default function LinkedListPuzzle() {
       {/* Stats Bar */}
       <View style={styles.statsBar}>
         <View style={styles.statItem}>
-          <Ionicons name="swap-horizontal" size={20} color="#a21caf" />
+          <Ionicons name="swap-horizontal" size={20} color="#4a044e" />
           <Text style={styles.statLabel}>Swaps</Text>
           <Text style={styles.statValue}>{swaps}</Text>
         </View>
         <View style={styles.statDivider} />
         <View style={styles.statItem}>
-          <MaterialCommunityIcons name="link" size={20} color="#a21caf" />
+          <MaterialCommunityIcons name="link" size={20} color="#4a044e" />
           <Text style={styles.statLabel}>Nodes</Text>
           <Text style={styles.statValue}>{nodes.length}</Text>
         </View>
@@ -78,7 +78,7 @@ export default function LinkedListPuzzle() {
 
       {/* Instruction */}
       <View style={styles.instructionContainer}>
-        <Ionicons name="information-circle" size={20} color="#a21caf" />
+        <Ionicons name="information-circle" size={20} color="#4a044e" />
         <Text style={styles.instruction}>
           Arrange nodes in order: <Text style={styles.highlight}>A → B → C → D</Text>
         </Text>
@@ -94,7 +94,7 @@ export default function LinkedListPuzzle() {
                 <Text style={styles.goalNodeText}>{letter}</Text>
               </View>
               {index < correctOrder.length - 1 && (
-                <Ionicons name="arrow-forward" size={16} color="#a21caf" style={styles.goalArrow} />
+                <Ionicons name="arrow-forward" size={16} color="#4a044e" style={styles.goalArrow} />
               )}
             </View>
           ))}
@@ -133,7 +133,7 @@ export default function LinkedListPuzzle() {
                   <Ionicons 
                     name="arrow-forward" 
                     size={28} 
-                    color={solved ? "#10b981" : selectedIndex === index || selectedIndex === index + 1 ? "#a21caf" : "#d1d5db"} 
+                    color={solved ? "#10b981" : selectedIndex === index || selectedIndex === index + 1 ? "#4a044e" : "#d1d5db"} 
                   />
                 </View>
               )}
@@ -180,7 +180,7 @@ export default function LinkedListPuzzle() {
       {/* How to Play */}
       <View style={styles.howToPlayContainer}>
         <View style={styles.howToPlayHeader}>
-          <Ionicons name="game-controller" size={18} color="#a21caf" />
+          <Ionicons name="game-controller" size={18} color="#4a044e" />
           <Text style={styles.howToPlayTitle}>How to Play</Text>
         </View>
         <View style={styles.howToPlaySteps}>
@@ -208,7 +208,7 @@ export default function LinkedListPuzzle() {
       {/* Principle Box */}
       <View style={styles.hintContainer}>
         <View style={styles.hintIcon}>
-          <Ionicons name="book" size={18} color="#a21caf" />
+          <Ionicons name="book" size={18} color="#4a044e" />
         </View>
         <Text style={styles.hintText}>
           <Text style={styles.hintBold}>Linked List Principle:</Text> A linear data structure where elements (nodes) are connected via pointers. Each node contains data and a reference to the next node, enabling efficient insertion and deletion.
@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     marginBottom: 20,
-    shadowColor: '#a21caf',
+    shadowColor: '#4a044e',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
@@ -278,7 +278,7 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 24,
     fontWeight: '800',
-    color: '#a21caf',
+    color: '#4a044e',
   },
   instructionContainer: {
     flexDirection: 'row',
@@ -332,7 +332,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#a21caf',
+    backgroundColor: '#4a044e',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -350,7 +350,7 @@ const styles = StyleSheet.create({
   },
   highlight: {
     fontWeight: '800',
-    color: '#a21caf',
+    color: '#4a044e',
   },
   goalContainer: {
     backgroundColor: '#ffffff',
@@ -392,7 +392,7 @@ const styles = StyleSheet.create({
   goalNodeText: {
     fontSize: 18,
     fontWeight: '800',
-    color: '#a21caf',
+    color: '#4a044e',
   },
   goalArrow: {
     marginHorizontal: 6,
@@ -411,7 +411,7 @@ const styles = StyleSheet.create({
   puzzleLabel: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#a21caf',
+    color: '#4a044e',
     marginBottom: 20,
     textAlign: 'center',
     textTransform: 'uppercase',
@@ -436,7 +436,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 3,
     borderColor: '#d8b4fe',
-    shadowColor: '#a21caf',
+    shadowColor: '#4a044e',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.2,
     shadowRadius: 5,
@@ -456,7 +456,7 @@ const styles = StyleSheet.create({
   nodeText: {
     fontSize: 32,
     fontWeight: '800',
-    color: '#a21caf',
+    color: '#4a044e',
   },
   nodeTextSelected: {
     color: '#f59e0b',
@@ -551,12 +551,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#a21caf',
+    backgroundColor: '#4a044e',
     paddingVertical: 16,
     paddingHorizontal: 32,
     borderRadius: 16,
     gap: 8,
-    shadowColor: '#a21caf',
+    shadowColor: '#4a044e',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -594,6 +594,6 @@ const styles = StyleSheet.create({
   },
   hintBold: {
     fontWeight: '800',
-    color: '#a21caf',
+    color: '#4a044e',
   },
 });

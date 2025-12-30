@@ -256,17 +256,19 @@ router.post("/forgot-password", createRateLimiter({ max: 6 }), async (req, res) 
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) return res.status(400).json({ message: "No account with that email" });
 
-    const rawToken = crypto.randomBytes(32).toString("hex");
-    const hashed = crypto.createHash("sha256").update(rawToken).digest("hex");
-    user.resetPasswordToken = hashed;
-    user.resetPasswordExpires = new Date(Date.now() + RESET_TOKEN_EXPIRES_MIN * 60 * 1000);
+    // Generate 6-digit OTP
+    const rawOtp = Math.floor(100000 + Math.random() * 900000).toString();
+    const hashedOtp = crypto.createHash("sha256").update(rawOtp).digest("hex");
+    user.resetPasswordOtp = {
+      code: hashedOtp,
+      expiresAt: new Date(Date.now() + OTP_EXPIRES_MIN * 60 * 1000)
+    };
     await user.save();
 
-    const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${rawToken}&id=${user._id}`;
-    const html = `<p>To reset your password, click: <a href="${resetUrl}">${resetUrl}</a></p><p>This link expires in ${RESET_TOKEN_EXPIRES_MIN} minutes.</p>`;
-    await sendEmail({ to: user.email, subject: "Password reset", html });
+    const html = `<p>Your password reset OTP is: <strong>${rawOtp}</strong></p><p>It expires in ${OTP_EXPIRES_MIN} minutes.</p>`;
+    await sendEmail({ to: user.email, subject: "Password Reset OTP", html });
 
-    return res.json({ message: "Password reset email sent" });
+    return res.json({ message: "Password reset OTP sent to your email" });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Server error" });

@@ -140,7 +140,7 @@ const QuizCard = ({ title, category, attempted, isFree, onPress }) => {
           <MaterialCommunityIcons
             name="lightbulb-on-outline"
             size={18}
-            color="#a21caf"
+            color="#4a044e"
           />
           <Text
             className="ml-1 text-[14px] font-extrabold text-[#2d0c57]"

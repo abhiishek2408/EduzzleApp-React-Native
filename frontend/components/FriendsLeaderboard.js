@@ -141,14 +141,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#fae8ff'
   },
-  viewAllText: { fontSize: 10, fontWeight: '900', color: '#a21caf', marginRight: 2 },
+  viewAllText: { fontSize: 10, fontWeight: '900', color: '#4a044e', marginRight: 2 },
 
   mainCard: {
     backgroundColor: '#ffffff',
     borderRadius: 28,
     padding: 12,
     elevation: 8,
-    shadowColor: '#a21caf',
+    shadowColor: '#4a044e',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.1,
     shadowRadius: 20,

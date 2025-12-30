@@ -87,7 +87,7 @@ const PlanDetailScreen = ({ route, navigation }) => {
             onChangeText={setDiscountCode}
           />
           <TouchableOpacity
-            style={[styles.button, { backgroundColor: "#a21caf" }]}
+            style={[styles.button, { backgroundColor: "#4a044e" }]}
             onPress={handleSubscribe}
           >
             <Text style={styles.buttonText}>Confirm Subscription</Text>
@@ -103,7 +103,7 @@ export default PlanDetailScreen;
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: "#fff" },
   loaderContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
-  planName: { fontSize: 22, fontWeight: "bold", marginBottom: 20, color: "#a21caf" },
+  planName: { fontSize: 22, fontWeight: "bold", marginBottom: 20, color: "#4a044e" },
   input: {
     borderWidth: 1,
     borderColor: "#ccc",

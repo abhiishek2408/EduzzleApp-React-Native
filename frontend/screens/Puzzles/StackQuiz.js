@@ -78,7 +78,7 @@ export default function StackQuiz() {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.iconContainer}>
-          <MaterialCommunityIcons name="layers-triple" size={28} color="#a21caf" />
+          <MaterialCommunityIcons name="layers-triple" size={28} color="#4a044e" />
         </View>
         <Text style={styles.title}>Stack Operations</Text>
       </View>
@@ -86,19 +86,19 @@ export default function StackQuiz() {
       {/* Stats Bar */}
       <View style={styles.statsBar}>
         <View style={styles.statItem}>
-          <Ionicons name="list" size={20} color="#a21caf" />
+          <Ionicons name="list" size={20} color="#4a044e" />
           <Text style={styles.statLabel}>Items</Text>
           <Text style={styles.statValue}>{stack.length}</Text>
         </View>
         <View style={styles.statDivider} />
         <View style={styles.statItem}>
-          <Ionicons name="footsteps" size={20} color="#a21caf" />
+          <Ionicons name="footsteps" size={20} color="#4a044e" />
           <Text style={styles.statLabel}>Step</Text>
           <Text style={styles.statValue}>{currentStep}/{operations.length}</Text>
         </View>
         <View style={styles.statDivider} />
         <View style={styles.statItem}>
-          <Ionicons name="time" size={20} color="#a21caf" />
+          <Ionicons name="time" size={20} color="#4a044e" />
           <Text style={styles.statLabel}>Operations</Text>
           <Text style={styles.statValue}>{history.length}</Text>
         </View>
@@ -106,7 +106,7 @@ export default function StackQuiz() {
 
       {/* Instruction */}
       <View style={styles.instructionContainer}>
-        <Ionicons name="bulb" size={18} color="#a21caf" />
+        <Ionicons name="bulb" size={18} color="#4a044e" />
         <Text style={styles.instruction}>
           Watch LIFO in action: Last In, First Out
         </Text>
@@ -116,7 +116,7 @@ export default function StackQuiz() {
       <View style={styles.stackContainer}>
         <View style={styles.stackHeader}>
           <View style={styles.stackLabel}>
-            <MaterialCommunityIcons name="stack-overflow" size={22} color="#a21caf" />
+            <MaterialCommunityIcons name="stack-overflow" size={22} color="#4a044e" />
             <Text style={styles.stackLabelText}>Stack State</Text>
           </View>
           {stack.length > 0 && (
@@ -237,7 +237,7 @@ export default function StackQuiz() {
       {history.length > 0 && (
         <View style={styles.historyContainer}>
           <View style={styles.historyHeader}>
-            <MaterialCommunityIcons name="history" size={22} color="#a21caf" />
+            <MaterialCommunityIcons name="history" size={22} color="#4a044e" />
             <Text style={styles.historyTitle}>Execution Log</Text>
             <View style={styles.historyCount}>
               <Text style={styles.historyCountText}>{history.length}</Text>
@@ -280,7 +280,7 @@ export default function StackQuiz() {
       {/* How to Play */}
       <View style={styles.howToPlayContainer}>
         <View style={styles.howToPlayHeader}>
-          <Ionicons name="game-controller" size={18} color="#a21caf" />
+          <Ionicons name="game-controller" size={18} color="#4a044e" />
           <Text style={styles.howToPlayTitle}>How to Play</Text>
         </View>
         <View style={styles.howToPlaySteps}>
@@ -308,7 +308,7 @@ export default function StackQuiz() {
       {/* Info Box */}
       <View style={styles.infoBox}>
         <View style={styles.infoIconContainer}>
-          <Ionicons name="information" size={18} color="#a21caf" />
+          <Ionicons name="information" size={18} color="#4a044e" />
         </View>
         <Text style={styles.infoText}>
           <Text style={styles.infoBold}>LIFO Principle:</Text> The last element pushed onto the stack is the first one to be popped off
@@ -354,7 +354,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     marginBottom: 20,
-    shadowColor: '#a21caf',
+    shadowColor: '#4a044e',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
@@ -378,7 +378,7 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 20,
     fontWeight: '800',
-    color: '#a21caf',
+    color: '#4a044e',
   },
   instructionContainer: {
     flexDirection: 'row',
@@ -431,7 +431,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#a21caf',
+    backgroundColor: '#4a044e',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -544,7 +544,7 @@ const styles = StyleSheet.create({
   stackSizeText: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#a21caf',
+    color: '#4a044e',
   },
   stackItems: {
     alignItems: 'center',
@@ -575,7 +575,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     borderWidth: 3,
     borderColor: '#d8b4fe',
-    shadowColor: '#a21caf',
+    shadowColor: '#4a044e',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 4,
@@ -626,7 +626,7 @@ const styles = StyleSheet.create({
   progressText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#a21caf',
+    color: '#4a044e',
   },
   operationCard: {
     flexDirection: 'row',
@@ -677,12 +677,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#a21caf',
+    backgroundColor: '#4a044e',
     paddingVertical: 16,
     paddingHorizontal: 24,
     borderRadius: 16,
     gap: 8,
-    shadowColor: '#a21caf',
+    shadowColor: '#4a044e',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -776,7 +776,7 @@ const styles = StyleSheet.create({
   historyCountText: {
     fontSize: 13,
     fontWeight: '800',
-    color: '#a21caf',
+    color: '#4a044e',
   },
   historyList: {
     gap: 2,
@@ -795,7 +795,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#a21caf',
+    backgroundColor: '#4a044e',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -848,13 +848,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#a21caf',
+    backgroundColor: '#4a044e',
     paddingVertical: 16,
     paddingHorizontal: 24,
     borderRadius: 16,
     gap: 8,
     marginBottom: 16,
-    shadowColor: '#a21caf',
+    shadowColor: '#4a044e',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 6,
@@ -891,6 +891,6 @@ const styles = StyleSheet.create({
   },
   infoBold: {
     fontWeight: '800',
-    color: '#a21caf',
+    color: '#4a044e',
   },
 });

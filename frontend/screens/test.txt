@@ -17,7 +17,7 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 
 import { AuthContext } from "../context/AuthContext";
 
-const THEME_COLOR = "#a21caf";
+const THEME_COLOR = "#4a044e";
 const PRIMARY_TEXT_COLOR = "#2d0c57";
 const SECONDARY_TEXT_COLOR = "#4a4a6a";
 

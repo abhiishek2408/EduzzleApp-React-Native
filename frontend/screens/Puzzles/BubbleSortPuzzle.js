@@ -42,7 +42,7 @@ export default function BubbleSortPuzzle() {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.iconContainer}>
-          <MaterialCommunityIcons name="sort-ascending" size={28} color="#a21caf" />
+          <MaterialCommunityIcons name="sort-ascending" size={28} color="#4a044e" />
         </View>
         <Text style={styles.title}>Bubble Sort Puzzle</Text>
       </View>
@@ -50,13 +50,13 @@ export default function BubbleSortPuzzle() {
       {/* Stats Bar */}
       <View style={styles.statsBar}>
         <View style={styles.statItem}>
-          <Ionicons name="swap-horizontal" size={20} color="#a21caf" />
+          <Ionicons name="swap-horizontal" size={20} color="#4a044e" />
           <Text style={styles.statLabel}>Swaps</Text>
           <Text style={styles.statValue}>{swaps}</Text>
         </View>
         <View style={styles.statDivider} />
         <View style={styles.statItem}>
-          <Ionicons name="analytics" size={20} color="#a21caf" />
+          <Ionicons name="analytics" size={20} color="#4a044e" />
           <Text style={styles.statLabel}>Numbers</Text>
           <Text style={styles.statValue}>{array.length}</Text>
         </View>
@@ -64,9 +64,9 @@ export default function BubbleSortPuzzle() {
 
       {/* Instruction */}
       <View style={styles.instructionContainer}>
-        <Ionicons name="information-circle" size={20} color="#a21caf" />
+        <Ionicons name="information-circle" size={20} color="#4a044e" />
         <Text style={styles.instruction}>
-          Tap <Ionicons name="swap-vertical" size={16} color="#a21caf" /> to swap adjacent numbers
+          Tap <Ionicons name="swap-vertical" size={16} color="#4a044e" /> to swap adjacent numbers
         </Text>
       </View>
 
@@ -139,7 +139,7 @@ export default function BubbleSortPuzzle() {
       {/* How to Play */}
       <View style={styles.howToPlayContainer}>
         <View style={styles.howToPlayHeader}>
-          <Ionicons name="game-controller" size={18} color="#a21caf" />
+          <Ionicons name="game-controller" size={18} color="#4a044e" />
           <Text style={styles.howToPlayTitle}>How to Play</Text>
         </View>
         <View style={styles.howToPlaySteps}>
@@ -167,7 +167,7 @@ export default function BubbleSortPuzzle() {
       {/* Info Box */}
       <View style={styles.infoBox}>
         <View style={styles.infoIconContainer}>
-          <Ionicons name="book" size={18} color="#a21caf" />
+          <Ionicons name="book" size={18} color="#4a044e" />
         </View>
         <Text style={styles.infoText}>
           <Text style={styles.infoBold}>Bubble Sort Principle:</Text> Repeatedly compare adjacent elements and swap them if they are in wrong order. The largest element "bubbles up" to its correct position in each pass.
@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     marginBottom: 20,
-    shadowColor: '#a21caf',
+    shadowColor: '#4a044e',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 24,
     fontWeight: '800',
-    color: '#a21caf',
+    color: '#4a044e',
   },
   instructionContainer: {
     flexDirection: 'row',
@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#a21caf',
+    backgroundColor: '#4a044e',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
   },
   goalText: {
     fontSize: 14,
-    color: '#a21caf',
+    color: '#4a044e',
     fontWeight: '700',
     textAlign: 'center',
     marginBottom: 20,
@@ -356,10 +356,10 @@ const styles = StyleSheet.create({
     borderRadius: 32,
     backgroundColor: '#fdf4ff',
     borderWidth: 3,
-    borderColor: '#a21caf',
+    borderColor: '#4a044e',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#a21caf',
+    shadowColor: '#4a044e',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
@@ -368,7 +368,7 @@ const styles = StyleSheet.create({
   blockText: {
     fontSize: 28,
     fontWeight: '800',
-    color: '#a21caf',
+    color: '#4a044e',
   },
   blockTextSorted: {
     color: '#10b981',
@@ -377,10 +377,10 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: '#a21caf',
+    backgroundColor: '#4a044e',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#a21caf',
+    shadowColor: '#4a044e',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 6,
@@ -470,7 +470,7 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   resetButton: {
-    backgroundColor: '#a21caf',
+    backgroundColor: '#4a044e',
   },
   buttonText: {
     fontSize: 16,
@@ -503,6 +503,6 @@ const styles = StyleSheet.create({
   },
   infoBold: {
     fontWeight: '800',
-    color: '#a21caf',
+    color: '#4a044e',
   },
 });

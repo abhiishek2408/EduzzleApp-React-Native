@@ -264,7 +264,7 @@
 //     borderRadius: 5,
 //   },
 //   button: {
-//     backgroundColor: "#a21caf",
+//     backgroundColor: "#4a044e",
 //     padding: 15,
 //     borderRadius: 8,
 //     marginTop: 20,
@@ -405,7 +405,7 @@ export default function ResultComponent({
             <Ionicons
               name="rocket-outline"
               size={50}
-              color="#a21caf"
+              color="#4a044e"
               style={{ marginBottom: 10 }}
             />
             <Text style={styles.successText}>
@@ -436,7 +436,7 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 5,
   },
-  title: { fontSize: 30, fontWeight: "800", color: "#a21caf", marginBottom: 4 },
+  title: { fontSize: 30, fontWeight: "800", color: "#4a044e", marginBottom: 4 },
   subtitle: { fontSize: 18, color: "#a78bfa", marginBottom: 20 },
   scoreContainer: {
     backgroundColor: "#f3e8ff",
@@ -445,7 +445,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     alignItems: "center",
   },
-  scoreLabel: { fontSize: 16, color: "#a21caf", fontWeight: "600" },
+  scoreLabel: { fontSize: 16, color: "#4a044e", fontWeight: "600" },
   scoreText: { fontSize: 36, fontWeight: "bold", color: "#7e22ce" },
   statusBoxPassed: {
     flexDirection: "row",
@@ -477,13 +477,13 @@ const styles = StyleSheet.create({
     color: "#1f2937",
     textAlignVertical: "top",
   },
-  ratingTitle: { fontSize: 18, marginTop: 25, marginBottom: 10, color: "#a21caf", fontWeight: "600" },
+  ratingTitle: { fontSize: 18, marginTop: 25, marginBottom: 10, color: "#4a044e", fontWeight: "600" },
   starRow: { flexDirection: "row", justifyContent: "center", marginBottom: 10 },
   starButton: { paddingHorizontal: 5 },
   star: { color: "#facc15" },
   starOutline: { color: "#d1d5db" },
   button: {
-    backgroundColor: "#a21caf",
+    backgroundColor: "#4a044e",
     padding: 16,
     borderRadius: 10,
     marginTop: 30,
