@@ -43,49 +43,59 @@ const LogoHeader = () => {
       {/* 🔹 Logo Section */}
       <View className="flex-row items-center justify-between pt-5 pb-2 px-5">
         
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          {/* 🧩 Puzzle Icon Unit */}
-          <View 
-            style={{ 
-              position: 'relative', 
-              width: 40, 
-              height: 44, 
-              justifyContent: 'center', 
-              alignItems: 'center',
-              marginRight: -4, 
-              zIndex: 10,
-            }}
-          >
-          
-            <Ionicons 
-              name="extension-puzzle" 
-              size={34} 
-              color="#fff" 
-              style={{ 
-                position: 'absolute',
-                top: 0,
-                left: 6,
-                textShadowColor: '#4a044e',
-                textShadowRadius: 10,
-              }} 
-            />
-            <View style={{ position: 'absolute', top: 10, left: 12, width: 8, height: 3, backgroundColor: '#fff', borderRadius: 10, opacity: 0.6, transform: [{ rotate: '-15deg' }] }} />
-          </View>
-            
-          {/* 📝 Eduzzle Text Unit */}
-          <View style={{ marginLeft: 6 }}> 
-            <View style={{ height: 48, justifyContent: 'center' }}>
-              {/* Single Eduzzle with 'Edu' colored #f3c999 */}
-              <Text style={{ fontSize: 38, fontWeight: '900', letterSpacing: 0.1, color: '#fff', fontFamily: Platform.OS === 'ios' ? 'Snell Roundhand' : 'cursive' }}>
-                <Text style={{ color: '#f3c999' }}>Edu</Text>
-                <Text style={{ color: '#fff' }}>zzle</Text>
-              </Text>
-            </View>
-            <Text style={{ fontSize: 11, fontWeight: '800', color: '#f3c999', marginTop: 0, letterSpacing: 0.8, textTransform: 'uppercase' }}>
-              Puzzle. Play. Progress.
-            </Text>
-          </View>
-        </View>
+     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+  {/* 🧩 Simplified Icon - No Shadows */}
+  <View style={{ width: 42, height: 42, justifyContent: 'center', alignItems: 'center' }}>
+    <Ionicons 
+      name="extension-puzzle" 
+      size={40} 
+      top={0}
+      color="#fff"
+      transform={[{ rotate: '-90deg' }]} 
+    />
+    {/* Subtle Inner Accent */}
+    <View style={{ 
+      position: 'absolute', 
+      top: 10, 
+      left: 12, 
+      width: 10, 
+      height: 3, 
+      backgroundColor: 'rgba(255,255,255,0.4)', 
+      borderRadius: 10, 
+      transform: [{ rotate: '-20deg' }] 
+    }} />
+  </View>
+    
+  {/* 📝 Eduzzle Identity - Reduced Gap */}
+  <View style={{ marginLeft: 4 }}> 
+    <View style={{ flexDirection: 'row', alignItems: 'baseline', position: 'relative' }}>
+      <View style={{ position: 'relative' }}>
+        <Text style={{ 
+          fontSize: 38, 
+          fontWeight: '900', 
+          color: '#f3c999', 
+          letterSpacing: 0, // Tightened letter spacing
+          fontFamily: Platform.OS === 'ios' ? 'Avenir-Heavy' : 'sans-serif-black' 
+        }}>
+          Edu<Text style={{ color: '#fff' }}>zzle</Text>
+        </Text>
+        {/* Dot above 'e' */}
+        <View style={{ position: 'absolute', left: 124, top: 10, width: 7, height: 7, backgroundColor: '#f3c999', borderRadius: 7 }} />
+      </View>
+    </View>
+
+    <Text style={{ 
+      fontSize: 11, 
+      fontWeight: '800', 
+      color: '#f3c999', 
+      marginTop: -6, // Pulled tagline closer to main text
+      letterSpacing: 1.2, 
+      textTransform: 'uppercase' 
+    }}>
+      Puzzle • Play • Progress
+    </Text>
+  </View>
+</View>
 
         {/* 🔔 Notification Icon - UPDATED TO WHITE */}
         <TouchableOpacity 

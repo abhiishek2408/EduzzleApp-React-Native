@@ -1,0 +1,100 @@
+import express from "express";
+import crypto from "crypto";
+import razorpay from "../config/razorpay.js";
+import Payment from "../models/Payment.js";
+import User from "../models/User.js";
+import authMiddleware from "../middleware/authMiddleware.js";
+
+const router = express.Router();
+
+/* =========================
+   CREATE RAZORPAY ORDER
+========================= */
+router.post("/create-order", authMiddleware, async (req, res) => {
+  try {
+    const { planId, amount } = req.body;
+
+    const order = await razorpay.orders.create({
+      amount: amount * 100, // INR → paise
+      currency: "INR",
+      receipt: `receipt_${Date.now()}`,
+    });
+
+    await Payment.create({
+      userId: req.user.id,
+      planId,
+      razorpay_order_id: order.id,
+      amount,
+      status: "created",
+    });
+
+    res.json({
+      success: true,
+      orderId: order.id,
+      amount: order.amount,
+      currency: order.currency,
+      key: process.env.RAZORPAY_KEY_ID,
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+/* =========================
+   VERIFY PAYMENT & ACTIVATE SUBSCRIPTION
+========================= */
+router.post("/verify", authMiddleware, async (req, res) => {
+  try {
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+      planId,
+      durationInDays,
+    } = req.body;
+
+    // 🔐 Signature verification
+    const body = `${razorpay_order_id}|${razorpay_payment_id}`;
+    const expectedSignature = crypto
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+      .update(body)
+      .digest("hex");
+
+    if (expectedSignature !== razorpay_signature) {
+      return res.status(400).json({ message: "Payment verification failed" });
+    }
+
+    // ✅ Update payment
+    await Payment.findOneAndUpdate(
+      { razorpay_order_id },
+      {
+        razorpay_payment_id,
+        razorpay_signature,
+        status: "success",
+      }
+    );
+
+    // ✅ Activate subscription INSIDE USER
+    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setDate(endDate.getDate() + durationInDays);
+
+    await User.findByIdAndUpdate(req.user.id, {
+      subscription: {
+        planId,
+        startDate,
+        endDate,
+        isActive: true,
+      },
+    });
+
+    res.json({
+      success: true,
+      message: "Payment verified & subscription activated",
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+export default router;

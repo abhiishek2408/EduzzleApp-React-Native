@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import "./global.css";
 import { NavigationContainer } from "@react-navigation/native";
 import { AuthProvider } from "./context/AuthContext";
 import { GameProvider } from "./context/GameContext";
 import AppNavigator from "./navigation/AppNavigator";
+import AnimatedSplash from "./AnimatedSplash";
 
 import { LogBox } from 'react-native';
 LogBox.ignoreLogs([
@@ -11,13 +12,20 @@ LogBox.ignoreLogs([
 ]);
 
 
+
 export default function App() {
+  const [showSplash, setShowSplash] = useState(true);
+
   return (
     <AuthProvider>
       <GameProvider>
-        <NavigationContainer>
-         <AppNavigator />
-        </NavigationContainer>
+        {showSplash ? (
+          <AnimatedSplash onFinish={() => setShowSplash(false)} />
+        ) : (
+          <NavigationContainer>
+            <AppNavigator />
+          </NavigationContainer>
+        )}
       </GameProvider>
     </AuthProvider>
   );

@@ -210,6 +210,7 @@ import leaderboardRoutes from "./routes/leaderboardRoutes.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import mcqRoutes from "./routes/mcqRoutes.js";
+import paymentRoutes from "./routes/paymentRoutes.js";
 
 dotenv.config();
 
@@ -273,6 +274,7 @@ app.use("/api/leaderboard", leaderboardRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/mcqs", mcqRoutes);
+app.use("/api/payment", paymentRoutes);
 
 // 3️⃣ Update GamingQuizEvent status every minute
 cron.schedule("* * * * *", async () => {

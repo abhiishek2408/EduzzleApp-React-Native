@@ -1,0 +1,21 @@
+<svg width="1080" height="1920" viewBox="0 0 1080 1920" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGradient" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2a002a"/>
+      <stop offset="100%" stop-color="#4c0050"/>
+    </linearGradient>
+  </defs>
+  <rect width="1080" height="1920" fill="url(#bgGradient)"/>
+  <g filter="url(#shadow)">
+    <rect x="390" y="700" width="300" height="300" rx="60" fill="#fff"/>
+    <path d="M540 800 l60 60 -60 60 -60-60z" fill="#a4508b"/>
+    <rect x="510" y="860" width="60" height="60" rx="10" fill="#4c0050"/>
+  </g>
+  <text x="50%" y="1200" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="100" fill="#fff" font-weight="bold">Eduzzle</text>
+  <text x="50%" y="1300" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="48" fill="#fff" opacity="0.8">Gamify Your Learning!</text>
+  <defs>
+    <filter id="shadow" x="0" y="0" width="200%" height="200%">
+      <feDropShadow dx="0" dy="20" stdDeviation="20" flood-color="#000" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+</svg>
