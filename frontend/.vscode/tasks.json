@@ -1,0 +1,23 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Build frontend app",
+			"type": "shell",
+			"command": "npm run build",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Run Android build (React Native)",
+			"type": "shell",
+			"command": "npx react-native run-android",
+			"isBackground": false,
+			"group": "build"
+		}
+	]
+}

@@ -45,11 +45,9 @@ router.get("/plans", async (req, res) => {
 /* ======================================================
    🟣 3️⃣  AVAIL SUBSCRIPTION (with discount option)
    ====================================================== */
-router.post("/avail", authenticate, async (req, res) => {
+router.post("/discount", authenticate, async (req, res) => {
   try {
     const { planId, discountCode } = req.body;
-    const user = await User.findById(req.user.id);
-    if (!user) return res.status(404).json({ message: "User not found" });
 
     const plan = await SubscriptionPlan.findById(planId);
     if (!plan) return res.status(404).json({ message: "Plan not found" });
@@ -57,49 +55,28 @@ router.post("/avail", authenticate, async (req, res) => {
     // Base price
     let finalPrice = plan.price;
     let discountApplied = null;
+    let discountPercent = null;
 
     // Apply discount if valid
     if (discountCode && plan.discountCodes?.length > 0) {
       const found = plan.discountCodes.find(dc => dc.code === discountCode);
       if (found) {
         discountApplied = found.code;
+        discountPercent = found.percentage;
         finalPrice = plan.price - (plan.price * found.percentage / 100);
       }
     }
 
-    // Simulated payment success
-    const paymentSuccess = true;
-    if (!paymentSuccess) return res.status(400).json({ message: "Payment failed" });
-
-    // Set start and end dates
-    const startDate = new Date();
-    const endDate = new Date();
-    endDate.setDate(endDate.getDate() + plan.durationInDays);
-
-    user.subscription = {
-      planId: plan._id,
-      planName: plan.name,
-      startDate,
-      endDate,
-      isActive: true,
-      paymentStatus: "paid",
-      finalPrice,
-      discountApplied
-    };
-
-    await user.save();
-
     res.json({
-      message: "Subscription activated successfully!",
+      message: discountApplied ? "Discount applied successfully!" : "No discount applied.",
       plan: plan.name,
       finalPrice,
       discountApplied,
-      startDate,
-      endDate
+      discountPercent
     });
 
   } catch (error) {
-    console.error("Error availing subscription:", error);
+    console.error("Error applying discount:", error);
     res.status(500).json({ message: "Server error" });
   }
 });

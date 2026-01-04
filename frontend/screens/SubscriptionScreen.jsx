@@ -199,7 +199,7 @@ const SubscriptionScreen = ({ navigation }) => {
                   </View>
                 ) : (
                   <TouchableOpacity
-                    onPress={() => navigation.navigate("PlanDetail", { plan: item, userSubscription: user.subscription })}
+                    onPress={() => navigation.navigate("PlanDetail", { plan: item, userSubscription: user.subscription || {} })}
                   >
                     <LinearGradient
                       colors={[CARD_GRADIENT_DARK, CARD_GRADIENT_LIGHT]}

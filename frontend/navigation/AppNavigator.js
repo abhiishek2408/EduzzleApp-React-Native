@@ -2,6 +2,7 @@ import React, { useContext } from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 
 import AdminDashboard from "../screens/AdminDashboard";
+import PlanDetailScreen from "../screens/PlanDetailScreen";
 import UserDashboard from "../screens/UserDashboard";
 import RegisterScreen from "../screens/RegisterScreen";
 import LoginScreen from "../screens/LoginScreen";
@@ -33,6 +34,7 @@ export default function AppNavigator() {
             <Stack.Screen name="BubbleSortPuzzleScreen" component={BubbleSortPuzzleScreen} />
             <Stack.Screen name="BinaryTreePuzzleScreen" component={BinaryTreePuzzleScreen} />
             <Stack.Screen name="FriendsScreen" component={FriendsScreen} />
+            <Stack.Screen name="PlanDetail" component={PlanDetailScreen} />
           </>
         )
       ) : (

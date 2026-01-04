@@ -1,314 +1,304 @@
-// import React, { useState, useContext } from "react";
-// import {
-//   View,
-//   Text,
-//   TextInput,
-//   TouchableOpacity,
-//   StyleSheet,
-//   Alert,
-// } from "react-native";
-// import CardSkeleton from "../components/CardSkeleton";
-// import axios from "axios";
-// import { AuthContext } from "../context/AuthContext";
-
-// const PlanDetailScreen = ({ route, navigation }) => {
-//   const { plan, userSubscription } = route.params;
-//   const { token, refreshUser } = useContext(AuthContext); // 🔹 added refreshUser
-//   const [discountCode, setDiscountCode] = useState("");
-//   const [loading, setLoading] = useState(false);
-
-//   const handleSubscribe = async () => {
-//     try {
-//       setLoading(true);
-//       const response = await axios.post(
-//         "https://eduzzleapp-react-native.onrender.com/api/subscription/avail",
-//         { planId: plan._id, discountCode },
-//         { headers: { Authorization: `Bearer ${token}` } }
-//       );
-
-//       // 🔹 Refresh user context immediately
-//       await refreshUser();
-
-//       setLoading(false);
-//       Alert.alert(
-//         "Subscribed!",
-//         `You have successfully subscribed to ${response.data.plan}.\nPrice Paid: ₹${response.data.finalPrice}`,
-//         [{ text: "OK", onPress: () => navigation.navigate("PremiumDashboard") }]
-//       );
-//     } catch (error) {
-//       setLoading(false);
-//       console.error(
-//         "Error subscribing:",
-//         error.response?.data || error.message
-//       );
-//       Alert.alert(
-//         "Error",
-//         error.response?.data?.message || "Something went wrong"
-//       );
-//     }
-//   };
-
-//   if (loading) {
-//     return (
-//       <View style={styles.loaderContainer}>
-//         <CardSkeleton />
-//       </View>
-//     );
-//   }
-
-//   // Check if user already has a subscription
-//   const hasActiveSubscription = userSubscription && userSubscription.isActive;
-//   const isCurrentPlan =
-//     hasActiveSubscription && userSubscription.planId === plan._id;
-
-//   return (
-//     <View style={styles.container}>
-//       <Text style={styles.planName}>{plan.name}</Text>
-//       <Text>Duration: {plan.durationInDays} days</Text>
-//       <Text>Price: ₹{plan.price}</Text>
-
-//       {isCurrentPlan ? (
-//         <View style={[styles.button, { backgroundColor: "#4caf50" }]}>
-//           <Text style={styles.buttonText}>
-//             Subscribed (Ends:{" "}
-//             {new Date(userSubscription.endDate).toLocaleDateString()})
-//           </Text>
-//         </View>
-//       ) : hasActiveSubscription ? (
-//         <View style={[styles.button, { backgroundColor: "#ccc" }]}>
-//           <Text style={styles.buttonText}>Cannot Subscribe</Text>
-//         </View>
-//       ) : (
-//         <>
-//           <TextInput
-//             style={styles.input}
-//             placeholder="Enter discount code (optional)"
-//             value={discountCode}
-//             onChangeText={setDiscountCode}
-//           />
-//           <TouchableOpacity
-//             style={[styles.button, { backgroundColor: "#4a044e" }]}
-//             onPress={handleSubscribe}
-//           >
-//             <Text style={styles.buttonText}>Confirm Subscription</Text>
-//           </TouchableOpacity>
-//         </>
-//       )}
-//     </View>
-//   );
-// };
-
-// export default PlanDetailScreen;
-
-// const styles = StyleSheet.create({
-//   container: { flex: 1, padding: 20, backgroundColor: "#fff" },
-//   loaderContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
-//   planName: { fontSize: 22, fontWeight: "bold", marginBottom: 20, color: "#4a044e" },
-//   input: {
-//     borderWidth: 1,
-//     borderColor: "#ccc",
-//     borderRadius: 8,
-//     padding: 12,
-//     marginBottom: 15,
-//   },
-//   button: {
-//     marginTop: 10,
-//     padding: 12,
-//     borderRadius: 8,
-//     alignItems: "center",
-//   },
-//   buttonText: { color: "#fff", fontWeight: "bold", fontSize: 16, },
-// });
-
-
-
-
-
-
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useRef } from "react";
 import {
+  Modal,
   View,
   Text,
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert,
+  ScrollView,
+  ActivityIndicator,
+  Dimensions,
+  Animated,
+  Keyboard,
+  StatusBar,
 } from "react-native";
 import RazorpayCheckout from "react-native-razorpay";
-import CardSkeleton from "../components/CardSkeleton";
 import axios from "axios";
+import ConfettiCannon from 'react-native-confetti-cannon';
 import { AuthContext } from "../context/AuthContext";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { LinearGradient } from 'expo-linear-gradient';
+
+const { width } = Dimensions.get("window");
 
 const PlanDetailScreen = ({ route, navigation }) => {
   const { plan, userSubscription } = route.params;
   const { token, user, refreshUser } = useContext(AuthContext);
 
+  // States
   const [discountCode, setDiscountCode] = useState("");
+  const [isApplied, setIsApplied] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [paymentError, setPaymentError] = useState({ show: false, msg: "" });
+  const [finalPrice, setFinalPrice] = useState(plan.price);
+  const [discountPercent, setDiscountPercent] = useState(null);
 
-  /* =========================
-     CREATE ORDER → PAY → VERIFY
-  ========================= */
-  const createOrderAndPay = async () => {
+  // Animation Refs
+  const checkmarkScale = useRef(new Animated.Value(0)).current;
+
+  // 1. Promo Code Logic
+  const handleApplyPromo = async () => {
+    if (!discountCode.trim()) {
+      alert("Please enter a promo code.");
+      return;
+    }
+    setLoading(true);
     try {
-      setLoading(true);
-
-      // 1️⃣ Create Razorpay Order
-      const orderRes = await axios.post(
-        "https://eduzzleapp-react-native.onrender.com/api/payment/create-order",
+      const res = await axios.post(
+        "https://eduzzleapp-react-native.onrender.com/api/subscription/avail",
         {
           planId: plan._id,
-          amount: plan.price, // backend converts to paise
+          discountCode: discountCode.trim(),
         },
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-
-      const { orderId, amount, currency, key } = orderRes.data;
-
-      openRazorpayCheckout({ orderId, amount, currency, key });
+      setLoading(false);
+      setIsApplied(true);
+      setShowConfetti(true);
+      Keyboard.dismiss();
+      setTimeout(() => setShowConfetti(false), 3000);
+      // Update price and discount percent from backend response
+      if (res.data && typeof res.data.finalPrice === 'number') {
+        setFinalPrice(res.data.finalPrice);
+      }
+      if (res.data && typeof res.data.discountPercent === 'number') {
+        setDiscountPercent(res.data.discountPercent);
+      } else if (res.data && res.data.discount) {
+        // fallback if backend sends 'discount' instead of 'discountPercent'
+        setDiscountPercent(res.data.discount);
+      }
     } catch (err) {
       setLoading(false);
-      Alert.alert("Error", "Unable to initiate payment");
+      alert(err?.response?.data?.message || "Invalid or expired promo code.");
     }
   };
 
-  /* =========================
-     OPEN RAZORPAY
-  ========================= */
-  const openRazorpayCheckout = async ({
-    orderId,
-    amount,
-    currency,
-    key,
-  }) => {
-    const options = {
-      description: `${plan.name} Subscription`,
-      image: "https://your-logo-url.png",
-      currency,
-      key,
-      amount,
-      name: "Eduzzle",
-      order_id: orderId,
-      prefill: {
-        email: user?.email,
-        name: user?.name,
-      },
-      theme: { color: "#4a044e" },
-    };
+  // 2. Success Animation Trigger
+  const triggerSuccess = () => {
+    setShowSuccessModal(true);
+    Animated.spring(checkmarkScale, {
+      toValue: 1,
+      tension: 20,
+      friction: 3,
+      useNativeDriver: true,
+    }).start();
 
-    RazorpayCheckout.open(options)
-      .then(async (data) => {
-        // 2️⃣ Verify Payment
-        await axios.post(
-          "https://eduzzleapp-react-native.onrender.com/api/payment/verify",
-          {
-            razorpay_order_id: data.razorpay_order_id,
-            razorpay_payment_id: data.razorpay_payment_id,
-            razorpay_signature: data.razorpay_signature,
-            planId: plan._id,
-            durationInDays: plan.durationInDays,
-          },
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-
-        // 3️⃣ Refresh user & navigate
-        await refreshUser();
-
-        setLoading(false);
-        Alert.alert(
-          "Payment Successful",
-          "Subscription activated successfully",
-          [
-            {
-              text: "OK",
-              onPress: () => navigation.navigate("PremiumDashboard"),
-            },
-          ]
-        );
-      })
-      .catch(() => {
-        setLoading(false);
-        Alert.alert("Payment Cancelled");
-      });
+    setTimeout(() => {
+      setShowSuccessModal(false);
+      navigation.navigate("PremiumDashboard");
+    }, 4000);
   };
 
-  if (loading) {
-    return (
-      <View style={styles.loaderContainer}>
-        <CardSkeleton />
-      </View>
-    );
-  }
+  // 3. Payment Logic
+  const createOrderAndPay = async () => {
+    try {
+      setLoading(true);
+      const amountToPay = isApplied ? finalPrice : plan.price;
+      const orderRes = await axios.post(
+        "https://eduzzleapp-react-native.onrender.com/api/payment/create-order",
+        { planId: plan._id, amount: amountToPay },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const options = {
+        description: `${plan.name} Plan`,
+        currency: orderRes.data.currency,
+        key: orderRes.data.key,
+        amount: orderRes.data.amount,
+        name: "Eduzzle",
+        order_id: orderRes.data.orderId,
+        prefill: { name: user?.name, email: user?.email },
+        theme: { color: "#701a75" },
+      };
+
+      RazorpayCheckout.open(options)
+        .then(async (res) => {
+          await axios.post(
+            "https://eduzzleapp-react-native.onrender.com/api/payment/verify",
+            { ...res, planId: plan._id, durationInDays: plan.durationInDays },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          await refreshUser();
+          setLoading(false);
+          triggerSuccess();
+        })
+        .catch((err) => {
+          setLoading(false);
+          setPaymentError({ show: true, msg: err.description || "Payment Cancelled" });
+        });
+    } catch (error) {
+      setLoading(false);
+      setPaymentError({ show: true, msg: "Failed to initiate payment" });
+    }
+  };
 
   const hasActiveSubscription = userSubscription?.isActive;
-  const isCurrentPlan =
-    hasActiveSubscription && userSubscription.planId === plan._id;
+  const isCurrentPlan = hasActiveSubscription && userSubscription.planId === plan._id;
 
   return (
     <View style={styles.container}>
-      <Text style={styles.planName}>{plan.name}</Text>
-      <Text>Duration: {plan.durationInDays} days</Text>
-      <Text>Price: ₹{plan.price}</Text>
+      <StatusBar barStyle="dark-content" />
+      
+      {/* CONFETTI LAYER */}
+      {showConfetti && <ConfettiCannon count={200} origin={{x: -10, y: 0}} fadeOut={true} />}
 
-      {isCurrentPlan ? (
-        <View style={[styles.button, { backgroundColor: "#4caf50" }]}>
-          <Text style={styles.buttonText}>
-            Subscribed (Ends:{" "}
-            {new Date(userSubscription.endDate).toLocaleDateString()})
-          </Text>
-        </View>
-      ) : hasActiveSubscription ? (
-        <View style={[styles.button, { backgroundColor: "#ccc" }]}>
-          <Text style={styles.buttonText}>Cannot Subscribe</Text>
-        </View>
-      ) : (
-        <>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter discount code (optional)"
-            value={discountCode}
-            onChangeText={setDiscountCode}
-          />
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+        
+        <TouchableOpacity style={styles.floatingBack} onPress={() => navigation.goBack()}>
+          <Ionicons name="chevron-back" size={28} color="#701a75" />
+        </TouchableOpacity>
 
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: "#4a044e" }]}
+        <View style={styles.heroSection}>
+          <View style={styles.iconCircle}>
+             <MaterialCommunityIcons name="lightning-bolt" size={50} color="#a21caf" />
+          </View>
+          <Text style={styles.planName}>{plan.name}</Text>
+          <Text style={styles.planTagline}>Unlock your full learning potential</Text>
+        </View>
+
+        {/* PRICE CARD */}
+        <LinearGradient 
+          colors={["#4a044e", "#701a75", "#86198f"]} 
+          start={{x: 0, y: 0}} end={{x: 1, y: 1}}
+          style={styles.priceCard}
+        >
+          <Text style={styles.priceLabel}>Investment Amount</Text>
+          <View style={styles.priceRow}>
+            <Text style={styles.currencySymbol}>₹</Text>
+            <Text style={styles.priceAmount}>{isApplied ? finalPrice : plan.price}</Text>
+          </View>
+          {isApplied && discountPercent && (
+            <Text style={styles.discountText}>✨ {discountPercent}% DISCOUNT APPLIED ✨</Text>
+          )}
+          <View style={styles.durationBadge}>
+            <Text style={styles.durationText}>{plan.durationInDays} Days Unlimited Access</Text>
+          </View>
+        </LinearGradient>
+
+        {/* PERKS */}
+        <View style={styles.perksContainer}>
+          <Text style={styles.sectionTitle}>Premium Benefits</Text>
+          {[
+            { icon: "infinite", text: "Unlimited Puzzles & Quizzes" },
+            { icon: "stopwatch-outline", text: "No Daily Time Limits" },
+            { icon: "rocket-outline", text: "Ad-Free Learning Experience" }
+          ].map((item, i) => (
+            <View key={i} style={styles.perkItem}>
+              <View style={styles.perkIconBg}><Ionicons name={item.icon} size={20} color="#701a75" /></View>
+              <Text style={styles.perkText}>{item.text}</Text>
+            </View>
+          ))}
+        </View>
+
+        {/* PROMO CODE */}
+        {!isCurrentPlan && !hasActiveSubscription && (
+           <View style={[styles.promoBox, isApplied && styles.promoBoxSuccess]}>
+              <TextInput
+                style={styles.promoInput}
+                placeholder={isApplied ? "Code Applied Successfully!" : "Have a Promo Code?"}
+                placeholderTextColor={isApplied ? "#10b981" : "#94a3b8"}
+                value={discountCode}
+                onChangeText={setDiscountCode}
+                editable={!isApplied}
+                autoCapitalize="characters"
+              />
+              <TouchableOpacity 
+                style={[styles.applyBtn, isApplied && styles.applyBtnSuccess]} 
+                onPress={handleApplyPromo}
+                disabled={isApplied || loading}
+              >
+                {loading ? <ActivityIndicator size="small" color="#fff" /> : 
+                <Text style={styles.applyBtnText}>{isApplied ? "Saved" : "Apply"}</Text>}
+              </TouchableOpacity>
+           </View>
+        )}
+      </ScrollView>
+
+      {/* BOTTOM ACTION BAR */}
+      <View style={styles.bottomBar}>
+        {isCurrentPlan ? (
+          <View style={styles.activeBanner}>
+            <Ionicons name="checkmark-circle" size={24} color="#10b981" />
+            <Text style={styles.activeText}>Subscribed until {new Date(userSubscription.endDate).toLocaleDateString()}</Text>
+          </View>
+        ) : (
+          <TouchableOpacity 
+            style={[styles.payButton, (loading || hasActiveSubscription) && styles.disabledBtn]} 
             onPress={createOrderAndPay}
+            disabled={loading || hasActiveSubscription}
           >
-            <Text style={styles.buttonText}>Proceed to Pay</Text>
+            {loading ? <ActivityIndicator color="#fff" /> : 
+            <Text style={styles.payButtonText}>{hasActiveSubscription ? "Subscription Active" : "Proceed to Payment"}</Text>}
           </TouchableOpacity>
-        </>
-      )}
+        )}
+      </View>
+
+      {/* SUCCESS MODAL */}
+      <Modal visible={showSuccessModal} transparent animationType="fade">
+        <View style={styles.successOverlay}>
+          <LinearGradient colors={["#4a044e", "#701a75"]} style={styles.successCard}>
+            <ConfettiCannon count={150} origin={{x: width/2, y: 0}} />
+            <Animated.View style={[styles.checkmarkCircle, { transform: [{ scale: checkmarkScale }] }]}>
+              <Ionicons name="checkmark" size={60} color="#10b981" />
+            </Animated.View>
+            <Text style={styles.successTitle}>Payment Successful!</Text>
+            <Text style={styles.successSub}>Your premium features are now unlocked.</Text>
+            <View style={styles.loaderLine}>
+                <ActivityIndicator color="#f5d0fe" size="small" />
+                <Text style={styles.redirectText}>REDIRECTING TO DASHBOARD...</Text>
+            </View>
+          </LinearGradient>
+        </View>
+      </Modal>
     </View>
   );
 };
 
-export default PlanDetailScreen;
-
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#fff" },
-  loaderContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
-  planName: {
-    fontSize: 22,
-    fontWeight: "bold",
-    marginBottom: 20,
-    color: "#4a044e",
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 15,
-  },
-  button: {
-    marginTop: 10,
-    padding: 12,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  buttonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
+  container: { flex: 1, backgroundColor: "#fff" },
+  scrollContent: { paddingBottom: 130, paddingHorizontal: 25 },
+  floatingBack: { marginTop: 50, width: 45, height: 45, borderRadius: 15, backgroundColor: "#fdf4ff", justifyContent: "center", alignItems: "center" },
+  heroSection: { alignItems: "center", marginTop: 20, marginBottom: 25 },
+  iconCircle: { width: 80, height: 80, borderRadius: 40, backgroundColor: "#fdf4ff", justifyContent: "center", alignItems: "center", marginBottom: 15 },
+  planName: { fontSize: 30, fontWeight: "900", color: "#4a044e" },
+  planTagline: { fontSize: 14, color: "#64748b", marginTop: 5 },
+  priceCard: { borderRadius: 30, padding: 30, alignItems: "center", elevation: 12, shadowColor: "#701a75", shadowOpacity: 0.3, shadowRadius: 15 },
+  priceLabel: { color: "rgba(255,255,255,0.7)", fontSize: 13, fontWeight: "700", textTransform: "uppercase" },
+  priceRow: { flexDirection: "row", alignItems: "flex-start", marginVertical: 8 },
+  currencySymbol: { fontSize: 24, color: "#fff", fontWeight: "bold", marginTop: 10 },
+  priceAmount: { fontSize: 60, color: "#fff", fontWeight: "900" },
+  discountText: { color: "#f5d0fe", fontWeight: "bold", marginBottom: 12, fontSize: 12 },
+  durationBadge: { backgroundColor: "rgba(255,255,255,0.2)", paddingHorizontal: 15, paddingVertical: 6, borderRadius: 12 },
+  durationText: { color: "#fff", fontWeight: "700", fontSize: 13 },
+  perksContainer: { marginTop: 35 },
+  sectionTitle: { fontSize: 18, fontWeight: "800", color: "#1e293b", marginBottom: 20 },
+  perkItem: { flexDirection: "row", alignItems: "center", marginBottom: 15 },
+  perkIconBg: { width: 38, height: 38, borderRadius: 10, backgroundColor: "#fdf4ff", justifyContent: "center", alignItems: "center", marginRight: 15 },
+  perkText: { fontSize: 15, color: "#475569", fontWeight: "500" },
+  promoBox: { flexDirection: "row", backgroundColor: "#f8fafc", borderRadius: 18, padding: 6, marginTop: 10, borderWidth: 1, borderColor: "#e2e8f0" },
+  promoBoxSuccess: { borderColor: "#10b981", backgroundColor: "#f0fdf4" },
+  promoInput: { flex: 1, paddingHorizontal: 15, fontSize: 14, fontWeight: "600", color: "#1e293b" },
+  applyBtn: { backgroundColor: "#4a044e", paddingHorizontal: 20, paddingVertical: 12, borderRadius: 15, minWidth: 85, alignItems: 'center' },
+  applyBtnSuccess: { backgroundColor: "#10b981" },
+  applyBtnText: { color: "#fff", fontWeight: "bold", fontSize: 14 },
+  bottomBar: { position: "absolute", bottom: 0, width: "100%", padding: 25, backgroundColor: "#fff", borderTopWidth: 1, borderTopColor: "#f1f5f9" },
+  payButton: { backgroundColor: "#701a75", height: 60, borderRadius: 20, justifyContent: "center", alignItems: "center", elevation: 4 },
+  payButtonText: { color: "#fff", fontSize: 18, fontWeight: "bold" },
+  disabledBtn: { backgroundColor: "#94a3b8" },
+  activeBanner: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10 },
+  activeText: { color: "#10b981", fontWeight: "800", fontSize: 15 },
+  successOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.85)", justifyContent: "center", alignItems: "center" },
+  successCard: { width: width * 0.85, padding: 35, borderRadius: 40, alignItems: "center" },
+  checkmarkCircle: { width: 90, height: 90, borderRadius: 45, backgroundColor: "#fff", justifyContent: "center", alignItems: "center", marginBottom: 20 },
+  successTitle: { fontSize: 24, fontWeight: "900", color: "#fff", textAlign: "center" },
+  successSub: { fontSize: 15, color: "#f5d0fe", textAlign: "center", marginTop: 8, opacity: 0.8 },
+  loaderLine: { flexDirection: 'row', alignItems: 'center', marginTop: 30, gap: 10 },
+  redirectText: { color: "#f5d0fe", fontSize: 10, fontWeight: "800", letterSpacing: 1.5 },
 });
+
+export default PlanDetailScreen;
