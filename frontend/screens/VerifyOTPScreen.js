@@ -18,7 +18,7 @@ export default function VerifyOtp() {
     try {
       const data = await verifyOtp(userId, otp);
       if (data?.token) {
-        navigation.navigate("UserDashboard");
+        navigation.navigate("UserNavigator");
       } else {
         Alert.alert("Error", data?.message || "Verification failed");
       }

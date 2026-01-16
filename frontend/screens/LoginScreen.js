@@ -48,7 +48,7 @@ export default function Login() {
     }
     try {
       const data = await login(form.email, form.password);
-      if (data?.token) navigation.navigate("UserDashboard");
+      if (data?.token) navigation.navigate("UserNavigator");
     } catch (err) {
       setError(err?.response?.data?.message || err?.message || "Login failed");
       setShowError(true);

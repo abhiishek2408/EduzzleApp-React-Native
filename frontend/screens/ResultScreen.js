@@ -345,7 +345,7 @@ export default function ResultComponent({
   );
 
   const goToHome = () => {
-    navigation.navigate("Home", { screen: "StackHome" });
+    navigation.navigate("StackHome", { screen: "StackHome" });
   };
 
   return (

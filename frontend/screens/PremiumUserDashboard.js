@@ -75,10 +75,9 @@ const categories = [
 //
 
 // ------------------- MAIN SCREEN -------------------
-export default function HomeScreen({ navigation }) {
+export default function PremiumUserDashboard({ navigation }) {
   const { user } = useContext(AuthContext);
   const route = useRoute();
-
 
   if (!user) {
     return (
@@ -100,7 +99,7 @@ export default function HomeScreen({ navigation }) {
 
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, marginBottom: 12, marginTop: 10 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 0 }}>
-            <View style={{ backgroundColor: '#fdf4ff', padding: 8, borderRadius: 12, marginRight: 10 }}>
+            <View style={{ backgroundColor: '#f6fff4ff', padding: 8, borderRadius: 12, marginRight: 10 }}>
               <Ionicons name="rocket-outline" size={20} color="#701a75" />
             </View>
             <View>
@@ -167,5 +166,6 @@ export default function HomeScreen({ navigation }) {
     </View>
   );
 }
+
 
 

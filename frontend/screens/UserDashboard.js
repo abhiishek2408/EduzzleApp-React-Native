@@ -1,154 +1,162 @@
-import React from "react";
-import { View, Text, StyleSheet, Platform } from "react-native";
+import React, { useState, useContext } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+  Dimensions,
+  StatusBar,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { createStackNavigator, CardStyleInterpolators } from "@react-navigation/stack";
+import { AuthContext } from "../context/AuthContext";
+import { useRoute } from "@react-navigation/native";
+import { LinearGradient } from 'expo-linear-gradient';
 
-// Screen Imports
-import HomeScreen from "./HomeScreen";
-import PlayScreen from "./PlayScreen";
-import ProfileScreen from "./ProfileScreen";
-import FriendsScreen from "./FriendsScreen";
-import QuizPlayScreen from "./QuizPlayScreen";
-import ResultScreen from "./ResultScreen";
-import StackQuiz from "../screens/Puzzles/StackQuiz";
-import LinkedListPuzzle from "../screens/Puzzles/LinkedListPuzzle";
-import BubbleSortPuzzle from "../screens/Puzzles/BubbleSortPuzzle";
-import BinaryTreePuzzle from "../screens/Puzzles/BinaryTreePuzzle";
-import SubscriptionScreen from "./SubscriptionScreen";
-import PlanDetailScreen from "./PlanDetailScreen";
-import QuizzesScreen from "./QuizzesScreen";
-import Notification from "./Notification";
-import GamingEventDetail from "./GamingEventDetail";
-import GamingEventPlay from "./GamingEventPlay";
-import GamingEventsList from "./GamingEventsList";
-import FullFriendsLeaderboard from "./FullFriendsLeaderboard";
-import FullGlobalLeaderboard from "./FullGlobalLeaderboard";
-import ChangePasswordScreen from "./ChangePasswordScreen";
-import VisualPuzzlesScreen from "./VisualPuzzlesScreen";
-import LogicChallengesScreen from "./LogicChallengesScreen";
-import MCQCategoriesScreen from "./MCQCategoriesScreen";
-import GeneralTriviaScreen from "./GeneralTriviaScreen";
-import GamingEventLeaderboard from "./GamingEventLeaderboard";
-import PendingRequestsScreen from './PendingRequestsScreen';
-import SentRequestsScreen from './SentRequestsScreen';
+import LogoHeader from "./LogoHeader";
+import DailyQuest from "./DailyQuest";
+import FriendsLeaderboard from "../components/FriendsLeaderboard";
+import GlobalLeaderboard from "../components/GlobalLeaderboard";
+import CardSkeleton from "../components/CardSkeleton";
+import PuzzlesScreen from "./RecommendationScreen";
+import HelpDesk from "../components/HelpDesk";
+import ReviewUs from "../components/ReviewUs";
+import CustomPremiumAlert from "../components/CustomPremiumAlert";
+import { QuizScreen } from "../components/QuizScreen";
 
-const Stack = createStackNavigator();
-const Tab = createBottomTabNavigator();
+const { width } = Dimensions.get("window");
 
-// ------------------- Stack Navigator -------------------
-const StackScreens = ({ route }) => {
-  const initialScreen = route.params?.screen || "StackHome";
+const categories = [
+  { name: "Quick Quizzes", icon: "flash", color: ["#FFEDD5", "#FED7AA"], iconColor: "#F59E0B", link: "QuizzesScreen", premium: false },
+  { name: "Visual Puzzles", icon: "grid", color: ["#E0F2FE", "#BAE6FD"], iconColor: "#0EA5E9", link: "VisualPuzzlesScreen", premium: false },
+  { name: "MCQ Bank", icon: "school", color: ["#F0FDF4", "#DCFCE7"], iconColor: "#22C55E", link: "MCQCategoriesScreen", premium: false },
+  { name: "Gaming Events", icon: "trophy", color: ["#FAF5FF", "#F3E8FF"], iconColor: "#A855F7", link: "GamingEventsList", premium: true },
+];
+
+const UserDashboard = ({ navigation }) => {
+  const { user } = useContext(AuthContext);
+  const route = useRoute();
+  const [showPremiumAlert, setShowPremiumAlert] = useState(false);
+
+  if (!user) {
+    return (
+      <View className="flex-1 justify-center items-center bg-white">
+        <CardSkeleton />
+      </View>
+    );
+  }
 
   return (
-    <Stack.Navigator
-      initialRouteName={initialScreen}
-      screenOptions={{
-        headerShown: false,
-        cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
-      }}
-    >
-      <Stack.Screen name="StackHome" component={HomeScreen} />
-      <Stack.Screen name="StackPlay" component={PlayScreen} />
-      <Stack.Screen name="StackProfile" component={ProfileScreen} />
-      <Stack.Screen name="StackFriends" component={FriendsScreen} />
-      <Stack.Screen name="PremiumDashboard" component={SubscriptionScreen} />
-      <Stack.Screen name="QuizPlayScreen" component={QuizPlayScreen} />
-      <Stack.Screen name="StackQuizScreen" component={StackQuiz} />
-      <Stack.Screen name="LinkedListPuzzleScreen" component={LinkedListPuzzle} />
-      <Stack.Screen name="BubbleSortPuzzleScreen" component={BubbleSortPuzzle} />
-      <Stack.Screen name="BinaryTreePuzzleScreen" component={BinaryTreePuzzle} />
-      <Stack.Screen name="StackResult" component={ResultScreen} />
-      <Stack.Screen name="PlanDetail" component={PlanDetailScreen} />
-      <Stack.Screen name="QuizzesScreen" component={QuizzesScreen} />
-      <Stack.Screen name="NotificationScreen" component={Notification} />
-      <Stack.Screen name="GamingEventDetail" component={GamingEventDetail} />
-      <Stack.Screen name="GamingEventPlay" component={GamingEventPlay} />
-      <Stack.Screen name="GamingEventsList" component={GamingEventsList} />
-      <Stack.Screen name="FullFriendsLeaderboard" component={FullFriendsLeaderboard} />
-      <Stack.Screen name="FullGlobalLeaderboard" component={FullGlobalLeaderboard} />
-      <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
-      <Stack.Screen name="VisualPuzzlesScreen" component={VisualPuzzlesScreen} />
-      <Stack.Screen name="LogicChallengesScreen" component={LogicChallengesScreen} />
-      <Stack.Screen name="GeneralTriviaScreen" component={GeneralTriviaScreen} />
-      <Stack.Screen name="GamingEventLeaderboard" component={GamingEventLeaderboard} />
-      <Stack.Screen name="PendingRequests" component={PendingRequestsScreen} />
-      <Stack.Screen name="SentRequests" component={SentRequestsScreen} />
-      <Stack.Screen name="MCQCategoriesScreen" component={MCQCategoriesScreen} />
-      <Stack.Screen name="MCQListScreen" component={require("./MCQListScreen").default} />
-    </Stack.Navigator>
+    <View className="flex-1 bg-white">
+      <StatusBar barStyle="light-content" backgroundColor="#4a044e" />
+
+      <CustomPremiumAlert
+        visible={showPremiumAlert}
+        onClose={() => setShowPremiumAlert(false)}
+      />
+
+      <ScrollView className="flex-grow pb-10">
+        <LogoHeader />
+
+        {/* Header */}
+          {/* Section Header */}
+        <View style={styles.sectionHeader}>
+          <View>
+            <Text style={styles.welcomeText}>Hi, {user.name.split(' ')[0]} 👋</Text>
+            <Text style={styles.subHeaderText}>Ready for today's challenge?</Text>
+          </View>
+        </View>
+
+        {/* Categories */}
+        <View style={styles.gridContainer}>
+          {Array.from({ length: Math.ceil(categories.length / 2) }).map((_, rowIdx) => (
+            <View key={rowIdx} style={styles.categoriesWrapper}>
+              {categories.slice(rowIdx * 2, rowIdx * 2 + 2).map((item, index) => (
+                <TouchableOpacity
+                  key={item.name}
+                  style={styles.categoryCard}
+                  activeOpacity={0.9}
+                  onPress={() => item.premium ? setShowPremiumAlert(true) : navigation.navigate(item.link)}
+                >
+                  <LinearGradient colors={item.color} style={styles.iconWrapper}>
+                    <Ionicons name={item.icon} size={26} color={item.iconColor} />
+                  </LinearGradient>
+                  <Text style={styles.categoryName} numberOfLines={1}>{item.name}</Text>
+                  {item.premium && (
+                    <View style={styles.premiumBadge}>
+                      <Ionicons name="star" size={10} color="#fff" />
+                    </View>
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+          ))}
+        </View>
+
+
+        <QuizScreen navigation={navigation} user={user} route={route} />
+        <DailyQuest navigation={navigation} />
+        <View className="mx-4">
+          <FriendsLeaderboard navigation={navigation} />
+          <GlobalLeaderboard navigation={navigation} />
+          <PuzzlesScreen navigation={navigation} />
+          <HelpDesk />
+          <ReviewUs />
+        </View>
+      </ScrollView>
+    </View>
   );
 };
 
-// ------------------- Bottom Tab Navigator -------------------
-export default function UserDashboard() {
-  return (
-    <Tab.Navigator
-      screenOptions={({ route }) => ({
-        headerShown: false,
-        tabBarActiveTintColor: "#701a75", // Your main purple
-        tabBarInactiveTintColor: "#94a3b8",
-        tabBarStyle: styles.tabBar,
-        tabBarLabelStyle: styles.tabBarLabel,
-        tabBarIcon: ({ focused, color, size }) => {
-          let iconName;
-
-          if (route.name === "Home") {
-            iconName = focused ? "home" : "home-outline";
-          } else if (route.name === "Play") {
-            iconName = focused ? "game-controller" : "game-controller-outline";
-          } else if (route.name === "Friends") {
-            iconName = focused ? "people" : "people-outline";
-          } else if (route.name === "Profile") {
-            iconName = focused ? "person" : "person-outline";
-          }
-
-          // Return the icon directly
-          return <Ionicons name={iconName} size={size} color={color} />;
-        },
-      })}
-    >
-      <Tab.Screen 
-        name="Home" 
-        component={StackScreens} 
-        initialParams={{ screen: "StackHome" }}
-      />
-      <Tab.Screen 
-        name="Play" 
-        component={StackScreens} 
-        initialParams={{ screen: "StackPlay" }}
-      />
-      <Tab.Screen 
-        name="Friends" 
-        component={StackScreens} 
-        initialParams={{ screen: "StackFriends" }}
-      />
-      <Tab.Screen 
-        name="Profile" 
-        component={StackScreens} 
-        initialParams={{ screen: "StackProfile" }}
-      />
-    </Tab.Navigator>
-  );
-}
-
 const styles = StyleSheet.create({
-  tabBar: {
-    backgroundColor: "#ffffff",
-    height: 75,
-    borderTopWidth: 1,
-    borderTopColor: "#f1f5f9",
-    paddingBottom: 10,
-    paddingTop: 2,
-    // Add shadow so it's visible
-    elevation: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+  container: { flex: 1, backgroundColor: "#F8FAFC" },
+  loaderContainer: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#fff" },
+  scrollContent: { paddingBottom: 40 },
+  
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 22,
+    marginTop: 15,
+    marginBottom: 20,
   },
-  tabBarLabel: {
-    fontSize: 12,
-    fontWeight: "700",
+  welcomeText: { fontSize: 24, fontWeight: '900', color: '#1e1b4b', letterSpacing: -0.5 },
+  subHeaderText: { fontSize: 13, color: '#64748b', fontWeight: '500', marginTop: 2 },
+  profileBadge: { width: 45, height: 45, borderRadius: 15, backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center', elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 10 },
+
+  gridContainer: { paddingHorizontal: 22, marginBottom: 25 },
+  gridHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 },
+  gridTitle: { fontSize: 18, fontWeight: '800', color: '#1e1b4b' },
+  viewAllText: { fontSize: 13, color: '#701a75', fontWeight: '700' },
+  
+  categoriesWrapper: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 10,
   },
+  categoryCard: {
+    backgroundColor: '#fff',
+    flex: 1,
+    minWidth: 0,
+    maxWidth: '48%',
+    padding: 14,
+    borderRadius: 22,
+    marginHorizontal: 0,
+    marginBottom: 0,
+    alignItems: 'center',
+    elevation: 3,
+    shadowColor: '#64748b',
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+  },
+  iconWrapper: { width: 55, height: 55, borderRadius: 18, justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
+  categoryName: { fontSize: 14, fontWeight: '700', color: '#475569' },
+  premiumBadge: { position: 'absolute', top: 12, right: 12, backgroundColor: '#701a75', padding: 4, borderRadius: 8 },
+
+  contentWrapper: { paddingHorizontal: 20 },
+  spacing: { height: 25 },
+  footerRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 }
 });
+
+export default UserDashboard;

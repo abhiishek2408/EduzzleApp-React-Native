@@ -3,7 +3,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 
 import AdminDashboard from "../screens/AdminDashboard";
 import PlanDetailScreen from "../screens/PlanDetailScreen";
-import UserDashboard from "../screens/UserDashboard";
+import UserNavigator from "../screens/UserNavigator";
 import RegisterScreen from "../screens/RegisterScreen";
 import LoginScreen from "../screens/LoginScreen";
 import ForgotPasswordScreen from "../screens/ForgotPasswordScreen";
@@ -28,7 +28,7 @@ export default function AppNavigator() {
           <Stack.Screen name="AdminDashboard" component={AdminDashboard} />
         ) : (
           <>
-            <Stack.Screen name="UserDashboard" component={UserDashboard} />
+            <Stack.Screen name="UserNavigator" component={UserNavigator} />
             <Stack.Screen name="StackQuizScreen" component={StackQuizScreen} />
             <Stack.Screen name="LinkedListPuzzleScreen" component={LinkedListPuzzleScreen} />
             <Stack.Screen name="BubbleSortPuzzleScreen" component={BubbleSortPuzzleScreen} />

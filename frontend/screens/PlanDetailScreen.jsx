@@ -48,7 +48,7 @@ const PlanDetailScreen = ({ route, navigation }) => {
     setLoading(true);
     try {
       const res = await axios.post(
-        "https://eduzzleapp-react-native.onrender.com/api/subscription/avail",
+        "https://eduzzleapp-react-native.onrender.com/api/subscription/discount",
         {
           planId: plan._id,
           discountCode: discountCode.trim(),
@@ -62,14 +62,13 @@ const PlanDetailScreen = ({ route, navigation }) => {
       setShowConfetti(true);
       Keyboard.dismiss();
       setTimeout(() => setShowConfetti(false), 3000);
-      // Update price and discount percent from backend response
+      
       if (res.data && typeof res.data.finalPrice === 'number') {
         setFinalPrice(res.data.finalPrice);
       }
       if (res.data && typeof res.data.discountPercent === 'number') {
         setDiscountPercent(res.data.discountPercent);
       } else if (res.data && res.data.discount) {
-        // fallback if backend sends 'discount' instead of 'discountPercent'
         setDiscountPercent(res.data.discount);
       }
     } catch (err) {
@@ -144,7 +143,6 @@ const PlanDetailScreen = ({ route, navigation }) => {
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
       
-      {/* CONFETTI LAYER */}
       {showConfetti && <ConfettiCannon count={200} origin={{x: -10, y: 0}} fadeOut={true} />}
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
@@ -195,7 +193,7 @@ const PlanDetailScreen = ({ route, navigation }) => {
           ))}
         </View>
 
-        {/* PROMO CODE */}
+        {/* PROMO BOX */}
         {!isCurrentPlan && !hasActiveSubscription && (
            <View style={[styles.promoBox, isApplied && styles.promoBoxSuccess]}>
               <TextInput
@@ -217,26 +215,35 @@ const PlanDetailScreen = ({ route, navigation }) => {
               </TouchableOpacity>
            </View>
         )}
-      </ScrollView>
 
-      {/* BOTTOM ACTION BAR */}
-      <View style={styles.bottomBar}>
-        {isCurrentPlan ? (
-          <View style={styles.activeBanner}>
-            <Ionicons name="checkmark-circle" size={24} color="#10b981" />
-            <Text style={styles.activeText}>Subscribed until {new Date(userSubscription.endDate).toLocaleDateString()}</Text>
-          </View>
-        ) : (
-          <TouchableOpacity 
-            style={[styles.payButton, (loading || hasActiveSubscription) && styles.disabledBtn]} 
-            onPress={createOrderAndPay}
-            disabled={loading || hasActiveSubscription}
-          >
-            {loading ? <ActivityIndicator color="#fff" /> : 
-            <Text style={styles.payButtonText}>{hasActiveSubscription ? "Subscription Active" : "Proceed to Payment"}</Text>}
-          </TouchableOpacity>
-        )}
-      </View>
+        {/* BOTTOM ACTION BUTTONS */}
+        <View style={styles.bottomBar}>
+          {isCurrentPlan ? (
+            <View style={styles.activeBanner}>
+              <Ionicons name="checkmark-circle" size={24} color="#10b981" />
+              <Text style={styles.activeText}>Subscribed until {new Date(userSubscription.endDate).toLocaleDateString()}</Text>
+            </View>
+          ) : (
+            <View style={styles.actionRow}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => navigation.goBack()}
+                disabled={loading}
+              >
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.payButton, (loading || hasActiveSubscription) && styles.disabledBtn]}
+                onPress={createOrderAndPay}
+                disabled={loading || hasActiveSubscription}
+              >
+                {loading ? <ActivityIndicator color="#fff" /> :
+                  <Text style={styles.payButtonText}>{hasActiveSubscription ? "Active" : "Pay Now"}</Text>}
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      </ScrollView>
 
       {/* SUCCESS MODAL */}
       <Modal visible={showSuccessModal} transparent animationType="fade">
@@ -286,9 +293,32 @@ const styles = StyleSheet.create({
   applyBtn: { backgroundColor: "#4a044e", paddingHorizontal: 20, paddingVertical: 12, borderRadius: 15, minWidth: 85, alignItems: 'center' },
   applyBtnSuccess: { backgroundColor: "#10b981" },
   applyBtnText: { color: "#fff", fontWeight: "bold", fontSize: 14 },
-  bottomBar: { position: "absolute", bottom: 0, width: "100%", padding: 25, backgroundColor: "#fff", borderTopWidth: 1, borderTopColor: "#f1f5f9" },
-  payButton: { backgroundColor: "#701a75", height: 60, borderRadius: 20, justifyContent: "center", alignItems: "center", elevation: 4 },
+  
+  // Equal Width Action Buttons
+  bottomBar: { marginTop: 35, paddingBottom: 20 },
+  actionRow: { flexDirection: 'row', alignItems: 'center', gap: 15 },
+  cancelButton: { 
+    flex: 1, 
+    backgroundColor: '#f1f5f9', 
+    height: 60, 
+    borderRadius: 20, 
+    justifyContent: 'center', 
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e2e8f0'
+  },
+  cancelButtonText: { color: '#64748b', fontWeight: 'bold', fontSize: 16 },
+  payButton: { 
+    flex: 1, 
+    backgroundColor: "#701a75", 
+    height: 60, 
+    borderRadius: 20, 
+    justifyContent: "center", 
+    alignItems: "center", 
+    elevation: 4 
+  },
   payButtonText: { color: "#fff", fontSize: 18, fontWeight: "bold" },
+  
   disabledBtn: { backgroundColor: "#94a3b8" },
   activeBanner: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10 },
   activeText: { color: "#10b981", fontWeight: "800", fontSize: 15 },
