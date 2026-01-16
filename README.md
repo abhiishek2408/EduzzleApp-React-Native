@@ -9,37 +9,43 @@
 ### Global Screens
 
 
-| Signup Section | Login Page | Reset Password | OTP verification  |
-|-------------|------------|---------------|
-| ![Register](frontend/assets/readme/register.jpg) | ![Login](frontend/assets/readme/login.jpg) | ![Signup](frontend/assets/readme/resetpassword.jpg) | [Signup](frontend/assets/readme/verifyotp.jpg) |
+
+| Signup Section | Login Page | Reset Password | OTP Verification |
+|---------------|-----------|---------------|------------------|
+| ![Register](frontend/assets/readme/register.jpg) | ![Login](frontend/assets/readme/login.jpg) | ![Reset Password](frontend/assets/readme/resetpassword.jpg) | ![OTP Verification](frontend/assets/readme/verifyotp.jpg) |
+
 
 
 ### Tab Screens
-| Home Screen | Play | Friends  | Profile  |
-|-------------|------------|---------------|
-| ![Home](frontend/assets/readme/homescreen.jpg) | ![Play](frontend/assets/readme/playscreen.jpg) | ![Friends](frontend/assets/readme/friends.jpg) | [Profile](frontend/assets/readme/profile.jpg) |
+| Home Screen | Play Screen | Friends Screen | Profile Screen |
+|-------------|-------------|---------------|---------------|
+| ![Home](frontend/assets/readme/homescreen.jpg) | ![Play](frontend/assets/readme/playscreen.jpg) | ![Friends](frontend/assets/readme/friends.jpg) | ![Profile](frontend/assets/readme/profile.jpg) |
 
 
 ## Features
 
-| Quick Quizzes |
-|--------------|-------------|---------------|
+
+| Popular Challenges | Quizzes | Quiz |
+|--------------------|---------|------|
 | ![Popular challenges](frontend/assets/readme/home4.jpg) | ![Quizzes](frontend/assets/readme/quickquizzes2.jpg) | ![Quiz](frontend/assets/readme/quizscreen.jpg) |
 
 
-| Visual Puzzles |
-|--------------|-------------|---------------|
-| ![Puzzle](frontend/assets/readme/playscreen.jpg) | ![Visual Puzzle](frontend/assets/readme/visualpuzzle.jpg) | 
+
+| Puzzle | Visual Puzzle |
+|--------|---------------|
+| ![Puzzle](frontend/assets/readme/playscreen.jpg) | ![Visual Puzzle](frontend/assets/readme/visualpuzzle.jpg) |
 
 
-| MCQ Bank  |
-|--------------|-------------|---------------|
+
+| MCQ Bank Screen | Course List | Chapters | Topics | Questions |
+|-----------------|------------|----------|--------|-----------|
 | ![MCQ Bank Screen](frontend/assets/readme/mcqbank1.jpg) | ![Course List](frontend/assets/readme/mcqbank2.jpg) | ![Chapters](frontend/assets/readme/mcqbank3.jpg) | ![Topics](frontend/assets/readme/mcqbank4.jpg) | ![Questions](frontend/assets/readme/mcqbank5.jpg) |
 
 
-| Friends Screen |
-|---------------|---------------|---|
-| ![My Friends](frontend/assets/readme/friendscreen1.jpg) | | ![Friend Request](frontend/assets/readme/friendscreen2.jpg) | ![Sent Request](frontend/assets/readme/friendscreen3.jpg) |
+
+| My Friends | Friend Request | Sent Request |
+|------------|---------------|--------------|
+| ![My Friends](frontend/assets/readme/friendscreen1.jpg) | ![Friend Request](frontend/assets/readme/friendscreen2.jpg) | ![Sent Request](frontend/assets/readme/friendscreen3.jpg) |
 
 
 | Daily Quest  |
