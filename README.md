@@ -1,6 +1,6 @@
 # 🚀 Educational Puzzle App (Eduzzle)
 
-![App Banner](frontend/assets/readme/splashscreen.jpg)  
+<img src="frontend/assets/readme/splashscreen.jpg" alt="App Banner" width="400" />
 *A fun and engaging **Educational Puzzle App** built with React Native and Node.js backend to help students learn through solving puzzles!*
 
 
@@ -50,7 +50,7 @@
 
 | Daily Quest  |
 |--------------|-------------|---------------|
-| ![Daily Quest](frontend/assets/readme/dailyquest2.jpg) |
+| <img src="frontend/assets/readme/dailyquest2.jpg" alt="Daily Quest" width="220" /> |
 
 
 | Gaming Event Section | Gaming Event List | Gaming Event | Gaming Event Quiz | Easy | Medium | Hard | Quiz Finish | Play Again | Quiz Result |
