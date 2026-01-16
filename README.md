@@ -44,17 +44,12 @@
 
 | Daily Quest  |
 |--------------|-------------|---------------|
-| ![Daily Quest](frontend/assets/readme/dailyquest2.jpg) | 
+| ![Daily Quest](frontend/assets/readme/dailyquest2.jpg) |
 
 
-| Gaming Events  |
-|--------------|-------------|---------------|
-| ![Gaming Event Section](frontend/assets/readme/gamingevent1.jpg) | ![Gaming Event List](frontend/assets/readme/gamingevent2.jpg) | ![Gaming Event](frontend/assets/readme/gamingevent3.jpg) | ![Gaming Event Quiz](frontend/assets/readme/gamingevent4.jpg) |
-
-
-| Gaming Event - Easy | Gaming Event - Medium | Gaming Event - Hard | Quiz Finish | Play Again | Quiz Result |
-|--------------------|----------------------|---------------------|------------|-----------|-------------|
-| ![Level-Easy](frontend/assets/PuzzleQuizEasy.jpg) | ![Level-Medium](frontend/assets/PuzzleQuizMed.jpg) | ![Level-Hard](frontend/assets/PuzzleQuizHard.jpg) | ![Finish1](frontend/assets/QuizFinish.jpg) | ![Finish2](frontend/assets/QuizFinish2.jpg) | ![PlayAgain](frontend/assets/PlaysectionPlayAgain.jpg) |
+| Gaming Event Section | Gaming Event List | Gaming Event | Gaming Event Quiz | Easy | Medium | Hard | Quiz Finish | Play Again | Quiz Result |
+|---------------------|------------------|--------------|-------------------|------|--------|------|------------|-----------|-------------|
+| ![Section](frontend/assets/readme/gamingevent1.jpg) | ![List](frontend/assets/readme/gamingevent2.jpg) | ![Event](frontend/assets/readme/gamingevent3.jpg) | ![Quiz](frontend/assets/readme/gamingevent4.jpg) | ![Easy](frontend/assets/PuzzleQuizEasy.jpg) | ![Medium](frontend/assets/PuzzleQuizMed.jpg) | ![Hard](frontend/assets/PuzzleQuizHard.jpg) | ![Finish1](frontend/assets/QuizFinish.jpg) | ![Finish2](frontend/assets/QuizFinish2.jpg) | ![PlayAgain](frontend/assets/PlaysectionPlayAgain.jpg) |
 
 
 | Friend Leaderboard | Global Leaderboards  | Premium Section |
