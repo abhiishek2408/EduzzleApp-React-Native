@@ -61,8 +61,21 @@ const SubscriptionScreen = ({ navigation }) => {
   }
 
   let currentPlan = null;
+  let daysLeft = null;
   if (user?.subscription?.isActive && user?.subscription?.planId) {
     currentPlan = plans.find((p) => String(p._id) === String(user.subscription.planId));
+    if (user.subscription.endDate) {
+      const end = new Date(user.subscription.endDate);
+      const today = new Date();
+      daysLeft = Math.max(0, Math.ceil((end - today) / (1000 * 60 * 60 * 24)));
+      // If plan expired, reset subscription so user can take a new plan
+      if (daysLeft < 1) {
+        user.subscription.isActive = false;
+        user.subscription.planId = null;
+        user.subscription.startDate = null;
+        user.subscription.endDate = null;
+      }
+    }
   }
 
   return (
@@ -88,20 +101,27 @@ const SubscriptionScreen = ({ navigation }) => {
             const daysLeft = end ? Math.max(0, Math.ceil((end - today) / (1000 * 60 * 60 * 24))) : null;
             const planName = currentPlan?.name || "Active Plan";
             return (
-              <View style={styles.currentPlanSimple}>
-                <MaterialCommunityIcons name="star-circle" size={22} color={PRIMARY_COLOR_LIGHT} style={{ marginRight: 10 }} />
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.currentPlanLabel}>Current Plan</Text>
-                  <Text style={styles.currentPlanValue}>{planName}</Text>
-                  {(start || end) && (
-                    <Text style={styles.currentPlanMeta}>
-                      {start ? `Started ${start.toLocaleDateString()} • ` : ''}
-                      {end ? `Ends ${end.toLocaleDateString()}` : ''}
-                      {daysLeft !== null ? ` • ${daysLeft} days left` : ''}
-                    </Text>
-                  )}
+              <LinearGradient
+                colors={[PRIMARY_COLOR_LIGHT, PRIMARY_COLOR_DARK]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.currentPlanAttractive}
+              >
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <MaterialCommunityIcons name="star-circle" size={38} color="#fff" style={{ marginRight: 18 }} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.currentPlanLabelAttractive}>Current Plan</Text>
+                    <Text style={styles.currentPlanValueAttractive}>{planName}</Text>
+                    {(start || end) && (
+                      <Text style={styles.currentPlanMetaAttractive}>
+                        {start ? `Started ${start.toLocaleDateString()} • ` : ''}
+                        {end ? `Ends ${end.toLocaleDateString()}` : ''}
+                        {daysLeft !== null ? ` • ${daysLeft} days left` : ''}
+                      </Text>
+                    )}
+                  </View>
                 </View>
-              </View>
+              </LinearGradient>
             );
           })()
         )}
@@ -223,14 +243,39 @@ const SubscriptionScreen = ({ navigation }) => {
 export default SubscriptionScreen;
 
 const styles = StyleSheet.create({
-  currentPlanSimple: {
+  currentPlanAttractive: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 4,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0e5f5',
-    marginBottom: 16,
+    borderRadius: 18,
+    paddingVertical: 18,
+    paddingHorizontal: 20,
+    marginBottom: 24,
+    shadowColor: PRIMARY_COLOR_DARK,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  currentPlanLabelAttractive: {
+    fontSize: 13,
+    color: '#fff',
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    marginBottom: 2,
+  },
+  currentPlanValueAttractive: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#fff',
+    marginBottom: 2,
+    letterSpacing: 0.5,
+  },
+  currentPlanMetaAttractive: {
+    marginTop: 2,
+    color: '#f3c999',
+    fontSize: 13,
+    fontWeight: '600',
   },
   currentPlanLabel: {
     fontSize: 12,

@@ -3,33 +3,8 @@
     "name": "Eduzzle",
     "slug": "Eduzzle",
     "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/appicon1.png",
     "runtimeVersion": "1.0.0",
-    "userInterfaceStyle": "light",
     "newArchEnabled": true,
-    "splash": {
-    "image": "./assets/splashscreen_logo.png",
-      "backgroundColor": "#4c0050"
-    },
-    "ios": {
-      "supportsTablet": true
-    },
-    "android": {
-      "package": "com.abhiishek2408.Eduzzle",
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon1.png",
-        "backgroundColor": "#4c0050"
-      },
-      "edgeToEdgeEnabled": true
-    },
-    "web": {
-      "favicon": "./assets/adaptive-icon1.png",
-      "bundler": "metro"
-    },
-    "plugins": [
-      "expo-font"
-    ],
     "extra": {
       "eas": {
         "projectId": "984667f1-544e-4c7a-8a49-0242d0165874"
@@ -37,6 +12,9 @@
     },
     "updates": {
       "url": "https://u.expo.dev/984667f1-544e-4c7a-8a49-0242d0165874"
+    },
+    "android": {
+      "package": "com.abhiishek2408.Eduzzle"
     }
   }
 }

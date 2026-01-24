@@ -11,6 +11,8 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import { useFonts, JosefinSans_400Regular, JosefinSans_700Bold } from '@expo-google-fonts/josefin-sans';
+
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -22,6 +24,11 @@ const LogoHeader = () => {
     setSearchQuery(text);
     navigation.setParams({ searchQuery: text });
   };
+
+    const [fontsLoaded] = useFonts({
+    'Josefin-Regular': JosefinSans_400Regular,
+    'Josefin-Bold': JosefinSans_700Bold,
+  });
 
   return (
     <LinearGradient
@@ -44,56 +51,30 @@ const LogoHeader = () => {
       <View className="flex-row items-center justify-between pt-5 pb-2 px-5">
         
      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-  {/* 🧩 Simplified Icon - No Shadows */}
-  <View style={{ width: 42, height: 42, justifyContent: 'center', alignItems: 'center' }}>
-    <Ionicons 
-      name="extension-puzzle" 
-      size={40} 
-      top={0}
-      color="#fff"
-      transform={[{ rotate: '-90deg' }]} 
-    />
-    {/* Subtle Inner Accent */}
-    <View style={{ 
-      position: 'absolute', 
-      top: 10, 
-      left: 12, 
-      width: 10, 
-      height: 3, 
-      backgroundColor: 'rgba(255,255,255,0.4)', 
-      borderRadius: 10, 
-      transform: [{ rotate: '-20deg' }] 
-    }} />
-  </View>
+
+  
+   
     
   {/* 📝 Eduzzle Identity - Reduced Gap */}
   <View style={{ marginLeft: 4 }}> 
     <View style={{ flexDirection: 'row', alignItems: 'baseline', position: 'relative' }}>
       <View style={{ position: 'relative' }}>
-        <Text style={{ 
-          fontSize: 38, 
-          fontWeight: '900', 
-          color: '#f3c999', 
-          letterSpacing: 0, // Tightened letter spacing
-          fontFamily: Platform.OS === 'ios' ? 'Avenir-Heavy' : 'sans-serif-black' 
+        <Text style={{
+          fontFamily: 'Josefin-Bold',
+          fontSize: 38,
+          lineHeight: 38,
+          letterSpacing: -1, // Reduced letter spacing
+          textAlign: 'center',
+          color: '#f3c999',
         }}>
-          Edu<Text style={{ color: '#fff' }}>zzle</Text>
+          Edu<Text style={{ color: '#fff', fontFamily: 'Josefin-Bold', fontSize: 38, lineHeight: 38, letterSpacing: -1 }}>zzle</Text>
         </Text>
         {/* Dot above 'e' */}
-        <View style={{ position: 'absolute', left: 124, top: 10, width: 7, height: 7, backgroundColor: '#f3c999', borderRadius: 7 }} />
+        <View style={{ position: 'absolute', left: 130, top: 3, width: 7, height: 7, backgroundColor: '#f3c999', borderRadius: 7 }} />
       </View>
     </View>
 
-    <Text style={{ 
-      fontSize: 11, 
-      fontWeight: '800', 
-      color: '#f3c999', 
-      marginTop: -6, // Pulled tagline closer to main text
-      letterSpacing: 1.2, 
-      textTransform: 'uppercase' 
-    }}>
-      Puzzle • Play • Progress
-    </Text>
+
   </View>
 </View>
 

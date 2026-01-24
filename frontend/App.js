@@ -4,7 +4,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { AuthProvider } from "./context/AuthContext";
 import { GameProvider } from "./context/GameContext";
 import AppNavigator from "./navigation/AppNavigator";
-import AnimatedSplash from "./AnimatedSplash";
+import AnimatedSplash from "./SplashScreen";
 
 import { LogBox, StatusBar, Platform } from 'react-native';
 LogBox.ignoreLogs([

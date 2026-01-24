@@ -13,7 +13,6 @@ import {
   Keyboard,
   StatusBar,
 } from "react-native";
-import RazorpayCheckout from "react-native-razorpay";
 import axios from "axios";
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { AuthContext } from "../context/AuthContext";
@@ -115,21 +114,9 @@ const PlanDetailScreen = ({ route, navigation }) => {
         theme: { color: "#701a75" },
       };
 
-      RazorpayCheckout.open(options)
-        .then(async (res) => {
-          await axios.post(
-            "https://eduzzleapp-react-native.onrender.com/api/payment/verify",
-            { ...res, planId: plan._id, durationInDays: plan.durationInDays },
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-          await refreshUser();
-          setLoading(false);
-          triggerSuccess();
-        })
-        .catch((err) => {
-          setLoading(false);
-          setPaymentError({ show: true, msg: err.description || "Payment Cancelled" });
-        });
+      // Razorpay integration removed. Implement payment gateway here.
+      setLoading(false);
+      setPaymentError({ show: true, msg: "Payment gateway not available. Please contact support." });
     } catch (error) {
       setLoading(false);
       setPaymentError({ show: true, msg: "Failed to initiate payment" });

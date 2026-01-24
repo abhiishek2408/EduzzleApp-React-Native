@@ -95,10 +95,17 @@ export default function GamingEventsSection({ navigation }) {
           const isCompleted = completedMap[item._id];
           
           let remainingMs = status === "Upcoming" ? start - nowDt : status === "Live" ? end - nowDt : 0;
-          const hh = Math.max(0, Math.floor(remainingMs / 1000 / 3600));
-          const mm = Math.max(0, Math.floor((remainingMs / 1000 % 3600) / 60));
-          const ss = Math.max(0, Math.floor(remainingMs / 1000 % 60));
-          const countdown = `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}:${String(ss).padStart(2, "0")}`;
+          let countdown = "00:00:00";
+          if (status !== "Closed" && remainingMs > 0) {
+            const days = Math.floor(remainingMs / (1000 * 60 * 60 * 24));
+            const hh = Math.floor((remainingMs / (1000 * 60 * 60)) % 24);
+            const mm = Math.floor((remainingMs / 1000 % 3600) / 60);
+            const ss = Math.floor(remainingMs / 1000 % 60);
+            countdown = `${hh.toString().padStart(2, "0")}:${mm.toString().padStart(2, "0")}:${ss.toString().padStart(2, "0")}`;
+            if (days > 0) {
+              countdown = `${days} day${days > 1 ? 's' : ''} ` + countdown;
+            }
+          }
 
           return (
             <TouchableOpacity

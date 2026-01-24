@@ -53,10 +53,15 @@ export default function GamingEventDetail({ route, navigation }) {
       const end = new Date(event.endTime);
       let diff = now < start ? start - now : now <= end ? end - now : 0;
       if (diff <= 0) return "Completed";
-      const hh = Math.floor(diff / 1000 / 3600);
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hh = Math.floor((diff / (1000 * 60 * 60)) % 24);
       const mm = Math.floor((diff / 1000 % 3600) / 60);
       const ss = Math.floor(diff / 1000 % 60);
-      return `${hh.toString().padStart(2, "0")}:${mm.toString().padStart(2, "0")}:${ss.toString().padStart(2, "0")}`;
+      let timeStr = `${hh.toString().padStart(2, "0")}:${mm.toString().padStart(2, "0")}:${ss.toString().padStart(2, "0")}`;
+      if (days > 0) {
+        timeStr = `${days} day${days > 1 ? 's' : ''} ` + timeStr;
+      }
+      return timeStr;
     };
     setCountdown(computeCountdown());
     timerRef.current = setInterval(() => setCountdown(computeCountdown()), 1000);

@@ -203,7 +203,18 @@ export default function ProfileScreen() {
 
           {/* Badges Section */}
           <Text style={styles.sectionTitle}>Hall of Fame</Text>
-          {loadingBadges ? <ActivityIndicator color={THEME_DARK} /> : (
+          {loadingBadges ? (
+            <ActivityIndicator color={THEME_DARK} />
+          ) : badges.length === 0 ? (
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
+              <View style={[styles.badgeItem, { borderStyle: 'dotted', borderWidth: 2, borderColor: '#d1d5db', backgroundColor: '#fff', borderRadius: 20 }]}> 
+                <View style={[styles.badgeCircle, { borderStyle: 'dotted', borderWidth: 2, borderColor: '#d1d5db', backgroundColor: '#f9fafb', justifyContent: 'center', alignItems: 'center', borderRadius: 35 }]}> 
+                  <MaterialCommunityIcons name="medal" size={35} color="#d1d5db" />
+                </View>
+                <Text style={[styles.badgeNameText, { color: '#d1d5db' }]}>No badges yet</Text>
+              </View>
+            </View>
+          ) : (
             <FlatList
               data={badges}
               horizontal
