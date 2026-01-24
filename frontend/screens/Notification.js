@@ -13,7 +13,7 @@ import {
 import { AuthContext } from '../context/AuthContext';
 import axios from 'axios';
 import io from 'socket.io-client';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const { width } = Dimensions.get('window');

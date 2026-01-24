@@ -3,7 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity, Dimensions, StyleSheet } from
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from "expo-linear-gradient";
 import GamingEventsSectionSkeleton from "../components/GamingEventsSectionSkeleton";
 

@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { Dimensions, TouchableOpacity, View, Text, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import QuizCardSkeleton from "./QuizCardSkeleton";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient'; // Added LinearGradient
 import axios from "axios";
 

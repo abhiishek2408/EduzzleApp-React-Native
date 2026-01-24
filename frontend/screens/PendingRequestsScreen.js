@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { View, Text, ScrollView, Image, TouchableOpacity, StyleSheet, StatusBar, ActivityIndicator } from 'react-native';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AuthContext } from '../context/AuthContext';
 import axios from 'axios';
 import { LinearGradient } from 'expo-linear-gradient';

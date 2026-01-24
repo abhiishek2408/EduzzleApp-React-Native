@@ -21,7 +21,7 @@ import Svg, {
   Circle,
   Path,
 } from "react-native-svg";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import QuizCard, { QuizScreen } from "../components/QuizScreen";
 import { Ionicons } from "@expo/vector-icons";
 import { AuthContext } from "../context/AuthContext";

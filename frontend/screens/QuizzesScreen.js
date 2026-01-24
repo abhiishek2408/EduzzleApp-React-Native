@@ -13,7 +13,7 @@ import {
 import axios from "axios";
 import Svg, { Rect, Defs, Stop, Circle, Path } from "react-native-svg";
 import { LinearGradient } from "expo-linear-gradient"; // Using expo-linear-gradient for buttons
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AuthContext } from "../context/AuthContext";
 
 const THEME_DARK = "#4a044e";

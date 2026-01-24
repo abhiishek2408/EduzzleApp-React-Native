@@ -4,7 +4,7 @@ import DailyQuestSkeleton from "../components/DailyQuestSkeleton";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
 import { LinearGradient } from "expo-linear-gradient";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Ionicons } from "@expo/vector-icons";
 
 const { width } = Dimensions.get('window');

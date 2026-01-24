@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import axios from 'axios';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Ionicons } from "@expo/vector-icons";
 import CardSkeleton from './CardSkeleton';
 import { AuthContext } from '../context/AuthContext';

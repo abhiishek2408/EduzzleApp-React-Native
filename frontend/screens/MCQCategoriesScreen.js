@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { API_URL } from '../config/api';
 import axios from 'axios';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const { width, height } = Dimensions.get('window');

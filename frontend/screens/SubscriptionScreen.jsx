@@ -74,6 +74,8 @@ const SubscriptionScreen = ({ navigation }) => {
         user.subscription.planId = null;
         user.subscription.startDate = null;
         user.subscription.endDate = null;
+          // Remove the stray null; statement
+          // null; // This line is unnecessary and will be removed
       }
     }
   }
