@@ -14,6 +14,12 @@
       "url": "https://u.expo.dev/984667f1-544e-4c7a-8a49-0242d0165874"
     },
     "userInterfaceStyle": "automatic",
+    "icon": "./assets/appicon1.png",
+        "splash": {
+          "image": "./assets/appicon1.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#4a044d"
+        },
     "android": {
       "package": "com.abhiishek2408.Eduzzle"
     }
