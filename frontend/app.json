@@ -22,6 +22,11 @@
         },
     "android": {
       "package": "com.abhiishek2408.Eduzzle"
+      ,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/appicon1.png",
+        "backgroundColor": "#4a044d"
+      }
     }
   }
 }

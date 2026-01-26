@@ -141,11 +141,11 @@ export default function UserNavigator() {
 const styles = StyleSheet.create({
   tabBar: {
     backgroundColor: "#ffffff",
-    height: 75,
+    height: 105,
     borderTopWidth: 1,
     borderTopColor: "#f1f5f9",
-    paddingBottom: 10,
-    paddingTop: 2,
+    paddingBottom: 50,
+    paddingTop: -27,
     // Add shadow so it's visible
     elevation: 10,
     shadowColor: "#000",

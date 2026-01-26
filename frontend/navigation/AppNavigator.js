@@ -1,19 +1,13 @@
 import React, { useContext } from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 
-import AdminDashboard from "../screens/AdminDashboard";
-import PlanDetailScreen from "../screens/PlanDetailScreen";
 import UserNavigator from "../screens/UserNavigator";
+import AdminDashboard from "../screens/AdminDashboard";
 import RegisterScreen from "../screens/RegisterScreen";
 import LoginScreen from "../screens/LoginScreen";
 import ForgotPasswordScreen from "../screens/ForgotPasswordScreen";
 import ResetPasswordScreen from "../screens/ResetPasswordScreen";
 import VerifyOTPScreen from "../screens/VerifyOTPScreen";
-import StackQuizScreen from "../screens/Puzzles/StackQuiz";
-import LinkedListPuzzleScreen from "../screens/Puzzles/LinkedListPuzzle";
-import BubbleSortPuzzleScreen from "../screens/Puzzles/BubbleSortPuzzle";
-import BinaryTreePuzzleScreen from "../screens/Puzzles/BinaryTreePuzzle";
-import FriendsScreen from '../screens/FriendsScreen.jsx';
 import { AuthContext } from "../context/AuthContext";
 
 const Stack = createStackNavigator();
@@ -29,12 +23,7 @@ export default function AppNavigator() {
         ) : (
           <>
             <Stack.Screen name="UserNavigator" component={UserNavigator} />
-            <Stack.Screen name="StackQuizScreen" component={StackQuizScreen} />
-            <Stack.Screen name="LinkedListPuzzleScreen" component={LinkedListPuzzleScreen} />
-            <Stack.Screen name="BubbleSortPuzzleScreen" component={BubbleSortPuzzleScreen} />
-            <Stack.Screen name="BinaryTreePuzzleScreen" component={BinaryTreePuzzleScreen} />
-            <Stack.Screen name="FriendsScreen" component={FriendsScreen} />
-            <Stack.Screen name="PlanDetail" component={PlanDetailScreen} />
+          
           </>
         )
       ) : (

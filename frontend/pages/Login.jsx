@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, ActivityIndicator } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 
 export default function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
+  const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
 
   const onChange = (name, value) => {
@@ -12,6 +13,7 @@ export default function Login() {
   };
 
   const submit = async () => {
+    setLoading(true);
     try {
       const res = await fetch("https://eduzzleapp-react-native.onrender.com/api/auth/login", {
         method: "POST",
@@ -30,9 +32,11 @@ export default function Login() {
       await AsyncStorage.setItem("token", data.token);
 
       Alert.alert("Success", "Logged in successfully!");
-      navigation.navigate("Dashboard"); // <- make sure Dashboard is in your navigator
+      navigation.navigate("Dashboard");
     } catch (err) {
       Alert.alert("Error", err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -57,8 +61,12 @@ export default function Login() {
         secureTextEntry
       />
 
-      <TouchableOpacity style={styles.button} onPress={submit}>
-        <Text style={styles.buttonText}>Login</Text>
+      <TouchableOpacity style={styles.button} onPress={submit} disabled={loading}>
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.buttonText}>Login</Text>
+        )}
       </TouchableOpacity>
 
       <TouchableOpacity
