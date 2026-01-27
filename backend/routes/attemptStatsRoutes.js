@@ -36,6 +36,8 @@ router.get("/stats/:id", async (req, res) => {
 
 
 
+
+
 // Get all quiz IDs attempted by a user
 router.get("/attempted-puzzles/:userId", async (req, res) => {
   try {
