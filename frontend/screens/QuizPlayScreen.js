@@ -9,26 +9,20 @@ import {
   Alert,
   ScrollView,
   TouchableOpacity,
+  Dimensions,
 } from "react-native";
-import { useFonts, Lato_100Thin, Lato_400Regular } from "@expo-google-fonts/lato";
-import Svg, {
-  Rect,
-  Defs,
-  LinearGradient,
-  Stop,
-  Circle,
-  Ellipse,
-  Line,
-  Polyline,
-  Polygon,
-  Path,
-} from "react-native-svg";
+// Import Toast
+import Toast from 'react-native-toast-message';
+import { useFonts, Lato_100Thin, Lato_400Regular, Lato_700Bold } from "@expo-google-fonts/lato";
+import Svg, { Rect, Defs, LinearGradient, Stop, Circle } from "react-native-svg";
 
 import { AuthContext } from "../context/AuthContext";
 import { GameContext } from "../context/GameContext";
 import ResultComponent from "./ResultScreen";
 
-export default function QuizScreen() {
+const { width } = Dimensions.get('window');
+
+export default function QuizPlayScreen() {
   const route = useRoute();
   const navigation = useNavigation();
 
@@ -61,6 +55,7 @@ export default function QuizScreen() {
 
   const questionStartTime = useRef(null);
 
+  const [fontsLoaded] = useFonts({ Lato_100Thin, Lato_400Regular, Lato_700Bold });
 
   const startQuiz = async (id) => {
     resetRetries();
@@ -84,14 +79,13 @@ export default function QuizScreen() {
       setLocalScore(0);
     } catch (err) {
       console.error(err);
-      Alert.alert("Error", "Could not load quiz data");
+      Toast.show({ type: 'error', text1: 'Error', text2: 'Could not load quiz data' });
       navigation.replace("QuizSelection");
     } finally {
       setLoading(false);
     }
   };
 
-  // ---- Load Quiz ----
   useEffect(() => {
     if (!quizId) {
       navigation.replace("QuizSelection");
@@ -100,13 +94,11 @@ export default function QuizScreen() {
     }
   }, [quizId]);
 
-  // ---- Timer ----
   useEffect(() => {
     if (!quizData) return;
 
     const limit = quizData.levels[currentLevelIndex]?.timeLimit || 60;
     setTimer(limit);
-
     questionStartTime.current = Date.now();
 
     if (intervalId) clearInterval(intervalId);
@@ -123,42 +115,40 @@ export default function QuizScreen() {
     }, 1000);
 
     setIntervalId(iv);
-
     return () => clearInterval(iv);
   }, [currentLevelIndex, quizData]);
 
-  // ---- Auto Advance ----
   const autoAdvanceLevel = () => {
     const lvl = quizData.levels[currentLevelIndex];
     const now = Date.now();
+    const unanswered = lvl.questions.slice(currentQuestionIndex).map((q) => ({
+      questionId: q._id,
+      selectedOption: null,
+      correctOption: q.answer,
+      isCorrect: false,
+      timeTaken: 0,
+      pointsEarned: 0,
+    }));
 
-    const unanswered = lvl.questions
-      .slice(currentQuestionIndex)
-      .map((q) => ({
-        questionId: q._id,
-        selectedOption: null,
-        correctOption: q.answer,
-        isCorrect: false,
-        timeTaken: 0,
-        pointsEarned: 0,
-      }));
-
-    setLevelAttempts((a) => [
-      ...a,
-      {
-        levelName: lvl.name,
-        startedAt: new Date(levelStartTime),
-        endedAt: new Date(now),
-        timeTaken: Math.floor((now - levelStartTime) / 1000),
-        totalQuestions: lvl.questions.length,
-        correctAnswers: 0,
-        wrongAnswers: lvl.questions.length,
-        unanswered: lvl.questions.length,
-        score: 0,
-        passed: false,
-        answers: unanswered,
-      },
-    ]);
+    setLevelAttempts((a) => {
+      const filtered = a.filter((entry) => entry.levelName !== lvl.name);
+      return [
+        ...filtered,
+        {
+          levelName: lvl.name,
+          startedAt: new Date(levelStartTime),
+          endedAt: new Date(now),
+          timeTaken: Math.floor((now - levelStartTime) / 1000),
+          totalQuestions: lvl.questions.length,
+          correctAnswers: 0,
+          wrongAnswers: lvl.questions.length,
+          unanswered: lvl.questions.length,
+          score: 0,
+          passed: false,
+          answers: unanswered,
+        },
+      ];
+    });
 
     setSelectedOption(null);
 
@@ -172,16 +162,13 @@ export default function QuizScreen() {
     }
   };
 
-  // ---- Answer Handling ----
   const handleOptionSelect = (opt) => setSelectedOption(opt);
 
   const handleNext = () => {
     const lvl = quizData.levels[currentLevelIndex];
     const ques = lvl.questions[currentQuestionIndex];
-
     const correct = selectedOption === ques.answer;
     const pts = correct ? ques.points || 1 : 0;
-
     const now = Date.now();
     const tTaken = Math.floor((now - questionStartTime.current) / 1000);
 
@@ -204,23 +191,25 @@ export default function QuizScreen() {
       questionStartTime.current = Date.now();
     } else {
       const levelScore = allAns.reduce((sum, a) => sum + a.pointsEarned, 0);
-
-      setLevelAttempts((a) => [
-        ...a,
-        {
-          levelName: lvl.name,
-          startedAt: new Date(levelStartTime),
-          endedAt: new Date(now),
-          timeTaken: Math.floor((now - levelStartTime) / 1000),
-          totalQuestions: lvl.questions.length,
-          correctAnswers: allAns.filter((a) => a.isCorrect).length,
-          wrongAnswers: allAns.filter((a) => !a.isCorrect).length,
-          unanswered: allAns.filter((a) => a.selectedOption == null).length,
-          score: levelScore,
-          passed: levelScore >= lvl.passingMarks,
-          answers: allAns,
-        },
-      ]);
+      setLevelAttempts((a) => {
+        const filtered = a.filter((entry) => entry.levelName !== lvl.name);
+        return [
+          ...filtered,
+          {
+            levelName: lvl.name,
+            startedAt: new Date(levelStartTime),
+            endedAt: new Date(now),
+            timeTaken: Math.floor((now - levelStartTime) / 1000),
+            totalQuestions: lvl.questions.length,
+            correctAnswers: allAns.filter((a) => a.isCorrect).length,
+            wrongAnswers: allAns.filter((a) => !a.isCorrect).length,
+            unanswered: allAns.filter((a) => a.selectedOption == null).length,
+            score: levelScore,
+            passed: levelScore >= lvl.passingMarks,
+            answers: allAns,
+          },
+        ];
+      });
 
       if (currentLevelIndex < quizData.levels.length - 1) {
         setCurrentLevelIndex((i) => i + 1);
@@ -237,7 +226,6 @@ export default function QuizScreen() {
   const getTotalPassingMarks = () =>
     quizData.levels.reduce((sum, l) => sum + l.passingMarks, 0);
 
-  // ---- Submit Results ----
   const submitResults = async () => {
     const payload = {
       userId: user._id,
@@ -255,208 +243,259 @@ export default function QuizScreen() {
     try {
       setSubmitted(true);
       await axios.post("https://eduzzleapp-react-native.onrender.com/api/puzzle-attempts", payload);
-      Alert.alert("Success", "Results submitted successfully");
+      // REPLACED ALERT WITH TOAST
+      Toast.show({
+        type: 'success',
+        text1: 'Success! 🎉',
+        text2: 'Results submitted successfully',
+        position: 'bottom'
+      });
     } catch {
-      Alert.alert("Error", "Submission failed");
+      Toast.show({ type: 'error', text1: 'Submission failed', text2: 'Please try again later' });
       setSubmitted(false);
     }
   };
 
-  // ---- Render ----
-  if (loading) {
-    return <ActivityIndicator size="large" style={{ marginTop: 50 }} />;
-  }
-
-  if (!quizData) {
-    return null; // fallback
-  }
-
-  // ---- Show result screen ----
-  if (isFinished) {
-    const totalPossible = levelAttempts.reduce((sum, l) => sum + l.score, 0);
-    const passed = score >= getTotalPassingMarks();
-
+  if (loading || !fontsLoaded) {
     return (
-      <ResultComponent
-        score={score}
-        totalPossible={totalPossible}
-        passed={passed}
-        feedback={feedback}
-        setFeedback={setFeedback}
-        rating={rating}
-        setRating={setRating}
-        submitted={submitted}
-        onSubmit={submitResults}
-        levelAttempts={levelAttempts}
-        isFinished={isFinished}
-        submitResults={submitResults}
-      />
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#701a75" />
+        <Text style={styles.loadingText}>Preparing your quiz...</Text>
+      </View>
     );
   }
 
-  // ---- Otherwise show the quiz ----
+  if (!quizData) return null;
+
+  const showPreviousAttempts = !isFinished && quizData && user && quizId;
+  const previousAttemptsBtn = showPreviousAttempts ? (
+    <TouchableOpacity
+      style={styles.prevBtn}
+      onPress={() => navigation.navigate("PreviousAttemptsScreen", { quizId, userId: user._id })}
+    >
+      <Text style={styles.prevBtnText}>View Previous Attempts</Text>
+    </TouchableOpacity>
+  ) : null;
+
+  if (isFinished) {
+    const easyLevel = quizData.levels.find(l => l.name.toLowerCase() === "easy");
+    const mediumLevel = quizData.levels.find(l => l.name.toLowerCase() === "medium");
+    const hardLevel = quizData.levels.find(l => l.name.toLowerCase() === "hard");
+    const easyQ = easyLevel ? easyLevel.questions.length : 0;
+    const mediumQ = mediumLevel ? mediumLevel.questions.length : 0;
+    const hardQ = hardLevel ? hardLevel.questions.length : 0;
+    const totalPossible = (2 * easyQ) + (4 * mediumQ) + (6 * hardQ);
+    const passed = score >= getTotalPassingMarks();
+
+    return (
+      <>
+        <ResultComponent
+          score={score}
+          totalPossible={totalPossible}
+          passed={passed}
+          feedback={feedback}
+          setFeedback={setFeedback}
+          rating={rating}
+          setRating={setRating}
+          submitted={submitted}
+          onSubmit={submitResults}
+          levelAttempts={levelAttempts}
+          isFinished={isFinished}
+          submitResults={submitResults}
+          onViewAttemptReview={() => navigation.navigate("AttemptReviewScreen", { levelAttempts })}
+        />
+        <Toast />
+      </>
+    );
+  }
+
   const lvl = quizData.levels[currentLevelIndex];
   const ques = lvl.questions[currentQuestionIndex];
+  const progress = ((currentQuestionIndex + 1) / lvl.questions.length) * 100;
 
   return (
-    <ScrollView contentContainerStyle={styles.testcontainer}>
-      {/* SVG Background */}
-      <View style={StyleSheet.absoluteFillObject}>
-        <Svg height="100%" width="100%">
+    <View style={{ flex: 1, backgroundColor: '#F8F9FD' }}>
+      <ScrollView contentContainerStyle={styles.testcontainer}>
+        {previousAttemptsBtn}
+        
+        <Text style={styles.header}>{quizData.name}</Text>
+        
+        <View style={styles.badgeContainer}>
+           <Text style={styles.levelBadge}>{lvl.name} Level</Text>
+        </View>
 
-        </Svg>
-      </View>
+        <View style={styles.questionTimeInfoRow}>
+          <Text style={styles.questionCount}>
+            Question <Text style={{color: '#701a75'}}>{currentQuestionIndex + 1}</Text> of {lvl.questions.length}
+          </Text>
+          <View style={styles.timerContainer}>
+            <Text style={styles.timer}>⏱ {timer}s</Text>
+          </View>
+        </View>
 
-      <Text style={styles.header}>{quizData.name}</Text>
-      <Text style={styles.level}>Level: {lvl.name}</Text>
+        {/* Progress Bar */}
+        <View style={styles.progressBarBg}>
+          <View style={[styles.progressBarFill, { width: `${progress}%` }]} />
+        </View>
 
-      <View style={styles.questionTimeInfoRow}>
-        <Text style={styles.questionCount}>
-          Question {currentQuestionIndex + 1} / {lvl.questions.length}
-        </Text>
-        <Text style={styles.timer}>⏱ {timer}s</Text>
-      </View>
+        <View style={styles.questionCard}>
+          <Text style={styles.question}>{ques.question}</Text>
 
-      <View style={styles.questionCard}>
-        <Text style={styles.question}>{ques.question}</Text>
+          {ques.options.map((opt, i) => (
+            <TouchableOpacity
+              key={i}
+              activeOpacity={0.7}
+              onPress={() => handleOptionSelect(opt)}
+              style={[
+                styles.optionBtn,
+                selectedOption === opt && styles.selectedOption,
+              ]}
+            >
+              <View style={[styles.radio, selectedOption === opt && styles.radioSelected]} />
+              <Text style={[styles.optionText, selectedOption === opt && styles.selectedOptionText]}>
+                {opt}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
 
-        {ques.options.map((opt, i) => (
-          <TouchableOpacity
-            key={i}
-            onPress={() => handleOptionSelect(opt)}
-            style={[
-              styles.optionBtn,
-              selectedOption === opt && styles.selectedOption,
-            ]}
-          >
-            <Text>{opt}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      <TouchableOpacity
-        onPress={handleNext}
-        disabled={!selectedOption}
-        style={[styles.nextBtn, !selectedOption && styles.disabledBtn]}
-      >
-        <Text style={styles.nextBtnText}>Next</Text>
-      </TouchableOpacity>
-    </ScrollView>
+        <TouchableOpacity
+          onPress={handleNext}
+          disabled={!selectedOption}
+          style={[styles.nextBtn, !selectedOption && styles.disabledBtn]}
+        >
+          <Text style={styles.nextBtnText}>Next Question</Text>
+        </TouchableOpacity>
+      </ScrollView>
+      {/* Toast component must be at the very bottom of the root view */}
+      <Toast />
+    </View>
   );
 }
 
-// ---- Styles ----
 const styles = StyleSheet.create({
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' },
+  loadingText: { marginTop: 10, color: '#701a75', fontFamily: 'Lato_400Regular' },
   testcontainer: {
-    padding: 25,
-    backgroundColor: "#fff",
+    padding: 20,
+    paddingTop: 40,
     width: "100%",
     maxWidth: 760,
-    borderRadius: 12,
-    elevation: 6,
-    marginHorizontal: "auto",
+    alignSelf: "center",
   },
   header: {
-    fontSize: 32,
-    fontWeight: "500",
-    marginBottom: 10,
+    fontSize: 28,
+    fontWeight: "700",
+    marginBottom: 8,
     textAlign: "center",
-    fontFamily: "Lato_400Regular",
+    color: '#1a1a1a',
+    fontFamily: "Lato_700Bold",
   },
-  level: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#2d3436",
-    textAlign: "center",
-    marginBottom: 20,
-    letterSpacing: 0.8,
-    backgroundColor: "#fce4ec",
-    paddingVertical: 6,
-    paddingHorizontal: 14,
-    alignSelf: "center",
-    borderRadius: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
+  badgeContainer: { alignItems: 'center', marginBottom: 20 },
+  levelBadge: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#701a75",
+    textTransform: 'uppercase',
+    backgroundColor: "#f3e8ff",
+    paddingVertical: 4,
+    paddingHorizontal: 16,
+    borderRadius: 20,
   },
+  prevBtn: { 
+    backgroundColor: '#fff', 
+    padding: 12, 
+    borderRadius: 12, 
+    marginBottom: 20, 
+    alignSelf: 'center',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    width: '100%'
+  },
+  prevBtnText: { color: '#701a75', fontWeight: '700', fontSize: 14, textAlign: 'center' },
   questionTimeInfoRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 5,
-    paddingHorizontal: 10,
-  },
-  questionCount: {
-    fontSize: 17,
-    color: "#555",
-    fontWeight: "500",
-    textAlign: "center",
+    alignItems: "flex-end",
     marginBottom: 10,
-    letterSpacing: 0.5,
-    backgroundColor: "#f1f2f6",
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
   },
-  timer: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#fff",
+  questionCount: { fontSize: 16, color: "#64748b", fontWeight: "600" },
+  timerContainer: {
     backgroundColor: "#4a044e",
     paddingVertical: 6,
-    paddingHorizontal: 16,
-    borderRadius: 25,
-    textAlign: "center",
-    overflow: "hidden",
-    letterSpacing: 1,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    elevation: 5,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+  },
+  timer: { fontSize: 14, fontWeight: "800", color: "#fff" },
+  progressBarBg: {
+    height: 8,
+    backgroundColor: '#e2e8f0',
+    borderRadius: 4,
+    marginBottom: 25,
+    overflow: 'hidden'
+  },
+  progressBarFill: {
+    height: '100%',
+    backgroundColor: '#701a75',
+    borderRadius: 4,
   },
   questionCard: {
-    borderWidth: 1,
-    padding: 25,
-    borderRadius: 10,
     backgroundColor: "#fff",
-    marginBottom: 30,
+    padding: 24,
+    borderRadius: 20,
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 3,
   },
   question: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 18,
+    fontSize: 20,
+    lineHeight: 28,
+    fontWeight: "700",
+    color: '#1e293b',
+    marginBottom: 24,
   },
   optionBtn: {
-    padding: 14,
-    marginVertical: 7,
-    borderRadius: 8,
-    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    marginVertical: 6,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: "#f1f5f9",
+    backgroundColor: '#f8fafc'
   },
   selectedOption: {
-    backgroundColor: "#d1ecf1",
-    borderColor: "#a4d9e7",
+    backgroundColor: "#faf5ff",
+    borderColor: "#701a75",
+  },
+  optionText: { fontSize: 16, color: '#475569', fontWeight: '500', marginLeft: 10 },
+  selectedOptionText: { color: '#701a75', fontWeight: '700' },
+  radio: {
+    height: 20,
+    width: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#cbd5e1',
+  },
+  radioSelected: {
+    borderColor: '#701a75',
+    backgroundColor: '#701a75',
+    borderWidth: 5,
   },
   nextBtn: {
-    backgroundColor: "#28a745",
-    padding: 16,
+    backgroundColor: "#701a75",
+    padding: 18,
     alignItems: "center",
-    borderRadius: 8,
+    borderRadius: 15,
+    shadowColor: "#701a75",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
   },
-  nextBtnText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 17,
-  },
-  disabledBtn: {
-    backgroundColor: "#adb5bd",
-    opacity: 0.6,
-  },
+  nextBtnText: { color: "#fff", fontWeight: "700", fontSize: 18 },
+  disabledBtn: { backgroundColor: "#cbd5e1", shadowOpacity: 0, elevation: 0 },
 });

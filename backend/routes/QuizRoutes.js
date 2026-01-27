@@ -1,7 +1,7 @@
 // routes/QuizRoutes.js
 import express from "express";
 import Quiz from "../models/Quiz.js";
-import UserAttempt from "../models/UserAttempt.js";
+
 
 const router = express.Router();
 

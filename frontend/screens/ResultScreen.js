@@ -281,7 +281,7 @@
 // });
 
 import { useNavigation } from "@react-navigation/native";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ScrollView,
   Text,
@@ -291,6 +291,7 @@ import {
   AppState,
   View,
 } from "react-native";
+import Toast from 'react-native-root-toast';
 import { Ionicons } from "@expo/vector-icons";
 
 export default function ResultComponent({
@@ -304,16 +305,33 @@ export default function ResultComponent({
   submitted,
   onSubmit,
   isFinished,
+  onViewAttemptReview,
 }) {
   const hasSubmittedRef = useRef(false);
   const navigation = useNavigation();
+  const [showToast, setShowToast] = useState(false);
 
   const handleSubmitOnce = () => {
     if (!hasSubmittedRef.current && isFinished && !submitted) {
       hasSubmittedRef.current = true;
       onSubmit();
+      setShowToast(true);
     }
   };
+
+  useEffect(() => {
+    if (showToast) {
+      Toast.show('Successfully submitted!', {
+        duration: Toast.durations.SHORT,
+        position: Toast.positions.BOTTOM,
+        shadow: true,
+        animation: true,
+        hideOnPress: true,
+        delay: 0,
+      });
+      setShowToast(false);
+    }
+  }, [showToast]);
 
   useEffect(() => {
     return () => handleSubmitOnce();
@@ -367,11 +385,21 @@ export default function ResultComponent({
           <Ionicons
             name={passed ? "checkmark-circle" : "close-circle"}
             size={28}
-            color={passed ? "#1caf3cff" : "#e11d48"} // Theme color or red for fail
+            color={passed ? "#1caf3cff" : "#e11d48"}
             style={{ marginRight: 8 }}
           />
           <Text style={styles.statusText}>{passed ? "Passed" : "Failed"}</Text>
         </View>
+
+        {/* Link to Attempt Review Screen */}
+        {submitted && (
+          <TouchableOpacity
+            style={[styles.button, { marginBottom: 10, backgroundColor: '#701a75' }]}
+            onPress={onViewAttemptReview}
+          >
+            <Text style={styles.buttonText}>View Attempt Review</Text>
+          </TouchableOpacity>
+        )}
 
         {!submitted && (
           <>

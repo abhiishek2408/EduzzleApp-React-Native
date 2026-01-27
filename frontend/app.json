@@ -16,9 +16,11 @@
     "userInterfaceStyle": "automatic",
     "icon": "./assets/appicon1.png",
         "splash": {
-          "image": "./assets/appicon1.png",
-          "resizeMode": "contain",
-          "backgroundColor": "#4a044d"
+          "image": "./assets/adaptive-icon1.png",
+          "resizeMode": "cover",
+          "backgroundColor": "#4a044d",
+          "androidSpinner": true,
+          "androidSpinnerStyle": "large"
         },
     "android": {
       "package": "com.abhiishek2408.Eduzzle"

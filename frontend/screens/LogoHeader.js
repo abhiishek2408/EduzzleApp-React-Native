@@ -56,7 +56,7 @@ const LogoHeader = () => {
       }}
     >
       {/* 🔹 Header */}
-      <View className="flex-row items-center justify-between pt-5 pb-2 px-5">
+      <View className="flex-row items-center justify-between pt-12 pb-1 px-5">
         {/* 🔹 Logo */}
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <Text

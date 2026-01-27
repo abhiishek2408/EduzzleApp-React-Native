@@ -127,7 +127,10 @@ export default function QuizScreen({ navigation }) {
               category={quiz.category}
               isFree={quiz.isFree}
               attempted={attemptedQuizIds.includes(quiz._id)}
-              onPress={() => navigation.navigate("QuizPlayScreen", { quizId: quiz._id })}
+              onPress={() => navigation.navigate("QuizOverviewScreen", {
+                quiz,
+                onViewPreviousAttempts: () => navigation.navigate("PreviousAttemptsScreen", { quizId: quiz._id, userId: user._id })
+              })}
             />
           ))}
         </View>
@@ -139,7 +142,7 @@ export default function QuizScreen({ navigation }) {
 // ------------------- STYLES -------------------
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
-  scrollContent: { paddingHorizontal: PADDING_HORIZONTAL, paddingTop: 20, paddingBottom: 40 },
+  scrollContent: { paddingHorizontal: PADDING_HORIZONTAL, paddingTop: 24, paddingBottom: 40 },
   headerSection: { marginBottom: 25, paddingLeft: 4 },
   mainTitle: { fontSize: 28, fontWeight: "900", color: THEME_DARK, letterSpacing: -0.5 },
   subTitle: { fontSize: 14, color: "#6b7280", fontWeight: "500", marginTop: 2 },

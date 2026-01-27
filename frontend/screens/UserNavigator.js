@@ -11,6 +11,7 @@ import PlayScreen from "./PlayScreen";
 import ProfileScreen from "./ProfileScreen";
 import FriendsScreen from "./FriendsScreen";
 import QuizPlayScreen from "./QuizPlayScreen";
+import QuizOverviewScreen from "./QuizOverviewScreen";
 import ResultScreen from "./ResultScreen";
 import StackQuiz from "../screens/Puzzles/StackQuiz";
 import LinkedListPuzzle from "../screens/Puzzles/LinkedListPuzzle";
@@ -59,7 +60,10 @@ const StackScreens = ({ route }) => {
       <Stack.Screen name="StackProfile" component={ProfileScreen} />
       <Stack.Screen name="StackFriends" component={FriendsScreen} />
       <Stack.Screen name="PremiumDashboard" component={SubscriptionScreen} />
+      <Stack.Screen name="QuizOverviewScreen" component={QuizOverviewScreen} />
       <Stack.Screen name="QuizPlayScreen" component={QuizPlayScreen} />
+      <Stack.Screen name="AttemptReviewScreen" component={require("./AttemptReviewScreen").default} />
+      <Stack.Screen name="PreviousAttemptsScreen" component={require("./PreviousAttemptsScreen").default} />
       <Stack.Screen name="StackQuizScreen" component={StackQuiz} />
       <Stack.Screen name="LinkedListPuzzleScreen" component={LinkedListPuzzle} />
       <Stack.Screen name="BubbleSortPuzzleScreen" component={BubbleSortPuzzle} />
