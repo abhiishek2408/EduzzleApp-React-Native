@@ -1,3 +1,4 @@
+
 import express from "express";
 import QuizAttempt from "../models/QuizAttempt.js";
 
@@ -35,7 +36,16 @@ router.get("/stats/:id", async (req, res) => {
 });
 
 
-
+// Get all attempts for a specific quiz and user
+router.get("/quiz/:quizId/user/:userId", async (req, res) => {
+  try {
+    const { quizId, userId } = req.params;
+    const attempts = await QuizAttempt.find({ quizId, userId }).sort({ startedAt: -1 });
+    res.json({ success: true, attempts });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error", error });
+  }
+});
 
 
 // Get all quiz IDs attempted by a user
