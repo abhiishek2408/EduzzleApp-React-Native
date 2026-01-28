@@ -9,28 +9,12 @@ const { width } = Dimensions.get("window");
 export default function AttemptReviewScreen() {
   const route = useRoute();
   const { levelAttempts } = route.params || {};
-  const totalScore = Array.isArray(levelAttempts)
+  const totalScoreget = Array.isArray(levelAttempts)
     ? levelAttempts.reduce((sum, level) => sum + (level.score || 0), 0)
     : 0;
   // Try to debug maxScore if not visible
   let maxScore = 0;
-  if (Array.isArray(levelAttempts)) {
-    maxScore = levelAttempts.reduce((sum, level) => {
-      if (typeof level.maxScore === 'number') return sum + level.maxScore;
-      if (Array.isArray(level.answers)) {
-        let pointsPerQuestion = null;
-        if (level.levelName === 0 || level.levelName === 'Easy') pointsPerQuestion = 2;
-        else if (level.levelName === 1 || level.levelName === 'Medium') pointsPerQuestion = 4;
-        else if (level.levelName === 6 || level.levelName === 'Hard') pointsPerQuestion = 6;
-        if (pointsPerQuestion !== null) {
-          return sum + (level.answers.length * pointsPerQuestion);
-        }
-        // If not level 0, 1, or 6, do not add to maxScore
-        return sum;
-      }
-      return sum;
-    }, 0);
-  }
+ 
 
   if (!levelAttempts) {
     return (
@@ -50,107 +34,128 @@ export default function AttemptReviewScreen() {
         <View style={styles.totalScoreBox}>
           <MaterialCommunityIcons name="trophy-award" size={22} color="#f59e42" style={{marginRight: 8}} />
           <Text style={styles.totalScoreText}>
-            Total Score: <Text style={{color:'#701a75'}}>{totalScore}</Text>
-            <Text style={{color:'#64748b'}}> / {maxScore}</Text>
+            Total Score: <Text style={{color:'#701a75'}}>{totalScoreget}</Text>
+            <Text style={{color:'#64748b'}}> / {totalScore}</Text>
           </Text>
+          {/* Display total marks from quiz if available */}
+         
         </View>
-        {/* Debug: show maxScore values for each level for developer */}
-        {/* <Text style={{fontSize:10, color:'#aaa', alignSelf:'center'}}>maxScores: {JSON.stringify(levelAttempts.map(l=>l.maxScore))}</Text> */}
 
-        {levelAttempts.map((level, idx) => (
-          <View key={level.levelName + idx} style={styles.levelCard}>
-            {/* Level Header */}
-            <View style={styles.levelHeader}>
-              <View style={styles.levelTitleRow}>
-                <MaterialCommunityIcons name="layers-triple" size={20} color="#fff" style={{marginRight: 8}} />
-                <Text style={styles.levelTitle}>{level.levelName} Level</Text>
+        {levelAttempts.map((level, idx) => {
+          // Find quiz data for this level if available
+          const quizData = level.quizData || (level.quizId && level.quizId.levels ? level.quizId : null);
+          let quizQuestions = [];
+          if (quizData && quizData.levels) {
+            const quizLevel = quizData.levels.find(lvl => lvl.name === level.levelName);
+            if (quizLevel && quizLevel.questions) quizQuestions = quizLevel.questions;
+          }
+          return (
+            <View key={level.levelName + idx} style={styles.levelCard}>
+              {/* Level Header */}
+              <View style={styles.levelHeader}>
+                <View style={styles.levelTitleRow}>
+                  <MaterialCommunityIcons name="layers-triple" size={20} color="#fff" style={{marginRight: 8}} />
+                  <Text style={styles.levelTitle}>{level.levelName} Level</Text>
+                </View>
+                <View style={styles.statPill}>
+                  <Text style={styles.statPillText}>
+                    Score: {level.score}
+                    {typeof level.maxScore === 'number' && (
+                      <Text style={{color:'#fde68a'}}> / {level.maxScore}</Text>
+                    )}
+                  </Text>
+                </View>
               </View>
-              <View style={styles.statPill}>
-                <Text style={styles.statPillText}>
-                  Score: {level.score}
-                  {typeof level.maxScore === 'number' && (
-                    <Text style={{color:'#fde68a'}}> / {level.maxScore}</Text>
-                  )}
-                </Text>
-              </View>
-            </View>
 
-            {level.answers && level.answers.length > 0 ? (
-              level.answers.map((ans, qidx) => (
-                <View key={ans.questionId + qidx} style={styles.questionCard}>
-                  <View style={styles.questionHeader}>
-                    <Text style={styles.questionNumber}>{qidx + 1}.</Text>
-                    <Text style={styles.questionText}>
-                      {ans.questionText || "Question Content"}
-                    </Text>
-                  </View>
-
-                  {/* Display all options for the question */}
-                  {Array.isArray(ans.options) && ans.options.length > 0 && (
-                    <View style={styles.optionsList}>
-                      {ans.options.map((opt, oidx) => {
-                        // Highlight if selected or correct
-                        let optionStyle = [styles.optionText];
-                        if (ans.selectedOption === opt && ans.isCorrect) optionStyle.push(styles.selectedCorrectOption);
-                        else if (ans.selectedOption === opt) optionStyle.push(styles.selectedOption);
-                        if (ans.correctOption === opt && !ans.isCorrect) optionStyle.push(styles.correctOption);
-                        return (
-                          <Text key={oidx} style={optionStyle}>
-                            {String.fromCharCode(65 + oidx)}. {opt}
-                          </Text>
-                        );
-                      })}
-                    </View>
-                  )}
-
-                  <View style={styles.answerSection}>
-                    {/* User Answer Row */}
-                    <View style={[
-                        styles.answerRow, 
-                        ans.isCorrect ? styles.correctBg : styles.incorrectBg
-                      ]}>
-                      <Ionicons 
-                        name={ans.isCorrect ? "checkmark-circle" : "close-circle"} 
-                        size={22} 
-                        color={ans.isCorrect ? "#166534" : "#991b1b"} 
-                        style={styles.statusIcon}
-                      />
-                      <View>
-                        <Text style={styles.label}>Your Answer</Text>
-                        <Text style={[styles.answerValue, { color: ans.isCorrect ? '#166534' : '#991b1b' }]}>
-                          {ans.selectedOption ?? 'Skipped'}
+              {level.answers && level.answers.length > 0 ? (
+                level.answers.map((ans, qidx) => {
+                  // Try to get question and options from quizQuestions if available
+                  let questionStatement = ans.questionText || "Question Content";
+                  let optionsList = ans.options || [];
+                  if (quizQuestions.length > 0) {
+                    const quizQ = quizQuestions.find(q => q._id?.toString() === ans.questionId?.toString());
+                    if (quizQ) {
+                      questionStatement = quizQ.question;
+                      optionsList = quizQ.options;
+                    }
+                  }
+                  return (
+                    <View key={ans.questionId + qidx} style={styles.questionCard}>
+                      <View style={styles.questionHeader}>
+                        <Text style={styles.questionNumber}>{qidx + 1}.</Text>
+                        <Text style={styles.questionText}>
+                          {questionStatement}
                         </Text>
                       </View>
-                    </View>
 
-                    {/* Correct Answer Row (Show if user was wrong) */}
-                    {!ans.isCorrect && (
-                      <View style={[styles.answerRow, styles.solutionBg]}>
-                        <MaterialCommunityIcons 
-                          name="lightbulb-on" 
-                          size={22} 
-                          color="#1e40af" 
-                          style={styles.statusIcon} 
-                        />
-                        <View>
-                          <Text style={styles.label}>Correct Answer</Text>
-                          <Text style={[styles.answerValue, { color: '#1e40af' }]}>
-                            {ans.correctOption}
-                          </Text>
+                      {/* Display all options for the question */}
+                      {Array.isArray(optionsList) && optionsList.length > 0 && (
+                        <View style={styles.optionsList}>
+                          {optionsList.map((opt, oidx) => {
+                            // Highlight if selected or correct
+                            let optionStyle = [styles.optionText];
+                            if (ans.selectedOption === opt && ans.isCorrect) optionStyle.push(styles.selectedCorrectOption);
+                            else if (ans.selectedOption === opt) optionStyle.push(styles.selectedOption);
+                            if (ans.correctOption === opt && !ans.isCorrect) optionStyle.push(styles.correctOption);
+                            return (
+                              <Text key={oidx} style={optionStyle}>
+                                {String.fromCharCode(65 + oidx)}. {opt}
+                              </Text>
+                            );
+                          })}
                         </View>
+                      )}
+
+                      <View style={styles.answerSection}>
+                        {/* User Answer Row */}
+                        <View style={[
+                            styles.answerRow, 
+                            ans.isCorrect ? styles.correctBg : styles.incorrectBg
+                          ]}>
+                          <Ionicons 
+                            name={ans.isCorrect ? "checkmark-circle" : "close-circle"} 
+                            size={22} 
+                            color={ans.isCorrect ? "#166534" : "#991b1b"} 
+                            style={styles.statusIcon}
+                          />
+                          <View>
+                            <Text style={styles.label}>Your Answer</Text>
+                            <Text style={[styles.answerValue, { color: ans.isCorrect ? '#166534' : '#991b1b' }]}>
+                              {ans.selectedOption ?? 'Skipped'}
+                            </Text>
+                          </View>
+                        </View>
+
+                        {/* Correct Answer Row (Show if user was wrong) */}
+                        {!ans.isCorrect && (
+                          <View style={[styles.answerRow, styles.solutionBg]}>
+                            <MaterialCommunityIcons 
+                              name="lightbulb-on" 
+                              size={22} 
+                              color="#1e40af" 
+                              style={styles.statusIcon} 
+                            />
+                            <View>
+                              <Text style={styles.label}>Correct Answer</Text>
+                              <Text style={[styles.answerValue, { color: '#1e40af' }]}>
+                                {ans.correctOption}
+                              </Text>
+                            </View>
+                          </View>
+                        )}
                       </View>
-                    )}
-                  </View>
+                    </View>
+                  );
+                })
+              ) : (
+                <View style={styles.emptyState}>
+                  <MaterialCommunityIcons name="comment-Question-outline" size={24} color="#94a3b8" />
+                  <Text style={styles.noQuestions}>No questions attempted in this level.</Text>
                 </View>
-              ))
-            ) : (
-              <View style={styles.emptyState}>
-                <MaterialCommunityIcons name="comment-Question-outline" size={24} color="#94a3b8" />
-                <Text style={styles.noQuestions}>No questions attempted in this level.</Text>
-              </View>
-            )}
-          </View>
-        ))}
+              )}
+            </View>
+          );
+        })}
       </ScrollView>
     </View>
   );

@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import DailyQuest from "./DailyQuest.js";
 
 const answerSchema = new mongoose.Schema({
-  questionId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "Quiz.questions" },
+  questionId: { type: mongoose.Schema.Types.ObjectId, required: true },
   selectedOption: { type: String, required: true },
   correctOption: { type: String, required: true },
   isCorrect: { type: Boolean, required: true },
