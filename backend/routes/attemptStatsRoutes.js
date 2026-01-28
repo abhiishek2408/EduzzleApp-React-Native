@@ -40,7 +40,9 @@ router.get("/stats/:id", async (req, res) => {
 router.get("/quiz/:quizId/user/:userId", async (req, res) => {
   try {
     const { quizId, userId } = req.params;
-    const attempts = await QuizAttempt.find({ quizId, userId }).sort({ startedAt: -1 });
+    const attempts = await QuizAttempt.find({ quizId, userId })
+      .sort({ startedAt: -1 })
+      .populate('quizId'); // assumes quizId is a ref in QuizAttempt schema
     res.json({ success: true, attempts });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error", error });

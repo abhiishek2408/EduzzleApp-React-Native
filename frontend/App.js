@@ -6,6 +6,7 @@ import { GameProvider } from "./context/GameContext";
 import AppNavigator from "./navigation/AppNavigator";
 import { LogBox, StatusBar } from "react-native";
 import * as SplashScreen from 'expo-splash-screen';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 LogBox.ignoreLogs([
   '[expo-image-picker] `ImagePicker.MediaTypeOptions` have been deprecated',
@@ -32,12 +33,14 @@ export default function App() {
   return (
     <AuthProvider>
       <GameProvider>
-        <StatusBar
-          backgroundColor="#1e0221"
-          barStyle="light-content"
-          translucent={false}
-        />
-        <AppContent />
+        <SafeAreaProvider>
+          <StatusBar
+            backgroundColor="#1e0221"
+            barStyle="light-content"
+            translucent={false}
+          />
+          <AppContent />
+        </SafeAreaProvider>
       </GameProvider>
     </AuthProvider>
   );

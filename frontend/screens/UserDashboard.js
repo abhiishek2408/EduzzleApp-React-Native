@@ -22,7 +22,7 @@ import PuzzlesScreen from "./RecommendationScreen";
 import HelpDesk from "../components/HelpDesk";
 import ReviewUs from "../components/ReviewUs";
 import CustomPremiumAlert from "../components/CustomPremiumAlert";
-import { QuizScreen } from "../components/QuizScreen";
+import { QuizScreen } from "../components/HomeScreenQuizSection";
 
 const { width } = Dimensions.get("window");
 

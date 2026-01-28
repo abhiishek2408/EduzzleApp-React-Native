@@ -89,7 +89,10 @@ export function QuizScreen({ navigation, user, route }) {
               attempted={attemptedQuizIds.includes(quiz._id)}
               isFree={quiz.isFree}
               onPress={() =>
-                navigation.navigate("QuizPlayScreen", { quizId: quiz._id })
+                navigation.navigate("QuizOverviewScreen", {
+                  quiz,
+                  onViewPreviousAttempts: () => navigation.navigate("PreviousAttemptsScreen", { quizId: quiz._id, userId: user._id })
+                })
               }
             />
           </View>

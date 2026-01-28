@@ -80,7 +80,7 @@ export default function QuizPlayScreen() {
     } catch (err) {
       console.error(err);
       Toast.show({ type: 'error', text1: 'Error', text2: 'Could not load quiz data' });
-      navigation.replace("QuizSelection");
+      navigation.goBack();
     } finally {
       setLoading(false);
     }
@@ -88,7 +88,7 @@ export default function QuizPlayScreen() {
 
   useEffect(() => {
     if (!quizId) {
-      navigation.replace("QuizSelection");
+      navigation.goBack();
     } else {
       startQuiz(quizId);
     }
@@ -267,15 +267,7 @@ export default function QuizPlayScreen() {
 
   if (!quizData) return null;
 
-  const showPreviousAttempts = !isFinished && quizData && user && quizId;
-  const previousAttemptsBtn = showPreviousAttempts ? (
-    <TouchableOpacity
-      style={styles.prevBtn}
-      onPress={() => navigation.navigate("PreviousAttemptsScreen", { quizId, userId: user._id })}
-    >
-      <Text style={styles.prevBtnText}>View Previous Attempts</Text>
-    </TouchableOpacity>
-  ) : null;
+
 
   if (isFinished) {
     const easyLevel = quizData.levels.find(l => l.name.toLowerCase() === "easy");
@@ -316,7 +308,7 @@ export default function QuizPlayScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: '#F8F9FD' }}>
       <ScrollView contentContainerStyle={styles.testcontainer}>
-        {previousAttemptsBtn}
+
         
         <Text style={styles.header}>{quizData.name}</Text>
         

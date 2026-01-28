@@ -22,7 +22,7 @@ import Svg, {
   Path,
 } from "react-native-svg";
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import QuizCard, { QuizScreen } from "../components/QuizScreen";
+import QuizCard, { QuizScreen } from "../components/HomeScreenQuizSection";
 import { Ionicons } from "@expo/vector-icons";
 import { AuthContext } from "../context/AuthContext";
 import { useRoute } from "@react-navigation/native";
