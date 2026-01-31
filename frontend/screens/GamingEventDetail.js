@@ -11,6 +11,7 @@ const THEME_DARK = "#4a044e";
 
 export default function GamingEventDetail({ route, navigation }) {
   const { eventId } = route.params;
+  
   const { user } = useContext(AuthContext);
   const [loading, setLoading] = useState(true);
   const [event, setEvent] = useState(null);
@@ -67,10 +68,10 @@ export default function GamingEventDetail({ route, navigation }) {
     timerRef.current = setInterval(() => setCountdown(computeCountdown()), 1000);
     return () => clearInterval(timerRef.current);
   }, [event, isCompleted]);
-
+    console.log("Attempting to join event:", eventId, "for user:", user?._id);
   const joinEvent = async () => {
     try {
-      // 1. Check completion first
+
       const check = await axios.get(`${API_BASE}/gaming-events/check-completed/${eventId}/${user._id}`);
       if (check.data?.completed) {
         setIsCompleted(true);
@@ -94,7 +95,8 @@ export default function GamingEventDetail({ route, navigation }) {
   if (loading) return <View style={styles.loader}><ActivityIndicator color={THEME_DARK} size="large" /></View>;
   if (!event) return null;
   const statusLabel = event.status === "scheduled" ? "SCHEDULED" : event.status === "completed" ? "COMPLETED" : "TOURNAMENT LIVE";
-  const isLive = event.status === "live";
+  const isLive = event.status === "Live";
+  console.log("Rendering GamingEventDetail - isCompleted:", event.status);
 
   return (
     <ScrollView style={styles.container} bounces={false} showsVerticalScrollIndicator={false}>

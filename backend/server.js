@@ -97,17 +97,27 @@ cron.schedule("* * * * *", async () => {
     const GamingQuizEvent = (await import("./models/GamingQuizEvent.js")).default;
     // Set scheduled for upcoming events
     await GamingQuizEvent.updateMany(
-      { status: { $nin: ["disabled", "completed"] }, startTime: { $gt: now } },
+      {
+        status: { $ne: "completed" },
+        $expr: { $gt: [{ $toDate: "$startTime" }, now] },
+      },
       { $set: { status: "scheduled" } }
     );
     // Set live
     await GamingQuizEvent.updateMany(
-      { status: { $ne: "disabled" }, startTime: { $lte: now }, endTime: { $gte: now } },
+      {
+        $expr: {
+          $and: [
+            { $lte: [{ $toDate: "$startTime" }, now] },
+            { $gte: [{ $toDate: "$endTime" }, now] },
+          ],
+        },
+      },
       { $set: { status: "live" } }
     );
     // Set completed
     await GamingQuizEvent.updateMany(
-      { status: { $ne: "disabled" }, endTime: { $lt: now } },
+      { $expr: { $lt: [{ $toDate: "$endTime" }, now] } },
       { $set: { status: "completed" } }
     );
   } catch (error) {

@@ -88,6 +88,7 @@ export default function GamingEventsSection({ navigation }) {
       >
         {events.map((item) => {
           const nowDt = new Date(now);
+          console.log("Status of event:", item.title, item.status);
           const start = new Date(item.startTime);
           const end = new Date(item.endTime);
           const status = item.status
