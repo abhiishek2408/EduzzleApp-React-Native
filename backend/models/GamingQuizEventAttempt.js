@@ -1,12 +1,16 @@
 // models/GamingQuizEventAttempt.js
 import mongoose from "mongoose";
 
-const answerSchema = new mongoose.Schema({
-  questionId: { type: mongoose.Schema.Types.ObjectId },
-  selectedOption: { type: String },
-  isCorrect: { type: Boolean },
-  timeTakenSec: { type: Number },
-});
+const answerSchema = new mongoose.Schema(
+  {
+    questionId: { type: mongoose.Schema.Types.ObjectId },
+    questionIndex: { type: Number },
+    selectedOption: { type: String },
+    isCorrect: { type: Boolean },
+    timeTakenSec: { type: Number },
+  },
+  { _id: false }
+);
 
 const gamingQuizEventAttemptSchema = new mongoose.Schema(
   {

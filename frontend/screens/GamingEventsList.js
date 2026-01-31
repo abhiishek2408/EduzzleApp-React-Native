@@ -55,7 +55,7 @@ export default function GamingEventsList({ navigation }) {
 
   const renderItem = ({ item }) => {
     const start = new Date(item.startTime);
-    const isLive = item._group === "Live";
+    const isLive = item._group === "live";
     const isCompleted = completedMap[item._id]; // 🔹 Check if this event is completed
 
     return (

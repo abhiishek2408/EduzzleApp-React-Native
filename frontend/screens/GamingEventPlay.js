@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useContext, useRef } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
+import Toast from "react-native-toast-message";
 
 const API_BASE = "https://eduzzleapp-react-native.onrender.com/api";
 const THEME = "#4a044e";
@@ -38,7 +39,11 @@ export default function GamingEventPlay({ route, navigation }) {
       totalStartRef.current = Date.now();
     } catch (e) {
       console.error(e);
-      Alert.alert("Error", "Failed to load questions");
+      Toast.show({
+        type: "error",
+        text1: "Failed to load questions",
+        position: "bottom",
+      });
       navigation.goBack();
     } finally {
       setLoading(false);
@@ -86,15 +91,17 @@ export default function GamingEventPlay({ route, navigation }) {
 
   const onSelect = (option) => {
     const q = questions[idx];
-    const existingIndex = answers.findIndex((a) => a.questionId === (q._id || q.questionBankId));
-    const newAns = { questionId: q._id || q.questionBankId, selectedOption: option };
-    if (existingIndex >= 0) {
-      const copy = [...answers];
-      copy[existingIndex] = newAns;
-      setAnswers(copy);
-    } else {
-      setAnswers((prev) => [...prev, newAns]);
-    }
+    const qIndex = q.questionIndex ?? idx;
+    const newAns = { questionIndex: qIndex, selectedOption: option };
+    setAnswers((prev) => {
+      const existingIndex = prev.findIndex((a) => Number(a.questionIndex) === Number(qIndex));
+      if (existingIndex >= 0) {
+        const copy = [...prev];
+        copy[existingIndex] = newAns;
+        return copy;
+      }
+      return [...prev, newAns];
+    });
   };
 
   const onNext = () => {
@@ -111,28 +118,49 @@ export default function GamingEventPlay({ route, navigation }) {
     setSubmitting(true);
     try {
       const durationSec = Math.floor((Date.now() - totalStartRef.current) / 1000);
+      const answerMap = new Map();
+      (answers || []).forEach((a) => answerMap.set(Number(a.questionIndex), a.selectedOption));
+      const finalAnswers = (questions || []).map((q, index) => {
+        const qIndex = q.questionIndex ?? index;
+        return { questionIndex: qIndex, selectedOption: answerMap.get(qIndex) ?? null };
+      });
+
       const res = await axios.post(`${API_BASE}/gaming-events/${eventId}/submit`, {
         userId: user._id,
-        answers,
+        answers: finalAnswers,
         durationSec,
       });
-      Alert.alert("Submitted", `Score: ${res.data?.score ?? 0}`);
+      Toast.show({
+        type: "success",
+        text1: "Quiz submitted",
+        position: "bottom",
+      });
       navigation.goBack();
     } catch (e) {
       const status = e?.response?.status;
       const msg = e?.response?.data?.message;
       if (status === 409) {
-        // Already submitted/completed — handle gracefully
-        Alert.alert("Already submitted", msg || "You have already completed this event.", [
-          { text: "OK", onPress: () => navigation.goBack() },
-        ]);
+        // Already submitted/completed — handle silently
+        Toast.show({
+          type: "info",
+          text1: "Already submitted",
+          position: "bottom",
+        });
+        navigation.goBack();
       } else if (status === 403) {
-        Alert.alert("Event not live", msg || "This event isn't currently live.", [
-          { text: "OK", onPress: () => navigation.goBack() },
-        ]);
+        Toast.show({
+          type: "info",
+          text1: msg || "Event not live",
+          position: "bottom",
+        });
+        navigation.goBack();
       } else {
         console.error(e);
-        Alert.alert("Error", msg || "Failed to submit");
+        Toast.show({
+          type: "error",
+          text1: msg || "Failed to submit",
+          position: "bottom",
+        });
       }
     } finally {
       setSubmitting(false);
@@ -144,7 +172,7 @@ export default function GamingEventPlay({ route, navigation }) {
   if (!questions.length) return <View style={styles.container}><Text style={{ padding: 16 }}>No questions available.</Text></View>;
 
   const q = questions[idx];
-  const currentAnswer = answers.find((a) => a.questionId === (q._id || q.questionBankId));
+  const currentAnswer = answers.find((a) => Number(a.questionIndex) === Number(q.questionIndex ?? idx));
   const selectedOption = currentAnswer?.selectedOption;
 
   return (
@@ -154,7 +182,10 @@ export default function GamingEventPlay({ route, navigation }) {
         {perQTimer > 0 && <Text style={styles.timer}>Q: {perQTimer}s</Text>}
       </View>
       <View style={styles.card}>
-        <Text style={styles.qText}>{q.text || q.question}</Text>
+        <Text style={styles.qText}>{q.question || q.text}</Text>
+        {!!q.text && q.text !== q.question && (
+          <Text style={styles.qSubText}>{q.text}</Text>
+        )}
         {(q.options || []).map((op, i) => {
           const isSelected = selectedOption === op;
           return (
@@ -187,6 +218,7 @@ const styles = StyleSheet.create({
   timer: { color: THEME, fontWeight: "800" },
   card: { backgroundColor: "#faf5ff", margin: 12, padding: 16, borderRadius: 14 },
   qText: { fontSize: 18, fontWeight: "800", color: "#2d0c57", marginBottom: 12 },
+  qSubText: { fontSize: 13, fontWeight: "600", color: "#6b7280", marginBottom: 10 },
   option: { backgroundColor: "#fff", borderRadius: 12, padding: 12, marginVertical: 6, borderWidth: 1, borderColor: "#ede9fe" },
   optionSelected: { borderColor: THEME, borderWidth: 2, backgroundColor: "#faf5ff" },
   optionText: { color: "#1f2937", fontWeight: "600" },

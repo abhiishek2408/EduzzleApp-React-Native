@@ -124,11 +124,11 @@ export default function GamingEventsSection({ navigation }) {
               >
                 {/* Badge Top Section */}
                 <View style={styles.cardTop}>
-                  <View style={[styles.statusBadge, { backgroundColor: isCompleted ? "#10b981" : status === "Live" ? "#ef4444" : "rgba(255,255,255,0.15)" }]}> 
+                  <View style={[styles.statusBadge, { backgroundColor: isCompleted ? "#10b981" : status === "live" ? "#ef4444" : "rgba(255,255,255,0.15)" }]}> 
                     {isCompleted ? (
                       <Ionicons name="medal" size={12} color="#fff" style={{marginRight: 4}} />
                     ) : (
-                      status === "Live" && <View style={styles.pulseDot} />
+                      status === "live" && <View style={styles.pulseDot} />
                     )}
                     <Text style={styles.statusText}>{isCompleted ? "FINISHED" : status}</Text>
                   </View>

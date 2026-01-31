@@ -7,6 +7,7 @@ import AppNavigator from "./navigation/AppNavigator";
 import { LogBox, StatusBar, View } from "react-native";
 import * as SplashScreen from "expo-splash-screen";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
 
 import {
   useFonts,
@@ -43,6 +44,7 @@ function AppContent() {
   return (
     <NavigationContainer>
       <AppNavigator />
+      <Toast />
     </NavigationContainer>
   );
 }

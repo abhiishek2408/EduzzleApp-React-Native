@@ -17,7 +17,8 @@ async function run() {
     // Seed a focused set of questions into QuestionBank for this event theme
     const questions = [
       {
-        text: "What does HTML stand for?",
+        question: "What does HTML stand for?",
+        text: "Select the correct answer.",
         options: [
           "HyperText Markup Language",
           "Hyperlinks and Text Markup Language",
@@ -30,7 +31,8 @@ async function run() {
         timeLimit: 30,
       },
       {
-        text: "Which company created JavaScript?",
+        question: "Which company created JavaScript?",
+        text: "Select the correct answer.",
         options: ["Netscape", "Microsoft", "Sun Microsystems", "Oracle"],
         answer: "Netscape",
         explanation: "JavaScript was created at Netscape by Brendan Eich in 1995.",
@@ -38,7 +40,8 @@ async function run() {
         timeLimit: 30,
       },
       {
-        text: "Node.js is built on which JavaScript engine?",
+        question: "Node.js is built on which JavaScript engine?",
+        text: "Select the correct answer.",
         options: ["V8", "SpiderMonkey", "Chakra", "JavaScriptCore"],
         answer: "V8",
         explanation: "Node.js uses Google's V8 JavaScript engine.",
@@ -46,7 +49,8 @@ async function run() {
         timeLimit: 30,
       },
       {
-        text: "Which HTTP status code means 'Created'?",
+        question: "Which HTTP status code means 'Created'?",
+        text: "Select the correct answer.",
         options: ["200", "201", "204", "301"],
         answer: "201",
         explanation: "201 Created indicates that a new resource has been created.",
@@ -54,7 +58,8 @@ async function run() {
         timeLimit: 30,
       },
       {
-        text: "Who invented the World Wide Web?",
+        question: "Who invented the World Wide Web?",
+        text: "Select the correct answer.",
         options: [
           "Tim Berners-Lee",
           "Vint Cerf",
@@ -67,7 +72,8 @@ async function run() {
         timeLimit: 30,
       },
       {
-        text: "Which version control system is distributed?",
+        question: "Which version control system is distributed?",
+        text: "Select the correct answer.",
         options: ["Git", "Subversion (SVN)", "CVS", "Perforce"],
         answer: "Git",
         explanation: "Git is a distributed VCS created by Linus Torvalds.",
@@ -75,7 +81,8 @@ async function run() {
         timeLimit: 30,
       },
       {
-        text: "ECMAScript 2015 (ES6) introduced which feature?",
+        question: "ECMAScript 2015 (ES6) introduced which feature?",
+        text: "Select the correct answer.",
         options: ["let and const", "document.write", "var hoisting", "XMLHttpRequest"],
         answer: "let and const",
         explanation: "ES6 added block-scoped declarations like let/const and many more features.",
@@ -83,7 +90,8 @@ async function run() {
         timeLimit: 30,
       },
       {
-        text: "Which HTML element represents a section of navigation links?",
+        question: "Which HTML element represents a section of navigation links?",
+        text: "Select the correct answer.",
         options: ["nav", "section", "aside", "menu"],
         answer: "nav",
         explanation: "The <nav> element represents a section of navigation links.",
@@ -91,7 +99,8 @@ async function run() {
         timeLimit: 30,
       },
       {
-        text: "CSS property to change text color is?",
+        question: "CSS property to change text color is?",
+        text: "Select the correct answer.",
         options: ["color", "font-color", "text-color", "foreground"],
         answer: "color",
         explanation: "The CSS 'color' property sets the text color.",
@@ -99,7 +108,8 @@ async function run() {
         timeLimit: 30,
       },
       {
-        text: "The first widely used graphical web browser Mosaic was released in which year?",
+        question: "The first widely used graphical web browser Mosaic was released in which year?",
+        text: "Select the correct answer.",
         options: ["1991", "1993", "1995", "1998"],
         answer: "1993",
         explanation: "NCSA Mosaic was released in 1993 and helped popularize the web.",
@@ -107,7 +117,8 @@ async function run() {
         timeLimit: 30,
       },
       {
-        text: "Which database is a document-oriented NoSQL database?",
+        question: "Which database is a document-oriented NoSQL database?",
+        text: "Select the correct answer.",
         options: ["MongoDB", "MySQL", "PostgreSQL", "SQLite"],
         answer: "MongoDB",
         explanation: "MongoDB stores data as flexible JSON-like documents.",
@@ -115,7 +126,8 @@ async function run() {
         timeLimit: 30,
       },
       {
-        text: "Which method converts a JSON string into a JavaScript object?",
+        question: "Which method converts a JSON string into a JavaScript object?",
+        text: "Select the correct answer.",
         options: ["JSON.parse", "JSON.stringify", "toJSON", "parseJSON"],
         answer: "JSON.parse",
         explanation: "JSON.parse converts a JSON string to a JS object.",
@@ -135,6 +147,7 @@ async function run() {
   totalQuestions: questions.length,
       randomizeQuestions: true,
       questions: questions.map(q => ({
+        question: q.question,
         text: q.text,
         difficulty: q.difficulty,
         options: q.options,

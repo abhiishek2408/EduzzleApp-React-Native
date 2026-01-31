@@ -2,16 +2,19 @@
 import mongoose from "mongoose";
 
 // Embedded question schema (similar to Quiz question schema)
-const eventQuestionSchema = new mongoose.Schema({
-  question: { type: String }, // optional alias
-  text: { type: String, required: true },
-  difficulty: { type: String, enum: ["easy", "medium", "hard"] },
-  options: [{ type: String, required: true }],
-  answer: { type: String, required: true }, // stored server-side; not returned to client
-  explanation: { type: String },
-  image: { type: String },
-  timeLimit: { type: Number, default: 30 },
-});
+const eventQuestionSchema = new mongoose.Schema(
+  {
+    question: { type: String }, // optional alias
+    text: { type: String, required: true },
+    difficulty: { type: String, enum: ["easy", "medium", "hard"] },
+    options: [{ type: String, required: true }],
+    answer: { type: String, required: true }, // stored server-side; not returned to client
+    explanation: { type: String },
+    image: { type: String },
+    timeLimit: { type: Number, default: 30 },
+  },
+  { _id: false }
+);
 
 const gamingQuizEventSchema = new mongoose.Schema({
     title: { type: String, required: true },

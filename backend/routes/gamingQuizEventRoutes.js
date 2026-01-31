@@ -130,9 +130,10 @@ router.get("/:id/questions", async (req, res) => {
   if (!qs.length) return res.status(404).json({ message: "No questions configured for event" });
   if (ev.randomizeQuestions) qs.sort(() => Math.random() - 0.5);
 
-    const payload = qs.map((q) => ({
-      _id: q._id,
-      text: q.text || q.question,
+    const payload = qs.map((q, index) => ({
+      questionIndex: index,
+      question: q.question || q.text,
+      text: q.text,
       options: q.options,
       image: q.image,
       timeLimit: q.timeLimit,
@@ -165,14 +166,17 @@ router.post("/:id/submit", async (req, res) => {
       }
     }
 
-    // Build answer key from embedded questions
-    let answerKeyMap = new Map();
-    (ev.questions || []).forEach((q) => answerKeyMap.set(String(q._id), q.answer));
-
     // Score
     let score = 0, correct = 0, wrong = 0, streak = 0;
     const computedAnswers = answers.map((a) => {
-      const correctAns = answerKeyMap.get(String(a.questionId));
+      let correctAns;
+      if (Number.isInteger(a.questionIndex)) {
+        const q = (ev.questions || [])[a.questionIndex];
+        correctAns = q?.answer;
+      } else if (a.questionId) {
+        const q = (ev.questions || []).find((qq) => String(qq._id) === String(a.questionId));
+        correctAns = q?.answer;
+      }
       const isCorrect = String(a.selectedOption) === String(correctAns);
       if (isCorrect) {
         score += ev.scoring.correct;

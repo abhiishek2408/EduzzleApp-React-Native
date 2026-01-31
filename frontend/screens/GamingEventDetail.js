@@ -11,13 +11,20 @@ const THEME_DARK = "#4a044e";
 
 export default function GamingEventDetail({ route, navigation }) {
   const { eventId } = route.params;
-  
+
   const { user } = useContext(AuthContext);
   const [loading, setLoading] = useState(true);
   const [event, setEvent] = useState(null);
   const [countdown, setCountdown] = useState("");
   const [isCompleted, setIsCompleted] = useState(false);
   const timerRef = useRef(null);
+
+  const formatDuration = (sec) => {
+    const s = Math.max(0, Number(sec) || 0);
+    if (!s) return "-";
+    const mins = Math.ceil(s / 60);
+    return `${mins} min`;
+  };
 
 
   const fetchEvent = async () => {
@@ -95,7 +102,7 @@ export default function GamingEventDetail({ route, navigation }) {
   if (loading) return <View style={styles.loader}><ActivityIndicator color={THEME_DARK} size="large" /></View>;
   if (!event) return null;
   const statusLabel = event.status === "scheduled" ? "SCHEDULED" : event.status === "completed" ? "COMPLETED" : "TOURNAMENT LIVE";
-  const isLive = event.status === "Live";
+  const isLive = event.status === "live";
   console.log("Rendering GamingEventDetail - isCompleted:", event.status);
 
   return (
@@ -178,6 +185,7 @@ export default function GamingEventDetail({ route, navigation }) {
           <View>
             <View style={styles.statsRow}>
               <StatItem icon="help-circle" label="Questions" val={event.totalQuestions} />
+              <StatItem icon="time" label="Duration" val={formatDuration(event.durationSec)} />
               <StatItem icon="flash" label="Difficulty" val={event.difficulty} />
             </View>
             
