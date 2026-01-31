@@ -9,6 +9,24 @@ const API_BASE = "https://eduzzleapp-react-native.onrender.com/api";
 const THEME_ACCENT = "#f3c999"; 
 const THEME_DARK = "#4a044e";   
 
+const parseAsLocalTime = (isoString) => {
+  if (!isoString) return new Date(0);
+  const cleaned = String(isoString).replace(/Z|[+-]\d{2}:?\d{2}$/, "");
+  const [datePart, timePart = "00:00:00"] = cleaned.split("T");
+  const [year, month, day] = datePart.split("-").map(Number);
+  const [hh = 0, mm = 0, ssMs = "0"] = timePart.split(":");
+  const [ss = "0", ms = "0"] = String(ssMs).split(".");
+  return new Date(
+    Number(year),
+    Number(month) - 1,
+    Number(day),
+    Number(hh),
+    Number(mm),
+    Number(ss),
+    Number(ms)
+  );
+};
+
 export default function GamingEventDetail({ route, navigation }) {
   const { eventId } = route.params;
 
@@ -57,8 +75,8 @@ export default function GamingEventDetail({ route, navigation }) {
     if (!event || isCompleted) return;
     const computeCountdown = () => {
       const now = new Date();
-      const start = new Date(event.startTime);
-      const end = new Date(event.endTime);
+      const start = parseAsLocalTime(event.startTime);
+      const end = parseAsLocalTime(event.endTime);
       let diff = now < start ? start - now : now <= end ? end - now : 0;
       if (diff <= 0) return "Completed";
       const days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -75,7 +93,6 @@ export default function GamingEventDetail({ route, navigation }) {
     timerRef.current = setInterval(() => setCountdown(computeCountdown()), 1000);
     return () => clearInterval(timerRef.current);
   }, [event, isCompleted]);
-    console.log("Attempting to join event:", eventId, "for user:", user?._id);
   const joinEvent = async () => {
     try {
 
@@ -103,7 +120,7 @@ export default function GamingEventDetail({ route, navigation }) {
   if (!event) return null;
   const statusLabel = event.status === "scheduled" ? "SCHEDULED" : event.status === "completed" ? "COMPLETED" : "TOURNAMENT LIVE";
   const isLive = event.status === "live";
-  console.log("Rendering GamingEventDetail - isCompleted:", event.status);
+
 
   return (
     <ScrollView style={styles.container} bounces={false} showsVerticalScrollIndicator={false}>

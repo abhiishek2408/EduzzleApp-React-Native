@@ -95,22 +95,32 @@ router.post("/:id/join", async (req, res) => {
       if (!ev.allowMultipleAttempts) {
         // If already attempted and finished, don't allow rejoin
         if (existing.finishedAt) {
-          return res.status(409).json({ 
-            message: "You have already completed this event", 
+          return res.status(409).json({
+            message: "You have already completed this event",
             attemptId: existing._id,
-            finished: true
+            finished: true,
           });
         }
-        // If joined but not finished, allow them to continue
-        return res.status(200).json({ 
-          success: true, 
+
+        // If attempt window expired, block re-join
+        const maxDurationSec = (ev.questions || []).reduce((sum, q) => sum + (Number(q.timeLimit) || 0), 0);
+        if (maxDurationSec > 0 && existing.startedAt) {
+          const elapsedSec = Math.floor((Date.now() - new Date(existing.startedAt)) / 1000);
+          if (elapsedSec > maxDurationSec) {
+            return res.status(403).json({ message: "Time over for this attempt" });
+          }
+        }
+
+        // If joined but not finished and within time, allow them to continue
+        return res.status(200).json({
+          success: true,
           attemptId: existing._id,
-          message: "Continue your attempt"
+          message: "Continue your attempt",
         });
       }
     }
 
-    const attempt = await GamingQuizEventAttempt.create({ eventId: ev._id, userId });
+    const attempt = await GamingQuizEventAttempt.create({ eventId: ev._id, userId, startedAt: new Date() });
     res.status(201).json({ success: true, attemptId: attempt._id });
   } catch (e) {
     console.error(e);
@@ -149,7 +159,7 @@ router.get("/:id/questions", async (req, res) => {
 // Submit answers and compute score
 router.post("/:id/submit", async (req, res) => {
   try {
-    const { userId, answers = [], durationSec } = req.body; // answers: [{questionId, selectedOption}]
+    const { userId, answers = [] } = req.body; // answers: [{questionIndex, selectedOption}]
     const ev = await GamingQuizEvent.findById(req.params.id);
     if (!ev) return res.status(404).json({ message: "Event not found" });
 
@@ -157,13 +167,17 @@ router.post("/:id/submit", async (req, res) => {
     if (!attempt) return res.status(404).json({ message: "Attempt not found" });
     if (attempt.finishedAt) return res.status(409).json({ message: "Already submitted" });
 
-    // Enforce duration limit based on sum of question time limits
+    // Enforce server-side event window
+    if (!isWithinWindow(ev) && ev.status !== "live") {
+      return res.status(403).json({ message: "Event not live" });
+    }
+
+    // Enforce duration limit based on sum of question time limits (server time)
     const maxDurationSec = (ev.questions || []).reduce((sum, q) => sum + (Number(q.timeLimit) || 0), 0);
-    if (maxDurationSec > 0 && attempt.startedAt) {
-      const elapsedSec = Math.floor((Date.now() - new Date(attempt.startedAt)) / 1000);
-      if (elapsedSec > maxDurationSec) {
-        return res.status(403).json({ message: "Time over for this attempt" });
-      }
+    const startedAt = attempt.startedAt ? new Date(attempt.startedAt) : new Date();
+    const elapsedSec = Math.floor((Date.now() - startedAt.getTime()) / 1000);
+    if (maxDurationSec > 0 && elapsedSec > maxDurationSec) {
+      return res.status(403).json({ message: "Time over for this attempt" });
     }
 
     // Score
@@ -196,9 +210,9 @@ router.post("/:id/submit", async (req, res) => {
     attempt.answers = computedAnswers;
     attempt.finishedAt = new Date();
     if (maxDurationSec > 0) {
-      attempt.durationSec = Math.min(Number(durationSec) || 0, maxDurationSec);
+      attempt.durationSec = maxDurationSec > 0 ? Math.min(elapsedSec, maxDurationSec) : elapsedSec;
     } else {
-      attempt.durationSec = durationSec;
+        attempt.durationSec = elapsedSec;
     }
     await attempt.save();
 

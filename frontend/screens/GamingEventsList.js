@@ -9,6 +9,24 @@ const API_BASE = "https://eduzzleapp-react-native.onrender.com/api";
 const THEME_ACCENT = "#f3c999";
 const THEME_DARK = "#4a044e";
 
+const parseAsLocalTime = (isoString) => {
+  if (!isoString) return new Date(0);
+  const cleaned = String(isoString).replace(/Z|[+-]\d{2}:?\d{2}$/, "");
+  const [datePart, timePart = "00:00:00"] = cleaned.split("T");
+  const [year, month, day] = datePart.split("-").map(Number);
+  const [hh = 0, mm = 0, ssMs = "0"] = timePart.split(":");
+  const [ss = "0", ms = "0"] = String(ssMs).split(".");
+  return new Date(
+    Number(year),
+    Number(month) - 1,
+    Number(day),
+    Number(hh),
+    Number(mm),
+    Number(ss),
+    Number(ms)
+  );
+};
+
 export default function GamingEventsList({ navigation }) {
   const { user } = useContext(AuthContext); // 🔹 User ID lene ke liye
   const [loading, setLoading] = useState(true);
@@ -25,9 +43,9 @@ export default function GamingEventsList({ navigation }) {
       ]);
       
       const rows = [
-        ...(live.data || []).map((e) => ({ ...e, _group: "Live" })),
-        ...(upcoming.data || []).map((e) => ({ ...e, _group: "Upcoming" })),
-        ...(past.data || []).map((e) => ({ ...e, _group: "Past" })),
+        ...(live.data || []).map((e) => ({ ...e, _group: "live" })),
+        ...(upcoming.data || []).map((e) => ({ ...e, _group: "scheduled" })),
+        ...(past.data || []).map((e) => ({ ...e, _group: "completed" })),
       ];
       setEvents(rows);
 
@@ -54,8 +72,9 @@ export default function GamingEventsList({ navigation }) {
   useEffect(() => { fetchAll(); }, []);
 
   const renderItem = ({ item }) => {
-    const start = new Date(item.startTime);
-    const isLive = item._group === "live";
+    const start = parseAsLocalTime(item.startTime);
+    const status = item.status || item._group;
+    const isLive = status === "live";
     const isCompleted = completedMap[item._id]; // 🔹 Check if this event is completed
 
     return (
@@ -83,7 +102,7 @@ export default function GamingEventsList({ navigation }) {
                 isLive && <View style={styles.liveIndicator} />
               )}
               <Text style={[styles.statusText, { color: (isLive || isCompleted) ? "#fff" : "#701a75" }]}>
-                {isCompleted ? "COMPLETED" : item._group}
+                {isCompleted ? "COMPLETED" : status}
               </Text>
             </View>
             
@@ -112,6 +131,7 @@ export default function GamingEventsList({ navigation }) {
                     {item.totalQuestions} Questions
                   </Text>
                 </View>
+                
                 {isCompleted && (
                    <View style={[styles.tag, { backgroundColor: 'rgba(16, 185, 129, 0.2)' }]}>
                     <Text style={[styles.tagText, { color: "#10b981" }]}>Ranked</Text>

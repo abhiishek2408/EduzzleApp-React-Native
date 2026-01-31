@@ -14,6 +14,24 @@ const { width: screenWidth } = Dimensions.get("window");
 const CARD_WIDTH = screenWidth * 0.90; 
 const CARD_MARGIN = 12;
 
+const parseAsLocalTime = (isoString) => {
+  if (!isoString) return new Date(0);
+  const cleaned = String(isoString).replace(/Z|[+-]\d{2}:?\d{2}$/, "");
+  const [datePart, timePart = "00:00:00"] = cleaned.split("T");
+  const [year, month, day] = datePart.split("-").map(Number);
+  const [hh = 0, mm = 0, ssMs = "0"] = timePart.split(":");
+  const [ss = "0", ms = "0"] = String(ssMs).split(".");
+  return new Date(
+    Number(year),
+    Number(month) - 1,
+    Number(day),
+    Number(hh),
+    Number(mm),
+    Number(ss),
+    Number(ms)
+  );
+};
+
 export default function GamingEventsSection({ navigation }) {
   const { user } = useContext(AuthContext);
   const [loading, setLoading] = useState(true);
@@ -88,15 +106,14 @@ export default function GamingEventsSection({ navigation }) {
       >
         {events.map((item) => {
           const nowDt = new Date(now);
-          console.log("Status of event:", item.title, item.status);
-          const start = new Date(item.startTime);
-          const end = new Date(item.endTime);
+          const start = parseAsLocalTime(item.startTime);
+          const end = parseAsLocalTime(item.endTime);
           const status = item.status
-            ? (item.status === "scheduled" ? "Upcoming" : item.status === "completed" ? "Closed" : "Live")
-            : (nowDt < start ? "Upcoming" : nowDt > end ? "Closed" : "Live");
+            ? item.status
+            : (nowDt < start ? "scheduled" : nowDt > end ? "completed" : "live");
           const isCompleted = completedMap[item._id];
           
-          let remainingMs = status === "Upcoming" ? start - nowDt : status === "Live" ? end - nowDt : 0;
+          let remainingMs = status === "scheduled" ? start - nowDt : status === "live" ? end - nowDt : 0;
           let countdown = "00:00:00";
           if (status !== "Closed" && remainingMs > 0) {
             const days = Math.floor(remainingMs / (1000 * 60 * 60 * 24));
@@ -117,7 +134,7 @@ export default function GamingEventsSection({ navigation }) {
               style={[styles.cardWrapper, { width: CARD_WIDTH }]}
             >
               <LinearGradient
-                colors={status === "Live" ? ["#4a044e", "#701a75"] : ["#701a75", "#2e1065"]}
+                colors={status === "live" ? ["#4a044e", "#701a75"] : ["#701a75", "#2e1065"]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={styles.cardGradient}
@@ -130,7 +147,7 @@ export default function GamingEventsSection({ navigation }) {
                     ) : (
                       status === "live" && <View style={styles.pulseDot} />
                     )}
-                    <Text style={styles.statusText}>{isCompleted ? "FINISHED" : status}</Text>
+                    <Text style={styles.statusText}>{isCompleted ? "COMPLETED" : status}</Text>
                   </View>
                 </View>
 
@@ -151,8 +168,8 @@ export default function GamingEventsSection({ navigation }) {
                   ) : (
                     <>
                       <View style={styles.infoItem}>
-                        <Text style={styles.infoLabel}>{status === "Live" ? "ENDS IN" : "STARTS IN"}</Text>
-                        <Text style={styles.infoValue}>{status === "Closed" ? "00:00:00" : countdown}</Text>
+                        <Text style={styles.infoLabel}>{status === "live" ? "ENDS IN" : "STARTS IN"}</Text>
+                        <Text style={styles.infoValue}>{status === "completed" ? "00:00:00" : countdown}</Text>
                       </View>
                       <View style={styles.verticalDivider} />
                       <View style={styles.infoItem}>
