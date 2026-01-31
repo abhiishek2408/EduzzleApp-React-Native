@@ -34,6 +34,7 @@ const parseAsLocalTime = (isoString) => {
 
 export default function GamingEventsSection({ navigation }) {
   const { user } = useContext(AuthContext);
+  const isPremium = !!user?.subscription?.isActive;
   const [loading, setLoading] = useState(true);
   const [events, setEvents] = useState([]);
   const [now, setNow] = useState(Date.now());
@@ -68,12 +69,16 @@ export default function GamingEventsSection({ navigation }) {
     }
   };
 
-  useEffect(() => { fetchEvents(); }, []);
+  useEffect(() => {
+    if (!isPremium) return;
+    fetchEvents();
+  }, [isPremium]);
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, []);
 
+  if (!isPremium) return null;
   if (loading) return <GamingEventsSectionSkeleton />;
   if (!events.length) return null;
 

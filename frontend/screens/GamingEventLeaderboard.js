@@ -80,8 +80,8 @@ export default function GamingEventLeaderboard({ route, navigation }) {
         {analytics && (
           <View style={styles.analyticsRow}>
             <AnalyticChip icon="people" val={analytics.participants} label="Players" />
-            <AnalyticChip icon="star" val={Math.round(analytics.avgScore || 0)} label="Avg Pts" />
-            <AnalyticChip icon="timer-outline" val={`${Math.round(analytics.avgDuration || 0)}s`} label="Avg Time" />
+            <AnalyticChip icon="star" val={Math.round(analytics.avgScore || 0)} label="MARKS" />
+            <AnalyticChip icon="timer-outline" val={`${Math.round(analytics.avgDuration || 0)}s`} label="Time" />
           </View>
         )}
       </LinearGradient>

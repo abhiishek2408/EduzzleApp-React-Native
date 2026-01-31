@@ -12,6 +12,11 @@ export const checkSubscription = async (req, res, next) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    // allow admins regardless of subscription
+    if (user.role === "admin") {
+      return next();
+    }
+
     // check active subscription
     if (!user.subscription || !user.subscription.isActive) {
       return res.status(403).json({

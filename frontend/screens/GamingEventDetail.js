@@ -32,6 +32,7 @@ export default function GamingEventDetail({ route, navigation }) {
   const { eventId } = route.params;
 
   const { user } = useContext(AuthContext);
+  const isPremium = !!user?.subscription?.isActive;
   const [loading, setLoading] = useState(true);
   const [event, setEvent] = useState(null);
   const [countdown, setCountdown] = useState("");
@@ -61,6 +62,7 @@ export default function GamingEventDetail({ route, navigation }) {
 
   // On mount: fetch event and check completion
   useEffect(() => {
+    if (!isPremium) return;
     fetchEvent();
     // Check completion status
     if (user && user._id && eventId) {
@@ -70,11 +72,12 @@ export default function GamingEventDetail({ route, navigation }) {
         })
         .catch(() => {});
     }
-  }, [eventId, user]);
+  }, [eventId, user, isPremium]);
 
   // Refresh when coming back to this screen
   useFocusEffect(
     React.useCallback(() => {
+      if (!isPremium) return;
       fetchEvent();
       if (user && user._id && eventId) {
         axios.get(`${API_BASE}/gaming-events/check-completed/${eventId}/${user._id}`)
@@ -83,7 +86,7 @@ export default function GamingEventDetail({ route, navigation }) {
           })
           .catch(() => {});
       }
-    }, [eventId, user])
+    }, [eventId, user, isPremium])
   );
 
   useEffect(() => {
@@ -130,6 +133,22 @@ export default function GamingEventDetail({ route, navigation }) {
       }
     }
   };
+
+  if (!isPremium) {
+    return (
+      <View style={styles.container}>
+        <StatusBar barStyle="dark-content" />
+        <View style={styles.premiumBlock}>
+          <MaterialCommunityIcons name="lock-outline" size={60} color="#cbd5e1" />
+          <Text style={styles.premiumTitle}>Premium Only</Text>
+          <Text style={styles.premiumText}>Gaming events are available for premium users.</Text>
+          <TouchableOpacity onPress={() => navigation.navigate("PremiumDashboard")} style={styles.upgradeBtn}>
+            <Text style={styles.upgradeBtnText}>Upgrade to Premium</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
 
   if (loading) return <View style={styles.loader}><ActivityIndicator color={THEME_DARK} size="large" /></View>;
   if (!event) return null;
@@ -266,6 +285,11 @@ const styles = StyleSheet.create({
   statusPillText: { fontSize: 11, fontWeight: '900', color: THEME_DARK, letterSpacing: 0.5 },
   
   body: { paddingHorizontal: 20, marginTop: -30 },
+  premiumBlock: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 30 },
+  premiumTitle: { fontSize: 20, fontWeight: '900', color: THEME_DARK, marginTop: 12 },
+  premiumText: { fontSize: 14, color: '#6b7280', marginTop: 6, textAlign: 'center' },
+  upgradeBtn: { marginTop: 16, backgroundColor: THEME_DARK, paddingVertical: 10, paddingHorizontal: 18, borderRadius: 10 },
+  upgradeBtnText: { color: '#fff', fontWeight: '800', fontSize: 13 },
   statsRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 },
   statItem: { backgroundColor: '#fff', width: '31%', padding: 15, borderRadius: 25, alignItems: 'center', elevation: 8, shadowColor: '#4a044e', shadowOpacity: 0.1, shadowRadius: 10 },
   statLabel: { fontSize: 9, color: '#64748b', fontWeight: '800', marginTop: 6, textTransform: 'uppercase' },

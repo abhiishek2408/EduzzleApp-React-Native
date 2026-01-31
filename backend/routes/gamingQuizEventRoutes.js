@@ -3,8 +3,13 @@ import express from "express";
 import mongoose from "mongoose";
 import GamingQuizEvent from "../models/GamingQuizEvent.js";
 import GamingQuizEventAttempt from "../models/GamingQuizEventAttempt.js";
+import authenticate from "../middlewares/auth.js";
+import { checkSubscription } from "../middlewares/checkSubscription.js";
 
 const router = express.Router();
+
+// Require premium for gaming events
+router.use(authenticate, checkSubscription);
 
 // Check if user has completed a specific event
 router.get("/check-completed/:eventId/:userId", async (req, res) => {

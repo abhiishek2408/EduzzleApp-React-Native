@@ -29,6 +29,7 @@ const parseAsLocalTime = (isoString) => {
 
 export default function GamingEventsList({ navigation }) {
   const { user } = useContext(AuthContext); // 🔹 User ID lene ke liye
+  const isPremium = !!user?.subscription?.isActive;
   const [loading, setLoading] = useState(true);
   const [events, setEvents] = useState([]);
   const [completedMap, setCompletedMap] = useState({}); // 🔹 Completion status store karne ke liye
@@ -153,6 +154,28 @@ export default function GamingEventsList({ navigation }) {
     );
   };
 
+  if (!isPremium) {
+    return (
+      <View style={styles.container}>
+        <StatusBar barStyle="dark-content" />
+        <View style={styles.headerSection}>
+          <Text style={styles.headerTitle}>Gaming Events</Text>
+          <Text style={styles.headerSubtitle}>Premium users only</Text>
+        </View>
+        <View style={styles.emptyBox}>
+          <MaterialCommunityIcons name="lock-outline" size={60} color="#cbd5e1" />
+          <Text style={styles.emptyText}>This feature is available for premium users.</Text>
+          <TouchableOpacity
+            onPress={() => navigation.navigate("PremiumDashboard")}
+            style={styles.upgradeBtn}
+          >
+            <Text style={styles.upgradeBtnText}>Upgrade to Premium</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+
   if (loading) return <ActivityIndicator color="#4a044e" style={{ flex: 1 }} size="large" />;
 
   return (
@@ -207,5 +230,9 @@ const styles = StyleSheet.create({
   tag: { paddingVertical: 4, paddingHorizontal: 10, borderRadius: 8 },
   tagText: { fontSize: 11, fontWeight: "700" },
   
-  actionArea: { marginLeft: 10, justifyContent: 'center' }
+  actionArea: { marginLeft: 10, justifyContent: 'center' },
+  emptyBox: { alignItems: 'center', marginTop: 50, paddingHorizontal: 20 },
+  emptyText: { color: '#94a3b8', fontSize: 16, fontWeight: '700', marginTop: 10, textAlign: 'center' },
+  upgradeBtn: { marginTop: 16, backgroundColor: THEME_DARK, paddingVertical: 10, paddingHorizontal: 18, borderRadius: 10 },
+  upgradeBtnText: { color: '#fff', fontWeight: '800', fontSize: 13 }
 });
