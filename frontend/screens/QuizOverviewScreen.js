@@ -7,7 +7,7 @@ const { width } = Dimensions.get('window');
 export default function QuizOverviewScreen() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { quiz, onViewPreviousAttempts } = route.params || {};
+  const { quiz, userId } = route.params || {};
 
   const rules = quiz?.rules || [
      'Each question has a time limit.',
@@ -24,7 +24,13 @@ export default function QuizOverviewScreen() {
         <TouchableOpacity style={styles.backLink} onPress={() => navigation.goBack()}>
           <Text style={styles.backLinkText}>← Back</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.prevAttemptBtn} onPress={onViewPreviousAttempts}>
+        <TouchableOpacity
+          style={styles.prevAttemptBtn}
+          onPress={() => {
+            console.log('Navigating to PreviousAttemptsScreen', quiz?._id, userId);
+            navigation.navigate('PreviousAttemptsScreen', { quizId: quiz?._id, userId });
+          }}
+        >
           <Text style={styles.prevAttemptText}>History</Text>
         </TouchableOpacity>
       </View>

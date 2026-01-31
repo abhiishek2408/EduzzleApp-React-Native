@@ -12,7 +12,6 @@ const gamingQuizEventAttemptSchema = new mongoose.Schema(
   {
     eventId: { type: mongoose.Schema.Types.ObjectId, ref: "GamingQuizEvent", required: true },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-    teamId: { type: mongoose.Schema.Types.ObjectId, ref: "Team" },
 
     startedAt: { type: Date, default: Date.now },
     finishedAt: { type: Date },
@@ -21,7 +20,6 @@ const gamingQuizEventAttemptSchema = new mongoose.Schema(
     score: { type: Number, default: 0, index: true },
     correctCount: { type: Number, default: 0 },
     wrongCount: { type: Number, default: 0 },
-    maxStreak: { type: Number, default: 0 },
     answers: [answerSchema],
 
     // Anti-cheat

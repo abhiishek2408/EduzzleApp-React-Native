@@ -129,7 +129,7 @@ export default function QuizScreen({ navigation }) {
               attempted={attemptedQuizIds.includes(quiz._id)}
               onPress={() => navigation.navigate("QuizOverviewScreen", {
                 quiz,
-                onViewPreviousAttempts: () => navigation.navigate("PreviousAttemptsScreen", { quizId: quiz._id, userId: user._id })
+                userId: user._id
               })}
             />
           ))}

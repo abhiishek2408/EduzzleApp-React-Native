@@ -294,7 +294,14 @@ export default function QuizPlayScreen() {
           levelAttempts={levelAttempts}
           isFinished={isFinished}
           submitResults={submitResults}
-          onViewAttemptReview={() => navigation.navigate("AttemptReviewScreen", { levelAttempts })}
+          onViewAttemptReview={() => navigation.navigate("AttemptReviewScreen", {
+            attempt: {
+              levelAttempts,
+              totalScore: score,
+              quizId: quizData,
+              // add more fields if AttemptReviewScreen expects them
+            }
+          })}
         />
         <Toast />
       </>

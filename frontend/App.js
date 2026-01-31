@@ -4,31 +4,48 @@ import { NavigationContainer } from "@react-navigation/native";
 import { AuthProvider, AuthContext } from "./context/AuthContext";
 import { GameProvider } from "./context/GameContext";
 import AppNavigator from "./navigation/AppNavigator";
-import { LogBox, StatusBar } from "react-native";
-import * as SplashScreen from 'expo-splash-screen';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { LogBox, StatusBar, View } from "react-native";
+import * as SplashScreen from "expo-splash-screen";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+
+import {
+  useFonts,
+  JosefinSans_400Regular,
+  JosefinSans_700Bold,
+} from "@expo-google-fonts/josefin-sans";
+
+// 🔒 Keep splash visible until we hide it manually
+SplashScreen.preventAutoHideAsync();
 
 LogBox.ignoreLogs([
-  '[expo-image-picker] `ImagePicker.MediaTypeOptions` have been deprecated',
+  "[expo-image-picker] `ImagePicker.MediaTypeOptions` have been deprecated",
 ]);
 
 function AppContent() {
   const { loading } = useContext(AuthContext);
+
+  const [fontsLoaded] = useFonts({
+    "Josefin-Regular": JosefinSans_400Regular,
+    "Josefin-Bold": JosefinSans_700Bold,
+  });
+
   useEffect(() => {
-    if (!loading) {
+    if (!loading && fontsLoaded) {
       SplashScreen.hideAsync();
     }
-  }, [loading]);
-  // Don't render anything while splash is visible
-  if (loading) return null;
+  }, [loading, fontsLoaded]);
+
+  // ⛔ Render nothing while splash is visible
+  if (loading || !fontsLoaded) {
+    return <View style={{ flex: 1, backgroundColor: "#1e0221" }} />;
+  }
+
   return (
     <NavigationContainer>
       <AppNavigator />
     </NavigationContainer>
   );
 }
-
-
 export default function App() {
   return (
     <AuthProvider>

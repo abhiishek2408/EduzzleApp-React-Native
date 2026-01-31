@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import { useNavigation } from '@react-navigation/native';
 import { Dimensions, TouchableOpacity, View, Text, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import QuizCardSkeleton from "./QuizCardSkeleton";
@@ -8,7 +9,9 @@ import axios from "axios";
 
 /* ===================== SECTION ===================== */
 
-export function QuizScreen({ navigation, user, route }) {
+
+export function QuizScreen({ user, route, searchQuery }) {
+  const navigation = useNavigation();
   const [quizzes, setQuizzes] = useState([]);
   const [attemptedQuizIds, setAttemptedQuizIds] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -16,14 +19,23 @@ export function QuizScreen({ navigation, user, route }) {
   const scrollRef = useRef(null);
   const currentOffset = useRef(0);
 
-  const fetchQuizzes = async () => {
+  const fetchQuizzes = async (query) => {
+    setLoading(true);
     try {
-      const res = await axios.get(
-        "https://eduzzleapp-react-native.onrender.com/api/fetch-puzzles/all-free-quizzes"
-      );
+      let res;
+      if (query && query.trim().length > 0) {
+        res = await axios.get(
+          `https://eduzzleapp-react-native.onrender.com/api/fetch-puzzles/search?q=${encodeURIComponent(query)}`
+        );
+      } else {
+        res = await axios.get(
+          "https://eduzzleapp-react-native.onrender.com/api/fetch-puzzles/all-free-quizzes"
+        );
+      }
       setQuizzes(res.data);
     } catch (e) {
       console.error(e);
+      setQuizzes([]);
     } finally {
       setLoading(false);
     }
@@ -37,18 +49,28 @@ export function QuizScreen({ navigation, user, route }) {
     if (res.data.success) setAttemptedQuizIds(res.data.attemptedQuizIds);
   };
 
+
   useEffect(() => {
+    fetchQuizzes(searchQuery);
     if (user?._id) {
-      fetchQuizzes();
       fetchAttemptedQuizzes();
     }
-  }, [user]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, searchQuery]);
 
   if (loading) return <QuizCardSkeleton />;
-  if (!quizzes.length) return null;
+  if (!quizzes.length) {
+    return (
+      <View style={{ alignItems: 'center', marginTop: 32, marginBottom: 32 }}>
+        <Ionicons name="alert-circle-outline" size={40} color="#701a75" style={{ marginBottom: 8 }} />
+        <Text style={{ fontSize: 16, color: '#701a75', fontWeight: 'bold' }}>No quizzes found</Text>
+        <Text style={{ fontSize: 13, color: '#6b7280', marginTop: 4 }}>Try a different search or check back later.</Text>
+      </View>
+    );
+  }
 
   return (
-    <View className="mb-6 mx-3">
+    <View className="mb-6 mx-3 mt-8">
       {/* HEADER */}
       <View className="flex-row justify-between items-center px-0 mb-2">
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 0, marginLeft: 12 }}>
@@ -62,9 +84,9 @@ export function QuizScreen({ navigation, user, route }) {
         </View>
         <TouchableOpacity
           onPress={() => navigation.navigate("QuizzesScreen")}
-          style={{ backgroundColor: '#f3e8ff', paddingVertical: 6, paddingHorizontal: 12, borderRadius: 20 }}
+          style={{ backgroundColor: '#f3e8ff', paddingVertical: 6, paddingHorizontal: 12, borderRadius: 20,marginRight:8  }}
         >
-          <Text style={{ fontSize: 10, fontWeight: '900', color: '#701a75' }}>VIEW ALL</Text>
+          <Text style={{ fontSize: 10, fontWeight: '900', color: '#701a75'}}>VIEW ALL</Text>
         </TouchableOpacity>
       </View>
 
@@ -91,7 +113,7 @@ export function QuizScreen({ navigation, user, route }) {
               onPress={() =>
                 navigation.navigate("QuizOverviewScreen", {
                   quiz,
-                  onViewPreviousAttempts: () => navigation.navigate("PreviousAttemptsScreen", { quizId: quiz._id, userId: user._id })
+                  userId: user._id
                 })
               }
             />

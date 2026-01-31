@@ -93,6 +93,8 @@ export default function GamingEventDetail({ route, navigation }) {
 
   if (loading) return <View style={styles.loader}><ActivityIndicator color={THEME_DARK} size="large" /></View>;
   if (!event) return null;
+  const statusLabel = event.status === "scheduled" ? "SCHEDULED" : event.status === "completed" ? "COMPLETED" : "TOURNAMENT LIVE";
+  const isLive = event.status === "live";
 
   return (
     <ScrollView style={styles.container} bounces={false} showsVerticalScrollIndicator={false}>
@@ -114,7 +116,7 @@ export default function GamingEventDetail({ route, navigation }) {
           <Text style={styles.heroTitle}>{event.title}</Text>
           <View style={[styles.statusPill, isCompleted && {backgroundColor: '#10b981'}]}>
             <Text style={[styles.statusPillText, isCompleted && {color: '#fff'}]}>
-                {isCompleted ? "PARTICIPATION RECORDED" : "TOURNAMENT LIVE"}
+                {isCompleted ? "PARTICIPATION RECORDED" : statusLabel}
             </Text>
           </View>
         </View>
@@ -175,7 +177,6 @@ export default function GamingEventDetail({ route, navigation }) {
             <View style={styles.statsRow}>
               <StatItem icon="help-circle" label="Questions" val={event.totalQuestions} />
               <StatItem icon="flash" label="Difficulty" val={event.difficulty} />
-              <StatItem icon="wallet" label="Fee" val={event.entryCostCoins || 'Free'} />
             </View>
             
             <View style={styles.descBox}>
@@ -189,9 +190,9 @@ export default function GamingEventDetail({ route, navigation }) {
                  <Text style={styles.timeVal}>{countdown}</Text>
                </View>
 
-               <TouchableOpacity activeOpacity={0.8} style={styles.primaryBtn} onPress={joinEvent}>
+               <TouchableOpacity activeOpacity={0.8} style={styles.primaryBtn} onPress={joinEvent} disabled={!isLive}>
                 <LinearGradient colors={["#f3c999", "#d97706"]} style={styles.btnGradient}>
-                  <Text style={styles.btnTextDark}>JOIN & PLAY NOW</Text>
+                  <Text style={styles.btnTextDark}>{isLive ? "JOIN & PLAY NOW" : "NOT LIVE"}</Text>
                   <Ionicons name="play-circle" size={20} color={THEME_DARK} />
                 </LinearGradient>
               </TouchableOpacity>

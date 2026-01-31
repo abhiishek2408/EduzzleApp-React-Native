@@ -6,7 +6,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 const { width } = Dimensions.get('window');
 
-const RecommendedPuzzlesSection = ({ navigation }) => {
+const RecommendedPuzzlesSection = ({ navigation, searchQuery = "" }) => {
   const recommendedScrollRef = useRef(null);
 
   const puzzles = [
@@ -54,6 +54,12 @@ const RecommendedPuzzlesSection = ({ navigation }) => {
     },
   ];
 
+  // Filter puzzles by searchQuery (case-insensitive)
+  const filteredPuzzles = puzzles.filter(puzzle =>
+    puzzle.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    puzzle.desc.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <View className="mt-8 mb-6">
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, marginBottom: 12, marginTop: 10 }}>
@@ -77,7 +83,7 @@ const RecommendedPuzzlesSection = ({ navigation }) => {
         snapToInterval={180} 
         decelerationRate="fast"
       >
-        {puzzles.map((puzzle) => (
+        {filteredPuzzles.map((puzzle) => (
           <TouchableOpacity
             key={puzzle.key}
             onPress={() => navigation.navigate(puzzle.screen, { puzzleId: puzzle.puzzleId })}
@@ -149,3 +155,5 @@ const styles = StyleSheet.create({
 });
 
 export default RecommendedPuzzlesSection;
+// For HomeScreen import compatibility
+export { RecommendedPuzzlesSection as PuzzlesScreen };

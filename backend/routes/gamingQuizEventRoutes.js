@@ -3,7 +3,6 @@ import express from "express";
 import mongoose from "mongoose";
 import GamingQuizEvent from "../models/GamingQuizEvent.js";
 import GamingQuizEventAttempt from "../models/GamingQuizEventAttempt.js";
-import User from "../models/User.js";
 
 const router = express.Router();
 
@@ -65,7 +64,7 @@ router.get("/", async (req, res) => {
   try {
     const { scope } = req.query; // upcoming|live|past
     const now = new Date();
-    let filter = { isActive: true };
+    let filter = { status: { $ne: "disabled" } };
     if (scope === "upcoming") filter.startTime = { $gt: now };
     else if (scope === "live") filter.$and = [{ startTime: { $lte: now } }, { endTime: { $gte: now } }];
     else if (scope === "past") filter.endTime = { $lt: now };
@@ -88,7 +87,7 @@ router.post("/:id/join", async (req, res) => {
   try {
     const { userId } = req.body;
     const ev = await GamingQuizEvent.findById(req.params.id);
-    if (!ev || !ev.isActive) return res.status(404).json({ message: "Event not available" });
+    if (!ev || ev.status === "disabled") return res.status(404).json({ message: "Event not available" });
     if (!isWithinWindow(ev) && ev.status !== "live") return res.status(403).json({ message: "Event not live" });
 
     const existing = await GamingQuizEventAttempt.findOne({ eventId: ev._id, userId });
@@ -109,15 +108,6 @@ router.post("/:id/join", async (req, res) => {
           message: "Continue your attempt"
         });
       }
-    }
-
-    // Entry cost (only for new attempts)
-    if (ev.entryCostCoins > 0) {
-      const user = await User.findById(userId);
-      if (!user) return res.status(404).json({ message: "User not found" });
-      if ((user.coins || 0) < ev.entryCostCoins) return res.status(402).json({ message: "Insufficient coins" });
-      user.coins -= ev.entryCostCoins;
-      await user.save();
     }
 
     const attempt = await GamingQuizEventAttempt.create({ eventId: ev._id, userId });
@@ -146,11 +136,9 @@ router.get("/:id/questions", async (req, res) => {
       options: q.options,
       image: q.image,
       timeLimit: q.timeLimit,
-      points: q.points,
-      tags: q.tags,
     }));
-    const windowSecs = Math.max(0, Math.floor((new Date(ev.endTime) - new Date(ev.startTime)) / 1000));
-    res.json({ questions: payload, totalTimerSec: windowSecs, perQuestionTimerSec: ev.perQuestionTimerSec });
+    const totalTimerSec = qs.reduce((sum, q) => sum + (Number(q.timeLimit) || 0), 0);
+    res.json({ questions: payload, totalTimerSec });
   } catch (e) {
     console.error(e);
     res.status(400).json({ message: "Failed to fetch questions" });
@@ -168,12 +156,21 @@ router.post("/:id/submit", async (req, res) => {
     if (!attempt) return res.status(404).json({ message: "Attempt not found" });
     if (attempt.finishedAt) return res.status(409).json({ message: "Already submitted" });
 
+    // Enforce duration limit based on sum of question time limits
+    const maxDurationSec = (ev.questions || []).reduce((sum, q) => sum + (Number(q.timeLimit) || 0), 0);
+    if (maxDurationSec > 0 && attempt.startedAt) {
+      const elapsedSec = Math.floor((Date.now() - new Date(attempt.startedAt)) / 1000);
+      if (elapsedSec > maxDurationSec) {
+        return res.status(403).json({ message: "Time over for this attempt" });
+      }
+    }
+
     // Build answer key from embedded questions
     let answerKeyMap = new Map();
     (ev.questions || []).forEach((q) => answerKeyMap.set(String(q._id), q.answer));
 
     // Score
-    let score = 0, correct = 0, wrong = 0, streak = 0, maxStreak = 0;
+    let score = 0, correct = 0, wrong = 0, streak = 0;
     const computedAnswers = answers.map((a) => {
       const correctAns = answerKeyMap.get(String(a.questionId));
       const isCorrect = String(a.selectedOption) === String(correctAns);
@@ -181,8 +178,6 @@ router.post("/:id/submit", async (req, res) => {
         score += ev.scoring.correct;
         correct += 1;
         streak += 1;
-        if (ev.scoring.streakEvery && streak % ev.scoring.streakEvery === 0) score += ev.scoring.streakBonus;
-        maxStreak = Math.max(maxStreak, streak);
       } else {
         score += ev.scoring.wrong;
         wrong += 1;
@@ -194,17 +189,20 @@ router.post("/:id/submit", async (req, res) => {
     attempt.score = score;
     attempt.correctCount = correct;
     attempt.wrongCount = wrong;
-    attempt.maxStreak = maxStreak;
     attempt.answers = computedAnswers;
     attempt.finishedAt = new Date();
-    attempt.durationSec = durationSec;
+    if (maxDurationSec > 0) {
+      attempt.durationSec = Math.min(Number(durationSec) || 0, maxDurationSec);
+    } else {
+      attempt.durationSec = durationSec;
+    }
     await attempt.save();
 
     // Optional: basic reward for top placements can be handled after leaderboard aggregation
     const io = req.app.get("io");
     if (io) io.emit("event:score-updated", { eventId: String(ev._id), userId: String(userId), score });
 
-    res.json({ success: true, score, correct, wrong, maxStreak });
+    res.json({ success: true, score, correct, wrong });
   } catch (e) {
     console.error(e);
     res.status(400).json({ message: "Failed to submit answers" });

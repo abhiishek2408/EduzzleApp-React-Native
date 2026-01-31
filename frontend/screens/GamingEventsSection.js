@@ -3,7 +3,6 @@ import { View, Text, ScrollView, TouchableOpacity, Dimensions, StyleSheet } from
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from "expo-linear-gradient";
 import GamingEventsSectionSkeleton from "../components/GamingEventsSectionSkeleton";
 
@@ -91,7 +90,9 @@ export default function GamingEventsSection({ navigation }) {
           const nowDt = new Date(now);
           const start = new Date(item.startTime);
           const end = new Date(item.endTime);
-          const status = nowDt < start ? "Upcoming" : nowDt > end ? "Closed" : "Live";
+          const status = item.status
+            ? (item.status === "scheduled" ? "Upcoming" : item.status === "completed" ? "Closed" : "Live")
+            : (nowDt < start ? "Upcoming" : nowDt > end ? "Closed" : "Live");
           const isCompleted = completedMap[item._id];
           
           let remainingMs = status === "Upcoming" ? start - nowDt : status === "Live" ? end - nowDt : 0;
@@ -129,10 +130,6 @@ export default function GamingEventsSection({ navigation }) {
                       status === "Live" && <View style={styles.pulseDot} />
                     )}
                     <Text style={styles.statusText}>{isCompleted ? "FINISHED" : status}</Text>
-                  </View>
-                  <View style={styles.entryCostBadge}>
-                    <MaterialCommunityIcons name="database" size={12} color={THEME_ACCENT} />
-                    <Text style={styles.entryCostText}>{item.entryCostCoins || 'FREE'}</Text>
                   </View>
                 </View>
 
@@ -203,8 +200,6 @@ const styles = StyleSheet.create({
   statusBadge: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10 },
   pulseDot: { width: 5, height: 5, borderRadius: 2.5, backgroundColor: '#fff', marginRight: 5 },
   statusText: { color: '#fff', fontSize: 10, fontWeight: '900', textTransform: 'uppercase' },
-  entryCostBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.1)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 10 },
-  entryCostText: { color: THEME_ACCENT, fontSize: 11, fontWeight: '900', marginLeft: 4 },
   
   eventTitle: { color: '#fff', fontSize: 19, fontWeight: '900', letterSpacing: 0.3, marginBottom: 10 },
   

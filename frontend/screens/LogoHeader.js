@@ -4,39 +4,40 @@ import {
   Text,
   TextInput,
   Image,
-  TouchableOpacity,
   Dimensions,
+  TouchableOpacity,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import {
-  useFonts,
-  JosefinSans_400Regular,
-  JosefinSans_700Bold,
-} from "@expo-google-fonts/josefin-sans";
+
 
 const screenWidth = Dimensions.get("window").width;
 
-const LogoHeader = () => {
-  const navigation = useNavigation();
-  const [searchQuery, setSearchQuery] = useState("");
 
-  const handleSearch = (text) => {
-    setSearchQuery(text);
-    navigation.setParams({ searchQuery: text });
+const LogoHeader = ({
+  searchQuery,
+  setSearchQuery,
+  onExplorePress
+}) => {
+    const navigation = useNavigation();
+  // If setSearchQuery is not provided, use local state for searchQuery
+  const [localQuery, setLocalQuery] = useState("");
+  const isControlled = typeof setSearchQuery === "function" && typeof searchQuery === "string";
+  const value = isControlled ? searchQuery : localQuery;
+
+  const handleChange = (text) => {
+    setLocalQuery(text);
+    if (isControlled && setSearchQuery) {
+      setSearchQuery(text);
+    }
   };
 
-  /* 🔤 Load Fonts */
-  const [fontsLoaded] = useFonts({
-    "Josefin-Regular": JosefinSans_400Regular,
-    "Josefin-Bold": JosefinSans_700Bold,
-  });
-
-  /* ❗ WAIT till fonts are loaded */
-  if (!fontsLoaded) {
-    return null;
-  }
+  const triggerSearch = () => {
+    if (isControlled && setSearchQuery) {
+      setSearchQuery(localQuery);
+    }
+  };
 
   return (
     <LinearGradient
@@ -52,160 +53,116 @@ const LogoHeader = () => {
         shadowOffset: { width: 0, height: 15 },
         shadowOpacity: 0.6,
         shadowRadius: 25,
-        elevation: 20,
+        elevation: 50,
+        zIndex: 9999,
       }}
     >
-      {/* 🔹 Header */}
+      {/* HEADER */}
       <View className="flex-row items-center justify-between pt-12 pb-1 px-5">
-        {/* 🔹 Logo */}
         <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <Text
-            style={{
-              fontFamily: "Josefin-Bold",
-              fontSize: 38,
-              lineHeight: 38,
-              color: "#f3c999",
-            }}
-          >
-            Edu
-          </Text>
-
-          <Text
-            style={{
-              fontFamily: "Josefin-Bold",
-              fontSize: 38,
-              lineHeight: 38,
-              color: "#ffffff",
-            }}
-          >
-            zzle
-          </Text>
-
-          <View
-            style={{
-              position: "absolute",
-              top: 2,
-              left: 135,
-              width: 7,
-              height: 7,
-              backgroundColor: "#f3c999",
-              borderRadius: 7,
-            }}
-          />
+          <Text style={{ fontSize: 38, color: "#f3c999", fontFamily: "Josefin-Bold" }}>Edu</Text>
+          <Text style={{ fontSize: 38, color: "#ffffff", fontFamily: "Josefin-Bold" }}>zzle</Text>
+          <View style={{ position: "absolute", top: 21, left: 135, width: 7, height: 7, backgroundColor: "#f3c999", borderRadius: 7 }} />
         </View>
 
-        {/* 🔔 Notification */}
+     <TouchableOpacity
+              onPress={() => navigation.navigate("NotificationScreen")}
+              style={{
+                backgroundColor: "rgba(255,255,255,0.2)",
+                padding: 9,
+                borderRadius: 12,
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.3)",
+              }}
+            >
+              <Ionicons name="notifications" size={20} color="#ffffff" />
+            </TouchableOpacity>
+      
+      </View>
+
+      {/* SEARCH BOX */}
+      <View
+        style={{ 
+          flexDirection: 'row',
+          alignItems: 'center',
+          backgroundColor: '#ffffff',
+          borderRadius: 16,
+          marginHorizontal: 20,
+          marginTop: 16,
+          marginBottom: 16,
+          paddingHorizontal: 16,
+          height: 52,
+          elevation: 8 
+        }}
+      >
+        <Ionicons name="search" size={18} color="#701a75" style={{ marginRight: 10 }} />
+        <TextInput
+          style={{ flex: 1, fontSize: 16, color: "#1f2937", fontFamily: "Josefin-Regular" }}
+          placeholder="Search puzzles..."
+          placeholderTextColor="#9ca3af"
+          value={value}
+          onChangeText={handleChange}
+          returnKeyType="search"
+          onSubmitEditing={triggerSearch}
+        />
         <TouchableOpacity
-          onPress={() => navigation.navigate("NotificationScreen")}
-          style={{
-            backgroundColor: "rgba(255,255,255,0.2)",
-            padding: 9,
-            borderRadius: 12,
-            borderWidth: 1,
-            borderColor: "rgba(255,255,255,0.3)",
-          }}
+          onPress={triggerSearch}
+          style={{ marginLeft: 8, padding: 6, borderRadius: 8, backgroundColor: '#f3e8ff' }}
         >
-          <Ionicons name="notifications" size={20} color="#ffffff" />
+          <Ionicons name="search" size={20} color="#701a75" />
         </TouchableOpacity>
       </View>
 
-      {/* 🔍 Search Box */}
+
+      {/* BANNER WITH PERMANENT BADGE */}
       <View
-        className="flex-row items-center bg-white rounded-2xl mx-5 mt-4 mb-4 px-4 h-[52px]"
         style={{
-          width: screenWidth - 40,
-          alignSelf: "center",
-          shadowColor: "#000",
-          shadowOpacity: 0.25,
-          shadowRadius: 8,
-          elevation: 8,
-        }}
-      >
-        <View
-          style={{
-            backgroundColor: "#f3c999",
-            padding: 8,
-            borderRadius: 100,
-            marginRight: 10,
-          }}
-        >
-          <Ionicons name="search" size={18} color="#701a75" />
-        </View>
-
-        <TextInput
-          style={{
-            flex: 1,
-            fontFamily: "Josefin-Regular",
-            fontSize: 16,
-            color: "#1f2937",
-          }}
-          placeholder="Find your favorite puzzle..."
-          placeholderTextColor="#9ca3af"
-          value={searchQuery}
-          onChangeText={handleSearch}
-        />
-
-        <Ionicons name="options-outline" size={20} color="#4a044e" />
-      </View>
-
-      {/* 🎴 Banner */}
-      <View
-        className="flex-row mx-5 rounded-3xl p-5 items-center justify-between mb-6"
-        style={{
+          flexDirection: 'row',
+          marginHorizontal: 20,
+          borderRadius: 24,
+          padding: 20,
+          alignItems: 'center',
+          justifyContent: 'between',
+          marginBottom: 24,
           backgroundColor: "rgba(0,0,0,0.15)",
           borderWidth: 1,
-          borderColor: "rgba(255,255,255,0.05)",
+          borderColor: "rgba(255,255,255,0.1)",
         }}
       >
-        <View style={{ width: "60%" }}>
-          <Text
-            style={{
-              fontFamily: "Josefin-Bold",
-              fontSize: 17,
-              lineHeight: 20,
-              color: "#ffffff",
-              marginBottom: 4,
-            }}
-          >
-            KNOWLEDGE AT{"\n"}YOUR FINGERTIPS
+        <View style={{ width: "65%" }}>
+          <Text style={{ fontSize: 18, color: "#ffffff", fontFamily: "Josefin-Bold" }}>
+            LEVEL UP YOUR{"\n"}IQ EVERY DAY
+          </Text>
+          
+          <Text style={{ fontSize: 13, color: "#f3c999", marginTop: 4, marginBottom: 12, fontFamily: "Josefin-Regular" }}>
+            Hand-picked puzzles to sharp{"\n"}your mind daily.
           </Text>
 
-          <Text
-            style={{
-              fontFamily: "Josefin-Regular",
-              fontSize: 12,
-              color: "#f3c999",
-              marginBottom: 12,
-            }}
-          >
-            Fast & Reliable Access to hundreds of Categories.
-          </Text>
-
-          <TouchableOpacity
-            style={{
-              backgroundColor: "#f3c999",
-              borderRadius: 12,
-              paddingVertical: 8,
-              paddingHorizontal: 16,
-              alignSelf: "flex-start",
-              elevation: 4,
-            }}
-          >
-            <Text
-              style={{
-                fontFamily: "Josefin-Bold",
-                fontSize: 13,
-                color: "#4a044e",
-              }}
-            >
-              Explore Now
-            </Text>
-          </TouchableOpacity>
+          {/* PERMANENT NON-BUTTON ELEMENT */}
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+             <View style={{ 
+               paddingHorizontal: 12, 
+               paddingVertical: 4, 
+               borderRadius: 6, 
+               backgroundColor: 'rgba(243, 201, 153, 0.15)',
+               borderWidth: 1,
+               borderColor: 'rgba(243, 201, 153, 0.3)'
+             }}>
+               <Text style={{ 
+                 color: '#f3c999', 
+                 fontSize: 10, 
+                 fontFamily: 'Josefin-Bold', 
+                 letterSpacing: 1.5
+               }}>
+                 Student Choice
+               </Text>
+             </View>
+          </View>
         </View>
 
         <Image
           source={require("../assets/puzzlequiz.png")}
-          style={{ width: 85, height: 85 }}
+          style={{ width: 80, height: 80 }}
           resizeMode="contain"
         />
       </View>

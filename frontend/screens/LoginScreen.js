@@ -48,7 +48,10 @@ export default function Login() {
     }
     try {
       const data = await login(form.email, form.password);
-      if (data?.token) navigation.navigate("UserNavigator");
+      if (data?.token) navigation.reset({
+        index: 0,
+        routes: [{ name: "UserNavigator", params: { screen: "Home" } }],
+      });
     } catch (err) {
       setError(err?.response?.data?.message || err?.message || "Login failed");
       setShowError(true);

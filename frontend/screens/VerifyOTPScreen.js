@@ -18,7 +18,10 @@ export default function VerifyOtp() {
     try {
       const data = await verifyOtp(userId, otp);
       if (data?.token) {
-        navigation.navigate("UserNavigator");
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "UserNavigator", params: { screen: "Home" } }],
+        });
       } else {
         Alert.alert("Error", data?.message || "Verification failed");
       }

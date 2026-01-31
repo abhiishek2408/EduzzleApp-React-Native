@@ -87,14 +87,6 @@ export default function GamingEventsList({ navigation }) {
               </Text>
             </View>
             
-            {item.entryCostCoins > 0 && !isCompleted && (
-              <View style={[styles.coinBadge, { backgroundColor: isLive ? 'rgba(255,255,255,0.1)' : '#fff7ed' }]}>
-                <Ionicons name="flash" size={12} color={isLive ? THEME_ACCENT : "#b45309"} />
-                <Text style={[styles.coinText, { color: isLive ? THEME_ACCENT : "#b45309" }]}>
-                  {item.entryCostCoins}
-                </Text>
-              </View>
-            )}
           </View>
 
           <View style={styles.cardBody}>
@@ -184,8 +176,6 @@ const styles = StyleSheet.create({
   statusBadge: { flexDirection: 'row', alignItems: 'center', paddingVertical: 4, paddingHorizontal: 12, borderRadius: 12 },
   liveIndicator: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#fff', marginRight: 6 },
   statusText: { fontSize: 11, fontWeight: "900", textTransform: 'uppercase', letterSpacing: 0.5 },
-  coinBadge: { flexDirection: 'row', alignItems: 'center', paddingVertical: 4, paddingHorizontal: 10, borderRadius: 12, borderWidth: 0.5, borderColor: 'rgba(255,255,255,0.2)' },
-  coinText: { fontSize: 11, fontWeight: "800", marginLeft: 4 },
   
   cardBody: { flexDirection: 'row', alignItems: 'center' },
   mainInfo: { flex: 1 },

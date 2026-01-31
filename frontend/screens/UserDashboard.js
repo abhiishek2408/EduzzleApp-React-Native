@@ -37,6 +37,7 @@ const UserDashboard = ({ navigation }) => {
   const { user } = useContext(AuthContext);
   const route = useRoute();
   const [showPremiumAlert, setShowPremiumAlert] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   if (!user) {
     return (
@@ -56,7 +57,7 @@ const UserDashboard = ({ navigation }) => {
       />
 
       <ScrollView className="flex-grow pb-10">
-        <LogoHeader />
+        <LogoHeader searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
 
         {/* Header */}
           {/* Section Header */}
@@ -94,12 +95,12 @@ const UserDashboard = ({ navigation }) => {
         </View>
 
 
-        <QuizScreen navigation={navigation} user={user} route={route} />
+        <QuizScreen navigation={navigation} user={user} route={route} searchQuery={searchQuery} />
         <DailyQuest navigation={navigation} />
         <View className="mx-4">
           <FriendsLeaderboard navigation={navigation} />
           <GlobalLeaderboard navigation={navigation} />
-          <PuzzlesScreen navigation={navigation} />
+          <PuzzlesScreen navigation={navigation} searchQuery={searchQuery} />
           <HelpDesk />
           <ReviewUs />
         </View>

@@ -79,11 +79,11 @@ export default function PreviousAttemptsScreen() {
               key={att._id || idx}
               activeOpacity={0.9}
               style={styles.attemptCard}
-              onPress={() => navigation.navigate("AttemptReviewScreen", { levelAttempts: att.levelAttempts })}
+              onPress={() => navigation.navigate("AttemptReviewScreen", { attempt: att })}
             >
               <View style={styles.cardHeader}>
                 <View>
-                  <Text style={styles.attemptNumber}>Attempt #{attempts.length - idx}</Text>
+                  <Text style={styles.attemptNumber}>Attempt: {idx + 1}</Text>
                   <Text style={styles.dateTimeText}>{attemptDate} • {attemptTime}</Text>
                 </View>
                 <View style={[styles.statusBadge, isPassed ? styles.passBadge : styles.failBadge]}>

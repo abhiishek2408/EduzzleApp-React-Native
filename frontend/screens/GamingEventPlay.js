@@ -18,7 +18,6 @@ export default function GamingEventPlay({ route, navigation }) {
   const [submitting, setSubmitting] = useState(false);
   const totalStartRef = useRef(null);
   const intervalRef = useRef(null);
-  const basePerQTimerRef = useRef(0);
   const submittingRef = useRef(false);
 
   const formatHMS = (totalSeconds) => {
@@ -34,13 +33,7 @@ export default function GamingEventPlay({ route, navigation }) {
     try {
       const res = await axios.get(`${API_BASE}/gaming-events/${eventId}/questions`);
       setQuestions(res.data?.questions || []);
-      if (res.data?.perQuestionTimerSec) {
-        basePerQTimerRef.current = res.data.perQuestionTimerSec;
-        setPerQTimer(basePerQTimerRef.current);
-      } else {
-        basePerQTimerRef.current = 0;
-        setPerQTimer(0);
-      }
+      setPerQTimer(0);
       if (res.data?.totalTimerSec) setTotalTimer(res.data.totalTimerSec);
       totalStartRef.current = Date.now();
     } catch (e) {
@@ -56,10 +49,10 @@ export default function GamingEventPlay({ route, navigation }) {
 
   useEffect(() => {
     if (!questions.length) return;
-    // reset per-question timer using question.timeLimit if provided, else global base
+    // reset per-question timer using question.timeLimit
     clearInterval(intervalRef.current);
     const current = questions[idx];
-    const startVal = (current?.timeLimit ?? basePerQTimerRef.current) || 0;
+    const startVal = current?.timeLimit || 0;
     setPerQTimer(startVal);
     if (startVal > 0) {
       let t = startVal;

@@ -78,6 +78,7 @@ const categories = [
 export default function PremiumUserDashboard({ navigation }) {
   const { user } = useContext(AuthContext);
   const route = useRoute();
+  const [searchQuery, setSearchQuery] = useState("");
 
   if (!user) {
     return (
@@ -95,7 +96,7 @@ export default function PremiumUserDashboard({ navigation }) {
       <View className="absolute inset-0 bg-white" />
 
       <ScrollView className="flex-grow pb-10">
-        <LogoHeader />
+        <LogoHeader searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
 
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, marginBottom: 12, marginTop: 10 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 0 }}>
@@ -130,7 +131,7 @@ export default function PremiumUserDashboard({ navigation }) {
         </View>
 
         {/* Quiz Section - logic moved to QuizCard.js */}
-        <QuizScreen navigation={navigation} user={user} route={route} />
+        <QuizScreen navigation={navigation} user={user} route={route} searchQuery={searchQuery} />
 
         {/* Daily Quest */}
         <DailyQuest navigation={navigation} />
