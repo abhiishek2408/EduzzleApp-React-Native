@@ -136,11 +136,13 @@ router.get("/:id/questions", async (req, res) => {
     if (!isWithinWindow(ev) && ev.status !== "live") return res.status(403).json({ message: "Event not live" });
 
   // Use embedded questions; optionally randomize (no artificial cap)
-  let qs = Array.isArray(ev.questions) ? [...ev.questions] : [];
+  let qs = Array.isArray(ev.questions)
+    ? ev.questions.map((q, index) => ({ q, index }))
+    : [];
   if (!qs.length) return res.status(404).json({ message: "No questions configured for event" });
   if (ev.randomizeQuestions) qs.sort(() => Math.random() - 0.5);
 
-    const payload = qs.map((q, index) => ({
+    const payload = qs.map(({ q, index }) => ({
       questionIndex: index,
       question: q.question || q.text,
       text: q.text,

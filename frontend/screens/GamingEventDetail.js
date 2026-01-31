@@ -4,6 +4,7 @@ import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { useFocusEffect } from "@react-navigation/native";
 
 const API_BASE = "https://eduzzleapp-react-native.onrender.com/api";
 const THEME_ACCENT = "#f3c999"; 
@@ -70,6 +71,20 @@ export default function GamingEventDetail({ route, navigation }) {
         .catch(() => {});
     }
   }, [eventId, user]);
+
+  // Refresh when coming back to this screen
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchEvent();
+      if (user && user._id && eventId) {
+        axios.get(`${API_BASE}/gaming-events/check-completed/${eventId}/${user._id}`)
+          .then(res => {
+            setIsCompleted(!!res.data?.completed);
+          })
+          .catch(() => {});
+      }
+    }, [eventId, user])
+  );
 
   useEffect(() => {
     if (!event || isCompleted) return;
