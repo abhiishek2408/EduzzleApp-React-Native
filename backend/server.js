@@ -96,35 +96,37 @@ cron.schedule("* * * * *", async () => {
     const now = new Date();
     const GamingQuizEvent = (await import("./models/GamingQuizEvent.js")).default;
 
-    // Future → scheduled
+    // Only future events → scheduled (don’t touch live or completed)
     await GamingQuizEvent.updateMany(
       {
-        status: { $ne: "completed" },
+        status: "scheduled",
         startTime: { $gt: now },
       },
       { $set: { status: "scheduled" } }
     );
 
-    // Running → live
+    // Only scheduled → live when time arrives
     await GamingQuizEvent.updateMany(
       {
+        status: "scheduled",
         startTime: { $lte: now },
         endTime: { $gte: now },
       },
       { $set: { status: "live" } }
     );
 
-    // Ended → completed
+    // Only live → completed when ended
     await GamingQuizEvent.updateMany(
       {
+        status: "live",
         endTime: { $lt: now },
       },
       { $set: { status: "completed" } }
     );
 
-    console.log("Cron ran at:", now.toISOString());
+    console.log("Cron ran:", now.toISOString());
   } catch (error) {
-    console.error("Error updating GamingQuizEvent status:", error);
+    console.error("Cron error:", error);
   }
 });
 
