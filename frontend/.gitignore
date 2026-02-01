@@ -36,3 +36,7 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+
+# APK files
+Eduzzle-production.apk
+*.apk
