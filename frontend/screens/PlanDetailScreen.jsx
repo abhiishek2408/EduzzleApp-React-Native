@@ -18,6 +18,7 @@ import ConfettiCannon from 'react-native-confetti-cannon';
 import { AuthContext } from "../context/AuthContext";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from 'expo-linear-gradient';
+import RazorpayCheckout from "react-native-razorpay";
 
 const { width } = Dimensions.get("window");
 
@@ -34,6 +35,8 @@ const PlanDetailScreen = ({ route, navigation }) => {
   const [paymentError, setPaymentError] = useState({ show: false, msg: "" });
   const [finalPrice, setFinalPrice] = useState(plan.price);
   const [discountPercent, setDiscountPercent] = useState(null);
+
+  const showApplyButton = isApplied || discountCode.trim().length > 0;
 
   // Animation Refs
   const checkmarkScale = useRef(new Animated.Value(0)).current;
@@ -99,7 +102,7 @@ const PlanDetailScreen = ({ route, navigation }) => {
       const amountToPay = isApplied ? finalPrice : plan.price;
       const orderRes = await axios.post(
         "https://eduzzleapp-react-native.onrender.com/api/payment/create-order",
-        { planId: plan._id, amount: amountToPay },
+        { planId: plan._id, discountCode: isApplied ? discountCode.trim() : undefined },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -114,12 +117,26 @@ const PlanDetailScreen = ({ route, navigation }) => {
         theme: { color: "#701a75" },
       };
 
-      // Razorpay integration removed. Implement payment gateway here.
+      const paymentRes = await RazorpayCheckout.open(options);
+
+      await axios.post(
+        "https://eduzzleapp-react-native.onrender.com/api/payment/verify",
+        {
+          razorpay_order_id: paymentRes.razorpay_order_id,
+          razorpay_payment_id: paymentRes.razorpay_payment_id,
+          razorpay_signature: paymentRes.razorpay_signature,
+          planId: plan._id,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      await refreshUser?.();
       setLoading(false);
-      setPaymentError({ show: true, msg: "Payment gateway not available. Please contact support." });
+      triggerSuccess();
     } catch (error) {
       setLoading(false);
-      setPaymentError({ show: true, msg: "Failed to initiate payment" });
+      const msg = error?.description || error?.message || "Failed to initiate payment";
+      setPaymentError({ show: true, msg });
     }
   };
 
@@ -192,14 +209,16 @@ const PlanDetailScreen = ({ route, navigation }) => {
                 editable={!isApplied}
                 autoCapitalize="characters"
               />
-              <TouchableOpacity 
-                style={[styles.applyBtn, isApplied && styles.applyBtnSuccess]} 
-                onPress={handleApplyPromo}
-                disabled={isApplied || loading}
-              >
-                {loading ? <ActivityIndicator size="small" color="#fff" /> : 
-                <Text style={styles.applyBtnText}>{isApplied ? "Saved" : "Apply"}</Text>}
-              </TouchableOpacity>
+              {showApplyButton && (
+                <TouchableOpacity 
+                  style={[styles.applyBtn, isApplied && styles.applyBtnSuccess]} 
+                  onPress={handleApplyPromo}
+                  disabled={isApplied || loading}
+                >
+                  {loading ? <ActivityIndicator size="small" color="#fff" /> : 
+                  <Text style={styles.applyBtnText}>{isApplied ? "Saved" : "Apply"}</Text>}
+                </TouchableOpacity>
+              )}
            </View>
         )}
 
@@ -247,6 +266,23 @@ const PlanDetailScreen = ({ route, navigation }) => {
                 <Text style={styles.redirectText}>REDIRECTING TO DASHBOARD...</Text>
             </View>
           </LinearGradient>
+        </View>
+      </Modal>
+
+      {/* PAYMENT ERROR MODAL */}
+      <Modal visible={paymentError.show} transparent animationType="fade">
+        <View style={styles.errorOverlay}>
+          <View style={styles.errorCard}>
+            <MaterialCommunityIcons name="alert-circle" size={48} color="#ef4444" />
+            <Text style={styles.errorTitle}>Payment Failed</Text>
+            <Text style={styles.errorMsg}>{paymentError.msg}</Text>
+            <TouchableOpacity
+              style={styles.errorBtn}
+              onPress={() => setPaymentError({ show: false, msg: "" })}
+            >
+              <Text style={styles.errorBtnText}>Close</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </Modal>
     </View>
@@ -316,6 +352,12 @@ const styles = StyleSheet.create({
   successSub: { fontSize: 15, color: "#f5d0fe", textAlign: "center", marginTop: 8, opacity: 0.8 },
   loaderLine: { flexDirection: 'row', alignItems: 'center', marginTop: 30, gap: 10 },
   redirectText: { color: "#f5d0fe", fontSize: 10, fontWeight: "800", letterSpacing: 1.5 },
+  errorOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.45)", justifyContent: "center", alignItems: "center" },
+  errorCard: { backgroundColor: "#fff", padding: 24, borderRadius: 18, alignItems: "center", width: width * 0.8 },
+  errorTitle: { fontSize: 18, fontWeight: "900", color: "#4a044e", marginTop: 10 },
+  errorMsg: { fontSize: 14, color: "#6b7280", textAlign: "center", marginTop: 6 },
+  errorBtn: { marginTop: 14, backgroundColor: "#4a044e", paddingVertical: 10, paddingHorizontal: 20, borderRadius: 10 },
+  errorBtnText: { color: "#fff", fontWeight: "800", fontSize: 14 },
 });
 
 export default PlanDetailScreen;

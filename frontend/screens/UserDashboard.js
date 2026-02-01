@@ -54,6 +54,10 @@ const UserDashboard = ({ navigation }) => {
       <CustomPremiumAlert
         visible={showPremiumAlert}
         onClose={() => setShowPremiumAlert(false)}
+        onUpgrade={() => {
+          setShowPremiumAlert(false);
+          navigation.navigate("PremiumDashboard");
+        }}
       />
 
       <ScrollView className="flex-grow pb-10">

@@ -3,6 +3,7 @@ import crypto from "crypto";
 import razorpay from "../config/razorpay.js";
 import Payment from "../models/Payment.js";
 import User from "../models/User.js";
+import SubscriptionPlan from "../models/SubscriptionPlan.js";
 import authMiddleware from "../middlewares/auth.js";
 
 const router = express.Router();
@@ -12,10 +13,21 @@ const router = express.Router();
 ========================= */
 router.post("/create-order", authMiddleware, async (req, res) => {
   try {
-    const { planId, amount } = req.body;
+    const { planId, discountCode } = req.body;
+
+    const plan = await SubscriptionPlan.findById(planId);
+    if (!plan) return res.status(404).json({ success: false, message: "Plan not found" });
+
+    let finalPrice = plan.price;
+    if (discountCode && plan.discountCodes?.length > 0) {
+      const found = plan.discountCodes.find((dc) => dc.code === discountCode);
+      if (found) {
+        finalPrice = plan.price - (plan.price * found.percentage) / 100;
+      }
+    }
 
     const order = await razorpay.orders.create({
-      amount: amount * 100, // INR → paise
+      amount: Math.round(finalPrice * 100), // INR → paise
       currency: "INR",
       receipt: `receipt_${Date.now()}`,
     });
@@ -24,7 +36,7 @@ router.post("/create-order", authMiddleware, async (req, res) => {
       userId: req.user.id,
       planId,
       razorpay_order_id: order.id,
-      amount,
+      amount: finalPrice,
       status: "created",
     });
 
@@ -36,6 +48,7 @@ router.post("/create-order", authMiddleware, async (req, res) => {
       key: process.env.RAZORPAY_KEY_ID,
     });
   } catch (err) {
+    console.error("[CREATE ORDER ERROR]", err);
     res.status(500).json({ success: false, message: err.message });
   }
 });
@@ -50,8 +63,10 @@ router.post("/verify", authMiddleware, async (req, res) => {
       razorpay_payment_id,
       razorpay_signature,
       planId,
-      durationInDays,
     } = req.body;
+
+    const plan = await SubscriptionPlan.findById(planId);
+    if (!plan) return res.status(404).json({ message: "Plan not found" });
 
     // 🔐 Signature verification
     const body = `${razorpay_order_id}|${razorpay_payment_id}`;
@@ -77,7 +92,7 @@ router.post("/verify", authMiddleware, async (req, res) => {
     // ✅ Activate subscription INSIDE USER
     const startDate = new Date();
     const endDate = new Date();
-    endDate.setDate(endDate.getDate() + durationInDays);
+    endDate.setDate(endDate.getDate() + plan.durationInDays);
 
     await User.findByIdAndUpdate(req.user.id, {
       subscription: {
@@ -93,6 +108,7 @@ router.post("/verify", authMiddleware, async (req, res) => {
       message: "Payment verified & subscription activated",
     });
   } catch (err) {
+    console.error("[VERIFY PAYMENT ERROR]", err);
     res.status(500).json({ message: err.message });
   }
 });
