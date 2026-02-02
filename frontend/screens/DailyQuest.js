@@ -6,6 +6,8 @@ import { AuthContext } from "../context/AuthContext";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Ionicons } from "@expo/vector-icons";
+import AchievementModal from '../components/AchievementModal';
+import ConfettiCelebration from '../components/ConfettiCelebration';
 
 const { width } = Dimensions.get('window');
 const API_BASE = "https://eduzzleapp-react-native.onrender.com/api";
@@ -17,6 +19,12 @@ export default function DailyQuest({ navigation }) {
   const [quest, setQuest] = useState({ quizzesAttemptedToday: 0, completedToday: false, streak: 0 });
   const [streak, setStreak] = useState({ currentStreak: 0, longestStreak: 0 });
   const [progressAnim] = useState(new Animated.Value(0));
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [showAchievement, setShowAchievement] = useState(false);
+  const [achievementText, setAchievementText] = useState("");
+  const [achievementCoins, setAchievementCoins] = useState(0);
+  const [prevCompleted, setPrevCompleted] = useState(false);
+  const [prevStreak, setPrevStreak] = useState(0);
 
   const fetchData = async () => {
     if (!user?._id) return;
@@ -42,6 +50,32 @@ export default function DailyQuest({ navigation }) {
   };
 
   useEffect(() => { fetchData(); }, [user?._id]);
+  useEffect(() => {
+    // Show confetti and achievement modal if daily quest completed
+    if (!loading && quest.completedToday && !prevCompleted) {
+      setShowConfetti(true);
+      setAchievementText("Daily Quest Complete!");
+      setAchievementCoins(10);
+      setShowAchievement(true);
+      setTimeout(() => setShowAchievement(false), 1800);
+    }
+    setPrevCompleted(quest.completedToday);
+    // Show confetti and achievement modal if streak milestone achieved (7, 14, 30, 60)
+    const streakMilestones = [7, 14, 30, 60];
+    if (!loading && streakMilestones.includes(streak.currentStreak) && prevStreak !== streak.currentStreak) {
+      setShowConfetti(true);
+      let coins = 0;
+      if (streak.currentStreak === 7) coins = 50;
+      if (streak.currentStreak === 14) coins = 100;
+      if (streak.currentStreak === 30) coins = 200;
+      if (streak.currentStreak === 60) coins = 500;
+      setAchievementText(`Streak Milestone! ${streak.currentStreak} days`);
+      setAchievementCoins(coins);
+      setShowAchievement(true);
+      setTimeout(() => setShowAchievement(false), 1800);
+    }
+    setPrevStreak(streak.currentStreak);
+  }, [quest.completedToday, streak.currentStreak, loading]);
 
   if (loading) return <DailyQuestSkeleton />;
 
@@ -53,6 +87,8 @@ export default function DailyQuest({ navigation }) {
 
   return (
     <View style={styles.container}>
+      <ConfettiCelebration show={showConfetti} onAnimationEnd={() => setShowConfetti(false)} />
+      <AchievementModal visible={showAchievement} achievement={achievementText} coins={achievementCoins} onClose={() => setShowAchievement(false)} />
       {/* --- Section Header --- */}
       <View style={styles.headerRow}>
         <View style={styles.headerTitleContainer}>

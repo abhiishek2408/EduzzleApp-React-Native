@@ -88,6 +88,7 @@ streakSchema.statics.updateDailyLoginStreak = async function(userId) {
 streakSchema.post("save", async function(doc) {
   try {
     const User = mongoose.model("User");
+    const Badge = mongoose.model("Badge");
     const milestone = MILESTONES.find((m) => m.days === doc.currentStreak);
     if (!milestone) return;
 
@@ -101,6 +102,31 @@ streakSchema.post("save", async function(doc) {
         { _id: doc._id },
         { $push: { milestonesAchieved: { days: milestone.days, achievedAt: new Date(), coinsAwarded: milestone.coins } } }
       ),
+      // Create badge if milestone matches badge streak days
+      (async () => {
+        let badgeName = null;
+        let rewardCoins = 0;
+        if (milestone.days === 7) { badgeName = "Bronze"; rewardCoins = 50; }
+        if (milestone.days === 14) { badgeName = "Silver"; rewardCoins = 100; }
+        if (milestone.days === 30) { badgeName = "Gold"; rewardCoins = 200; }
+        if (milestone.days === 60) { badgeName = "Diamond"; rewardCoins = 500; }
+        if (badgeName) {
+          // Check if badge already exists for user
+          const exists = await Badge.findOne({ userId: doc.userId, name: badgeName });
+          if (!exists) {
+            await Badge.create({
+              userId: doc.userId,
+              name: badgeName,
+              streakDays: milestone.days,
+              rewardCoins,
+              unlockedAt: new Date(),
+              claimed: true
+            });
+            // Credit badge coins to user
+            await User.findByIdAndUpdate(doc.userId, { $inc: { coins: rewardCoins } });
+          }
+        }
+      })()
     ]);
   } catch (e) {
     console.error("Error in Streak post-save milestone award:", e);

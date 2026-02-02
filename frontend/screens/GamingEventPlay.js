@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from "rea
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
 import Toast from "react-native-toast-message";
+import ConfettiCelebration from '../components/ConfettiCelebration';
+import AchievementModal from '../components/AchievementModal';
 
 const API_BASE = "https://eduzzleapp-react-native.onrender.com/api";
 const THEME = "#4a044e";
@@ -17,6 +19,10 @@ export default function GamingEventPlay({ route, navigation }) {
   const [perQTimer, setPerQTimer] = useState(0);
   const [totalTimer, setTotalTimer] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [showAchievement, setShowAchievement] = useState(false);
+  const [achievementText, setAchievementText] = useState("");
+  const [achievementCoins, setAchievementCoins] = useState(0);
   const totalStartRef = useRef(null);
   const intervalRef = useRef(null);
   const submittingRef = useRef(false);
@@ -130,12 +136,30 @@ export default function GamingEventPlay({ route, navigation }) {
         answers: finalAnswers,
         durationSec,
       });
+      // Check if first attempt (3 coins logic)
+      const isFirstAttempt = res?.data?.firstAttempt === true || res?.data?.coinsAwarded === 3;
+      let achievement = "Quiz Attempted";
+      let coins = 0;
+      if (isFirstAttempt) {
+        achievement = "First Attempt!";
+        coins = 3;
+      } else if (res?.data?.coinsAwarded) {
+        achievement = "Daily Quest Complete!";
+        coins = res.data.coinsAwarded;
+      }
       Toast.show({
         type: "success",
         text1: "Quiz submitted",
         position: "bottom",
       });
-      navigation.goBack();
+      setAchievementText(achievement);
+      setAchievementCoins(coins);
+      setShowAchievement(true);
+      setShowConfetti(true);
+      setTimeout(() => {
+        setShowAchievement(false);
+        navigation.navigate('DailyQuest', { refresh: true });
+      }, 1800);
     } catch (e) {
       const status = e?.response?.status;
       const msg = e?.response?.data?.message;
@@ -177,6 +201,8 @@ export default function GamingEventPlay({ route, navigation }) {
 
   return (
     <View style={styles.container}>
+      <ConfettiCelebration show={showConfetti} onAnimationEnd={() => setShowConfetti(false)} />
+      <AchievementModal visible={showAchievement} achievement={achievementText} coins={achievementCoins} onClose={() => setShowAchievement(false)} />
       <View style={styles.timersRow}>
         {totalTimer > 0 && <Text style={styles.timer}>Total: {formatHMS(totalTimer)}</Text>}
         {perQTimer > 0 && <Text style={styles.timer}>Q: {perQTimer}s</Text>}

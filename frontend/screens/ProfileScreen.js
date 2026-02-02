@@ -18,6 +18,8 @@ import { AuthContext } from '../context/AuthContext';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import axios from 'axios';
 import { LinearGradient } from 'expo-linear-gradient';
+import ConfettiCelebration from '../components/ConfettiCelebration';
+import AchievementModal from '../components/AchievementModal';
 
 const THEME_DARK = "#4a044e";
 const THEME_ACCENT = "#f3c999";
@@ -30,6 +32,11 @@ export default function ProfileScreen() {
   const [uploading, setUploading] = useState(false);
   const [badges, setBadges] = useState([]);
   const [loadingBadges, setLoadingBadges] = useState(true);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [showAchievement, setShowAchievement] = useState(false);
+  const [achievementText, setAchievementText] = useState("");
+  const [achievementCoins, setAchievementCoins] = useState(0);
+  const [prevBadgeCount, setPrevBadgeCount] = useState(0);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const API_URL = 'https://eduzzleapp-react-native.onrender.com';
@@ -65,7 +72,19 @@ export default function ProfileScreen() {
       setLoadingBadges(true);
       try {
         const res = await axios.get(`${API_URL}/api/badges/${user._id}`);
-        setBadges(Array.isArray(res.data) ? res.data : []);
+        const badgeArr = Array.isArray(res.data) ? res.data : [];
+        setBadges(badgeArr);
+        // Show confetti and achievement modal if new badge unlocked
+        if (prevBadgeCount !== 0 && badgeArr.length > prevBadgeCount) {
+          setShowConfetti(true);
+          // Find latest badge
+          const latestBadge = badgeArr[badgeArr.length - 1];
+          setAchievementText(`${latestBadge.name} Badge Unlocked!`);
+          setAchievementCoins(latestBadge.rewardCoins || 0);
+          setShowAchievement(true);
+          setTimeout(() => setShowAchievement(false), 1800);
+        }
+        setPrevBadgeCount(badgeArr.length);
       } catch (err) { console.error(err); } finally { setLoadingBadges(false); }
     };
     fetchBadges();
@@ -102,6 +121,8 @@ export default function ProfileScreen() {
 
   return (
     <View style={styles.container}>
+      <ConfettiCelebration show={showConfetti} onAnimationEnd={() => setShowConfetti(false)} />
+      <AchievementModal visible={showAchievement} achievement={achievementText} coins={achievementCoins} onClose={() => setShowAchievement(false)} />
       <StatusBar barStyle="light-content" />
       
       {/* Drawer Overlay Menu */}
