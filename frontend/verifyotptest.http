@@ -1,8 +1,0 @@
-### Verify OTP
-POST https://eduzzleapp-react-native.onrender.com/api/auth/verify-otp
-Content-Type: application/json
-
-{
-  "userId": "68f79fc1ba15bc2ce5033239",
-  "otp": "123456"
-}

@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { View, Text, StyleSheet, ActivityIndicator, FlatList, TouchableOpacity, StatusBar } from "react-native";
 import axios from "axios";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { AuthContext } from "../context/AuthContext";
 import { LinearGradient } from "expo-linear-gradient";
 
 const API_BASE = "https://eduzzleapp-react-native.onrender.com/api";
@@ -10,17 +11,20 @@ const THEME_DARK = "#4a044e";
 
 export default function GamingEventLeaderboard({ route, navigation }) {
   const { eventId } = route.params;
+  const { token } = useContext(AuthContext);
   const [loading, setLoading] = useState(true);
   const [leaderboard, setLeaderboard] = useState([]);
   const [analytics, setAnalytics] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
+      if (!token) return;
       setLoading(true);
       try {
+        const config = { headers: { Authorization: `Bearer ${token}` } };
         const [lbRes, anRes] = await Promise.all([
-          axios.get(`${API_BASE}/gaming-events/${eventId}/leaderboard`),
-          axios.get(`${API_BASE}/gaming-events/${eventId}/analytics`)
+          axios.get(`${API_BASE}/gaming-events/${eventId}/leaderboard`, config),
+          axios.get(`${API_BASE}/gaming-events/${eventId}/analytics`, config)
         ]);
         setLeaderboard(lbRes.data || []);
         setAnalytics(anRes.data || null);
@@ -31,7 +35,7 @@ export default function GamingEventLeaderboard({ route, navigation }) {
       }
     };
     fetchData();
-  }, [eventId]);
+  }, [eventId, token]);
 
   const renderTopThree = () => {
     if (leaderboard.length === 0) return null;

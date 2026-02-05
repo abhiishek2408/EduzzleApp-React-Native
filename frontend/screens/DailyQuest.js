@@ -14,7 +14,7 @@ const API_BASE = "https://eduzzleapp-react-native.onrender.com/api";
 const DAILY_TARGET = 5;
 
 export default function DailyQuest({ navigation }) {
-  const { user } = useContext(AuthContext);
+  const { user, token } = useContext(AuthContext);
   const [loading, setLoading] = useState(true);
   const [quest, setQuest] = useState({ quizzesAttemptedToday: 0, completedToday: false, streak: 0 });
   const [streak, setStreak] = useState({ currentStreak: 0, longestStreak: 0 });
@@ -27,11 +27,12 @@ export default function DailyQuest({ navigation }) {
   const [prevStreak, setPrevStreak] = useState(0);
 
   const fetchData = async () => {
-    if (!user?._id) return;
+    if (!user?._id || !token) return;
     setLoading(true);
     try {
-      const questRes = await axios.get(`${API_BASE}/daily-quests/${user._id}`);
-      const streakRes = await axios.get(`${API_BASE}/streaks/${user._id}`);
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      const questRes = await axios.get(`${API_BASE}/daily-quests/${user._id}`, config);
+      const streakRes = await axios.get(`${API_BASE}/streaks/${user._id}`, config);
       setQuest(questRes.data || { quizzesAttemptedToday: 0, completedToday: false });
       setStreak(streakRes.data?.streak || { currentStreak: 0 });
 
@@ -49,7 +50,7 @@ export default function DailyQuest({ navigation }) {
     }
   };
 
-  useEffect(() => { fetchData(); }, [user?._id]);
+  useEffect(() => { if (user?._id && token) fetchData(); }, [user?._id, token]);
   useEffect(() => {
     // Show confetti and achievement modal if daily quest completed
     if (!loading && quest.completedToday && !prevCompleted) {

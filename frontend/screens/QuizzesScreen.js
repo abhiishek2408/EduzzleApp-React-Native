@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
   scrollContent: { paddingHorizontal: PADDING_HORIZONTAL, paddingTop: 24, paddingBottom: 40 },
   headerSection: { marginBottom: 25, paddingLeft: 4 },
-  mainTitle: { fontSize: 28, fontWeight: "900", color: THEME_DARK, letterSpacing: -0.5 },
+  mainTitle: { fontSize: 28, fontWeight: "900", color: THEME_DARK, letterSpacing: -0.5,marginTop: 4 },
   subTitle: { fontSize: 14, color: "#6b7280", fontWeight: "500", marginTop: 2 },
   grid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "flex-start" },
   

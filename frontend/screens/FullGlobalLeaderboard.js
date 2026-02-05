@@ -16,6 +16,7 @@ import { AuthContext } from '../context/AuthContext';
 
 const FullGlobalLeaderboard = ({ navigation }) => {
   const { user } = useContext(AuthContext);
+  const { token } = useContext(AuthContext);
   const API_URL = 'https://eduzzleapp-react-native.onrender.com';
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -28,7 +29,8 @@ const FullGlobalLeaderboard = ({ navigation }) => {
   const fetchLeaderboard = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${API_URL}/api/leaderboard/global?limit=100`);
+      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+      const res = await axios.get(`${API_URL}/api/leaderboard/global?limit=100`, config);
       if (res.data.success) {
         setLeaderboard(res.data.leaderboard);
       }

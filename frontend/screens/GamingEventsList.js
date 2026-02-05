@@ -28,7 +28,7 @@ const parseAsLocalTime = (isoString) => {
 };
 
 export default function GamingEventsList({ navigation }) {
-  const { user } = useContext(AuthContext); // 🔹 User ID lene ke liye
+  const { user, token } = useContext(AuthContext); // 🔹 User ID & token lene ke liye
   const isPremium = !!user?.subscription?.isActive;
   const [loading, setLoading] = useState(true);
   const [events, setEvents] = useState([]);
@@ -37,12 +37,13 @@ export default function GamingEventsList({ navigation }) {
   const fetchAll = async () => {
     setLoading(true);
     try {
+      const axiosConfig = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
       const [live, upcoming, past] = await Promise.all([
-        axios.get(`${API_BASE}/gaming-events?scope=live`),
-        axios.get(`${API_BASE}/gaming-events?scope=upcoming`),
-        axios.get(`${API_BASE}/gaming-events?scope=past`),
+        axios.get(`${API_BASE}/gaming-events?scope=live`, axiosConfig),
+        axios.get(`${API_BASE}/gaming-events?scope=upcoming`, axiosConfig),
+        axios.get(`${API_BASE}/gaming-events?scope=past`, axiosConfig),
       ]);
-      
+
       const rows = [
         ...(live.data || []).map((e) => ({ ...e, _group: "live" })),
         ...(upcoming.data || []).map((e) => ({ ...e, _group: "scheduled" })),
@@ -54,7 +55,7 @@ export default function GamingEventsList({ navigation }) {
       if (user && user._id) {
         const checks = await Promise.all(
           rows.map(ev =>
-            axios.get(`${API_BASE}/gaming-events/check-completed/${ev._id}/${user._id}`)
+            axios.get(`${API_BASE}/gaming-events/check-completed/${ev._id}/${user._id}`, axiosConfig)
               .then(res => ({ id: ev._id, completed: res.data.completed }))
               .catch(() => ({ id: ev._id, completed: false }))
           )
@@ -70,7 +71,12 @@ export default function GamingEventsList({ navigation }) {
     }
   };
 
-  useEffect(() => { fetchAll(); }, []);
+  // Wait for auth token before fetching to avoid accidental 401 that triggers logout
+  useEffect(() => {
+    if (token) {
+      fetchAll();
+    }
+  }, [token]);
 
   const renderItem = ({ item }) => {
     const start = parseAsLocalTime(item.startTime);

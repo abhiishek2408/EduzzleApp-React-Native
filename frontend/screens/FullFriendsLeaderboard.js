@@ -16,13 +16,14 @@ import { AuthContext } from '../context/AuthContext';
 
 const FullFriendsLeaderboard = ({ navigation }) => {
   const { user } = useContext(AuthContext);
+  const { token } = useContext(AuthContext);
   const API_URL = 'https://eduzzleapp-react-native.onrender.com';
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    if (user?._id) {
+    if (user?._id && token) {
       fetchLeaderboard();
     }
   }, [user]);
@@ -34,7 +35,8 @@ const FullFriendsLeaderboard = ({ navigation }) => {
     }
     try {
       setLoading(true);
-      const res = await axios.get(`${API_URL}/api/leaderboard/friends/${user._id}`);
+      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+      const res = await axios.get(`${API_URL}/api/leaderboard/friends/${user._id}`, config);
       if (res.data.success) {
         setLeaderboard(res.data.leaderboard);
       }

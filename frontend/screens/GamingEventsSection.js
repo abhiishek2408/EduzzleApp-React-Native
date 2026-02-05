@@ -33,7 +33,7 @@ const parseAsLocalTime = (isoString) => {
 };
 
 export default function GamingEventsSection({ navigation }) {
-  const { user } = useContext(AuthContext);
+  const { user, token } = useContext(AuthContext);
   const isPremium = !!user?.subscription?.isActive;
   const [loading, setLoading] = useState(true);
   const [events, setEvents] = useState([]);
@@ -43,9 +43,14 @@ export default function GamingEventsSection({ navigation }) {
   const fetchEvents = async () => {
     setLoading(true);
     try {
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+      const config = { headers: { Authorization: `Bearer ${token}` } };
       const [liveRes, upcomingRes] = await Promise.all([
-        axios.get(`${API_BASE}/gaming-events?scope=live`),
-        axios.get(`${API_BASE}/gaming-events?scope=upcoming`),
+        axios.get(`${API_BASE}/gaming-events?scope=live`, config),
+        axios.get(`${API_BASE}/gaming-events?scope=upcoming`, config),
       ]);
       const combined = [...(liveRes.data || []), ...(upcomingRes.data || [])].slice(0, 6);
       setEvents(combined);
@@ -53,7 +58,7 @@ export default function GamingEventsSection({ navigation }) {
       if (user && user._id) {
         const checks = await Promise.all(
           combined.map(ev =>
-            axios.get(`${API_BASE}/gaming-events/check-completed/${ev._id}/${user._id}`)
+            axios.get(`${API_BASE}/gaming-events/check-completed/${ev._id}/${user._id}`, { headers: { Authorization: `Bearer ${token}` } })
               .then(res => ({ id: ev._id, completed: res.data.completed }))
               .catch(() => ({ id: ev._id, completed: false }))
           )
@@ -70,9 +75,9 @@ export default function GamingEventsSection({ navigation }) {
   };
 
   useEffect(() => {
-    if (!isPremium) return;
+    if (!isPremium || !token) return;
     fetchEvents();
-  }, [isPremium]);
+  }, [isPremium, token]);
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);

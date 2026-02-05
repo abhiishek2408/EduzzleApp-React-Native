@@ -151,21 +151,25 @@ export default function VisualPuzzlesScreen({ navigation }) {
   };
 
   if (gameState === "menu") {
+    // Project theme colors
+    const THEME_EASY = '#4a044e'; // Deep purple
+    const THEME_MEDIUM = '#fbbf24'; // Amber
+    const THEME_HARD = '#701a75'; // Darker purple
     return (
       <View style={[styles.container, styles.menuContainer]}>
-        <Ionicons name="eye" size={80} color="#701a75" />
+        <Ionicons name="eye" size={80} color={THEME_HARD} />
         <Text style={styles.menuTitle}>Visual Puzzles</Text>
         <Text style={styles.menuSub}>Select Difficulty to Start</Text>
-        
-        <TouchableOpacity style={[styles.menuBtn, {backgroundColor: '#22c55e'}]} onPress={() => startGame('easy')}>
+
+        <TouchableOpacity style={[styles.menuBtn, {backgroundColor: THEME_EASY}]} onPress={() => startGame('easy')}>
           <Text style={styles.menuBtnText}>EASY</Text>
         </TouchableOpacity>
-        
-        <TouchableOpacity style={[styles.menuBtn, {backgroundColor: '#f59e0b'}]} onPress={() => startGame('medium')}>
+
+        <TouchableOpacity style={[styles.menuBtn, {backgroundColor: THEME_MEDIUM}]} onPress={() => startGame('medium')}>
           <Text style={styles.menuBtnText}>MEDIUM</Text>
         </TouchableOpacity>
-        
-        <TouchableOpacity style={[styles.menuBtn, {backgroundColor: '#ef4444'}]} onPress={() => startGame('hard')}>
+
+        <TouchableOpacity style={[styles.menuBtn, {backgroundColor: THEME_HARD}]} onPress={() => startGame('hard')}>
           <Text style={styles.menuBtnText}>HARD</Text>
         </TouchableOpacity>
       </View>

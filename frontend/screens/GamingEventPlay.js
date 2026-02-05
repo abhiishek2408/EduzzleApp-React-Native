@@ -11,7 +11,7 @@ const THEME = "#4a044e";
 
 export default function GamingEventPlay({ route, navigation }) {
   const { eventId } = route.params;
-  const { user } = useContext(AuthContext);
+  const { user, token } = useContext(AuthContext);
   const [loading, setLoading] = useState(true);
   const [questions, setQuestions] = useState([]);
   const [idx, setIdx] = useState(0);
@@ -38,7 +38,12 @@ export default function GamingEventPlay({ route, navigation }) {
   const fetchQuestions = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API_BASE}/gaming-events/${eventId}/questions`);
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      const res = await axios.get(`${API_BASE}/gaming-events/${eventId}/questions`, config);
       setQuestions(res.data?.questions || []);
       setPerQTimer(0);
       if (res.data?.totalTimerSec) setTotalTimer(res.data.totalTimerSec);
@@ -56,7 +61,7 @@ export default function GamingEventPlay({ route, navigation }) {
     }
   };
 
-  useEffect(() => { fetchQuestions(); }, [eventId]);
+  useEffect(() => { if (token) fetchQuestions(); }, [eventId, token]);
 
   useEffect(() => {
     if (!questions.length) return;
@@ -135,7 +140,7 @@ export default function GamingEventPlay({ route, navigation }) {
         userId: user._id,
         answers: finalAnswers,
         durationSec,
-      });
+      }, { headers: { Authorization: `Bearer ${token}` } });
       // Check if first attempt (3 coins logic)
       const isFirstAttempt = res?.data?.firstAttempt === true || res?.data?.coinsAwarded === 3;
       let achievement = "Quiz Attempted";

@@ -9,6 +9,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 const FriendsLeaderboard = ({ navigation }) => {
   const { user } = useContext(AuthContext);
+  const { token } = useContext(AuthContext);
   const API_URL = 'https://eduzzleapp-react-native.onrender.com';
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,7 +21,8 @@ const FriendsLeaderboard = ({ navigation }) => {
   const fetchLeaderboard = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${API_URL}/api/leaderboard/friends/${user._id}`);
+      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+      const res = await axios.get(`${API_URL}/api/leaderboard/friends/${user._id}`, config);
       if (res.data.success) setLeaderboard(res.data.leaderboard);
     } catch (err) {
       console.error('Error fetching friends leaderboard:', err?.message);

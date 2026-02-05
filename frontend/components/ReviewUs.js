@@ -17,7 +17,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { AuthContext } from '../context/AuthContext';
 
 const ReviewUs = () => {
-  const { user } = useContext(AuthContext);
+  const { user, token } = useContext(AuthContext);
   const API_URL = 'https://eduzzleapp-react-native.onrender.com';
   const [modalVisible, setModalVisible] = useState(false);
   const [rating, setRating] = useState(0);
@@ -39,11 +39,12 @@ const ReviewUs = () => {
 
     try {
       setSubmitting(true);
-      await axios.post(`${API_BASE}/api/reviews/submit`, {
+      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+      await axios.post(`${API_URL}/api/reviews/submit`, {
         userId: user?._id,
         rating,
         feedback: feedback || (rating >= 4 ? 'Positive review' : ''),
-      });
+      }, config);
       setSubmitting(false);
 
       if (rating >= 4) {

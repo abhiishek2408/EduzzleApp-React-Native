@@ -31,7 +31,7 @@ const parseAsLocalTime = (isoString) => {
 export default function GamingEventDetail({ route, navigation }) {
   const { eventId } = route.params;
 
-  const { user } = useContext(AuthContext);
+  const { user, token } = useContext(AuthContext);
   const isPremium = !!user?.subscription?.isActive;
   const [loading, setLoading] = useState(true);
   const [event, setEvent] = useState(null);
@@ -51,7 +51,12 @@ export default function GamingEventDetail({ route, navigation }) {
     setLoading(true);
     try {
       // 1. Fetch Event Details
-      const res = await axios.get(`${API_BASE}/gaming-events/${eventId}`);
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      const res = await axios.get(`${API_BASE}/gaming-events/${eventId}`, config);
       setEvent(res.data);
     } catch (e) {
       Alert.alert("Error", "Failed to load event");
@@ -62,31 +67,31 @@ export default function GamingEventDetail({ route, navigation }) {
 
   // On mount: fetch event and check completion
   useEffect(() => {
-    if (!isPremium) return;
+    if (!isPremium || !token) return;
     fetchEvent();
     // Check completion status
     if (user && user._id && eventId) {
-      axios.get(`${API_BASE}/gaming-events/check-completed/${eventId}/${user._id}`)
+      axios.get(`${API_BASE}/gaming-events/check-completed/${eventId}/${user._id}`, { headers: { Authorization: `Bearer ${token}` } })
         .then(res => {
           if (res.data?.completed) setIsCompleted(true);
         })
         .catch(() => {});
     }
-  }, [eventId, user, isPremium]);
+  }, [eventId, user, isPremium, token]);
 
   // Refresh when coming back to this screen
   useFocusEffect(
     React.useCallback(() => {
-      if (!isPremium) return;
+      if (!isPremium || !token) return;
       fetchEvent();
       if (user && user._id && eventId) {
-        axios.get(`${API_BASE}/gaming-events/check-completed/${eventId}/${user._id}`)
+        axios.get(`${API_BASE}/gaming-events/check-completed/${eventId}/${user._id}`, { headers: { Authorization: `Bearer ${token}` } })
           .then(res => {
             setIsCompleted(!!res.data?.completed);
           })
           .catch(() => {});
       }
-    }, [eventId, user, isPremium])
+    }, [eventId, user, isPremium, token])
   );
 
   useEffect(() => {
@@ -114,14 +119,14 @@ export default function GamingEventDetail({ route, navigation }) {
   const joinEvent = async () => {
     try {
 
-      const check = await axios.get(`${API_BASE}/gaming-events/check-completed/${eventId}/${user._id}`);
+      const check = await axios.get(`${API_BASE}/gaming-events/check-completed/${eventId}/${user._id}`, { headers: { Authorization: `Bearer ${token}` } });
       if (check.data?.completed) {
         setIsCompleted(true);
         Alert.alert("Already Completed", "You have already completed this event.");
         return;
       }
       // 2. If not completed, try to join
-      const res = await axios.post(`${API_BASE}/gaming-events/${eventId}/join`, { userId: user._id });
+      const res = await axios.post(`${API_BASE}/gaming-events/${eventId}/join`, { userId: user._id }, { headers: { Authorization: `Bearer ${token}` } });
       if (res.data?.attemptId) {
         navigation.navigate("GamingEventPlay", { eventId, attemptId: res.data.attemptId });
       }

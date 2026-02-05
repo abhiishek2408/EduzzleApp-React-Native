@@ -42,9 +42,10 @@ export default function FriendsScreen() {
   const refreshLists = async () => {
     if (!user?._id) return;
     try {
+      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
       const [pendingRes, friendsRes] = await Promise.all([
-        axios.get(`${API_URL}/api/friends/pending/${user._id}`),
-        axios.get(`${API_URL}/api/friends/friends/${user._id}`),
+        axios.get(`${API_URL}/api/friends/pending/${user._id}`, config),
+        axios.get(`${API_URL}/api/friends/friends/${user._id}`, config),
       ]);
       setPendingRequests(pendingRes.data.received || []);
       setSentRequestUsers(pendingRes.data.sent || []);
@@ -88,7 +89,8 @@ export default function FriendsScreen() {
   // Handlers (sendFriendRequest, acceptRequest, etc. - keep your existing implementation)
   const sendFriendRequest = async (receiverId) => {
     try {
-      const res = await axios.post(`${API_URL}/api/friends/send/${receiverId}`, { senderId: user._id });
+      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+      const res = await axios.post(`${API_URL}/api/friends/send/${receiverId}`, { senderId: user._id }, config);
       socket?.emit('friendRequestSent', res.data);
       refreshLists();
       ToastAndroid.show('Request Sent!', ToastAndroid.SHORT);
@@ -97,7 +99,8 @@ export default function FriendsScreen() {
 
   const acceptRequest = async (sender) => {
     try {
-      await axios.post(`${API_URL}/api/friends/accept/${sender._id}`, { receiverId: user._id });
+      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+      await axios.post(`${API_URL}/api/friends/accept/${sender._id}`, { receiverId: user._id }, config);
       socket?.emit('friendRequestAccepted', { senderId: sender._id });
       refreshLists();
     } catch (err) { console.error(err); }
@@ -105,7 +108,8 @@ export default function FriendsScreen() {
 
   const rejectRequest = async (senderId) => {
     try {
-      await axios.post(`${API_URL}/api/friends/reject/${senderId}`, { receiverId: user._id });
+      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+      await axios.post(`${API_URL}/api/friends/reject/${senderId}`, { receiverId: user._id }, config);
       socket?.emit('friendRequestRejected', { senderId });
       refreshLists();
     } catch (err) { console.error(err); }
@@ -115,7 +119,8 @@ export default function FriendsScreen() {
     Alert.alert("Unfriend", "Are you sure?", [
         { text: "Cancel" },
         { text: "Remove", onPress: async () => {
-            await axios.post(`${API_URL}/api/friends/remove/${id}`, { userId: user._id });
+              const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+              await axios.post(`${API_URL}/api/friends/remove/${id}`, { userId: user._id }, config);
             refreshLists();
         }}
     ]);
@@ -123,7 +128,8 @@ export default function FriendsScreen() {
 
   const cancelSentRequest = async (receiverId) => {
     try {
-      await axios.post(`${API_URL}/api/friends/cancel/${receiverId}`, { senderId: user._id });
+      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+      await axios.post(`${API_URL}/api/friends/cancel/${receiverId}`, { senderId: user._id }, config);
       refreshLists();
     } catch (err) { console.error(err); }
   };

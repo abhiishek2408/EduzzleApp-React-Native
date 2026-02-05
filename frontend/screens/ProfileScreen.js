@@ -50,6 +50,14 @@ export default function ProfileScreen() {
         headers: { Authorization: `Bearer ${token}` },
       });
       setStats(res.data);
+      // Merge stats into user for instant display
+      if (res.data) {
+        setUser((prev) => ({
+          ...prev,
+          attemptCount: res.data.attemptCount,
+          totalPoints: res.data.totalPoints,
+        }));
+      }
     } catch (err) {
       console.error('Error fetching stats:', err);
     } finally {
@@ -209,15 +217,23 @@ export default function ProfileScreen() {
 
           <View style={styles.statsRow}>
             <View style={styles.statMiniCard}>
-              <Text style={styles.statVal}>{stats?.attemptCount || 0}</Text>
+              <Text style={styles.statVal}>{
+                (user?.attemptCount ?? stats?.attemptCount) != null
+                  ? (user?.attemptCount ?? stats?.attemptCount)
+                  : '-'
+              }</Text>
               <Text style={styles.statLab}>Games</Text>
             </View>
             <View style={styles.statMiniCard}>
-              <Text style={styles.statVal}>{stats?.totalPoints || 0}</Text>
+              <Text style={styles.statVal}>{
+                (user?.totalPoints ?? stats?.totalPoints) != null
+                  ? (user?.totalPoints ?? stats?.totalPoints)
+                  : '-'
+              }</Text>
               <Text style={styles.statLab}>Score</Text>
             </View>
             <View style={styles.statMiniCard}>
-              <Text style={styles.statVal}>{badges.length}</Text>
+              <Text style={styles.statVal}>{loadingBadges ? '-' : badges.length}</Text>
               <Text style={styles.statLab}>Badges</Text>
             </View>
           </View>

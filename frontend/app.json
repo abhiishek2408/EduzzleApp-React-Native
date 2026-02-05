@@ -1,9 +1,10 @@
 {
   "expo": {
     "name": "Eduzzle",
-    "slug": "Eduzzle",
+    "slug": "eduzzle",
     "version": "1.0.0",
     "runtimeVersion": "1.0.0",
+    "scheme": "eduzzle",
     "newArchEnabled": true,
     "extra": {
       "eas": {

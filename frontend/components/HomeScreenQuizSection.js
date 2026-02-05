@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useContext } from "react";
 import { useNavigation } from '@react-navigation/native';
 import { Dimensions, TouchableOpacity, View, Text, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -6,12 +6,14 @@ import QuizCardSkeleton from "./QuizCardSkeleton";
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient'; // Added LinearGradient
 import axios from "axios";
+import { AuthContext } from "../context/AuthContext";
 
 /* ===================== SECTION ===================== */
 
 
 export function QuizScreen({ user, route, searchQuery }) {
   const navigation = useNavigation();
+  const { token } = useContext(AuthContext);
   const [quizzes, setQuizzes] = useState([]);
   const [attemptedQuizIds, setAttemptedQuizIds] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -43,8 +45,10 @@ export function QuizScreen({ user, route, searchQuery }) {
 
   const fetchAttemptedQuizzes = async () => {
     if (!user?._id) return;
+    const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
     const res = await axios.get(
-      `https://eduzzleapp-react-native.onrender.com/api/attempts/attempted-puzzles/${user._id}`
+      `https://eduzzleapp-react-native.onrender.com/api/attempts/attempted-puzzles/${user._id}`,
+      config
     );
     if (res.data.success) setAttemptedQuizIds(res.data.attemptedQuizIds);
   };

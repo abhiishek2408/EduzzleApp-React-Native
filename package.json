@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "expo": "~54.0.33",
-    "react-native-confetti-cannon": "^1.5.2"
-  }
-}

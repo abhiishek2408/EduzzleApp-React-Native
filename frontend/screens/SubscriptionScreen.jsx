@@ -33,11 +33,10 @@ const SubscriptionScreen = ({ navigation }) => {
   const fetchPlans = async () => {
     try {
       setLoading(true);
+      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
       const response = await axios.get(
         "https://eduzzleapp-react-native.onrender.com/api/subscription/plans",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        config
       );
       setPlans(response.data);
       setLoading(false);
@@ -49,8 +48,8 @@ const SubscriptionScreen = ({ navigation }) => {
   };
 
   useEffect(() => {
-    fetchPlans();
-  }, []);
+    if (token) fetchPlans();
+  }, [token]);
 
   if (loading) {
     return (
