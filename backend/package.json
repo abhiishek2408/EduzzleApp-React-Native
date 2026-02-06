@@ -4,7 +4,7 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha --exit --recursive tests",
     "start": "node server.js",
     "build": "echo \"No build step required\"",
     "vercel-build": "echo \"No vercel-build step required\"",
@@ -41,5 +41,11 @@
     "speakeasy": "^2.0.0",
     "validator": "^13.15.15",
     "zod": "^4.1.1"
+  },
+  "devDependencies": {
+    "mocha": "^10.2.0",
+    "supertest": "^6.3.4",
+    "chai": "^4.3.7",
+    "mongodb-memory-server": "^8.12.0"
   }
 }

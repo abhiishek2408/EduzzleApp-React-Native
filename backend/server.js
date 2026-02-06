@@ -38,26 +38,34 @@ app.set("trust proxy", 1);
 app.use(helmet());
 
 // ---- CORS ----
-const allowedOrigins = [
+// Allowlist can be configured via environment variable `ALLOWED_ORIGINS`,
+// as a comma-separated list. If not set, fallback to sensible defaults.
+const defaultAllowed = [
   "http://localhost:8081",
   "http://10.159.191.56:8081",
   "http://10.0.2.2:8081",
   "https://eduzzleapp-react-native.onrender.com",
 ];
 
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        console.warn(`Blocked by CORS: ${origin}`);
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    credentials: true,
-  })
-);
+const envOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(",").map((s) => s.trim()).filter(Boolean)
+  : null;
+
+const allowedOrigins = envOrigins && envOrigins.length ? envOrigins : defaultAllowed;
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    // `origin` will be undefined for non-browser clients (curl, native apps).
+    // Allow those (they don't have an Origin header) while enforcing browser origins.
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    console.warn(`Blocked by CORS: ${origin}`);
+    return callback(new Error("Not allowed by CORS"));
+  },
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 
 // ---- JSON parser ----
 app.use(express.json());
@@ -195,14 +203,54 @@ app.get("/", (req, res) =>
   res.json({ message: "Educational Puzzle App API is running" })
 );
 
+// ---- Admin: return effective allowed origins (protected) ----
+// Requires `x-admin-token` header to match process.env.ADMIN_TOKEN
+app.get("/api/admin/allowed-origins", (req, res) => {
+  const token = req.headers["x-admin-token"] || req.query.admin_token;
+  if (!process.env.ADMIN_TOKEN) {
+    console.error("ADMIN_TOKEN not configured on server");
+    return res.status(500).json({ error: "ADMIN_TOKEN not configured on server" });
+  }
+  if (!token || token !== process.env.ADMIN_TOKEN) {
+    console.warn("Unauthorized admin access attempt", { ip: req.ip, headers: { origin: req.headers.origin, referer: req.headers.referer } });
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  return res.json({ allowedOrigins });
+});
+
+// Simple admin UI to view allowed origins (protected by admin token in query string)
+app.get("/admin", (req, res) => {
+  const token = req.query.admin_token;
+  if (!process.env.ADMIN_TOKEN) return res.status(500).send("ADMIN_TOKEN not configured on server");
+  if (!token || token !== process.env.ADMIN_TOKEN) {
+    console.warn("Unauthorized admin UI access attempt", { ip: req.ip, headers: { origin: req.headers.origin, referer: req.headers.referer } });
+    return res.status(401).send("Unauthorized");
+  }
+
+  const listItems = allowedOrigins.map((o) => `<li>${o}</li>`).join("\n");
+  const html = `<!doctype html>
+  <html>
+  <head><meta charset="utf-8"><title>Admin - Allowed Origins</title></head>
+  <body style="font-family:Arial,Helvetica,sans-serif;padding:20px;">
+    <h2>Configured Allowed Origins</h2>
+    <ul>${listItems}</ul>
+    <p>To fetch this list via API use: <code>/api/admin/allowed-origins?admin_token=YOUR_TOKEN</code></p>
+  </body>
+  </html>`;
+
+  res.setHeader("Content-Type", "text/html");
+  return res.send(html);
+});
+
 // ---- Create HTTP server + Socket.IO ----
 const PORT = process.env.PORT || 3000;
 const httpServer = createServer(app);
 
 const io = new Server(httpServer, {
   cors: {
-    origin: "*",
+    origin: corsOptions.origin,
     methods: ["GET", "POST"],
+    credentials: true,
   },
 });
 
@@ -230,14 +278,21 @@ io.on("connection", (socket) => {
 app.set("io", io);
 
 // ---- Connect DB and start server ----
-connectDB()
-  .then(() => {
-    console.log("✅ MongoDB connected successfully");
-    httpServer.listen(PORT, () =>
-      console.log(`🚀 Server running on port ${PORT}`)
-    );
-  })
-  .catch((err) => {
-    console.error("❌ MongoDB connection error:", err);
-    process.exit(1);
-  });
+// Start server unless running in test mode
+if (process.env.NODE_ENV !== "test") {
+  connectDB()
+    .then(() => {
+      console.log("✅ MongoDB connected successfully");
+      httpServer.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+    })
+    .catch((err) => {
+      console.error("❌ MongoDB connection error:", err);
+      process.exit(1);
+    });
+} else {
+  // In test mode we still export the app but avoid starting the server or connecting DB
+  console.log("ℹ️ Running in test mode — server not started");
+}
+
+// Export app and allowedOrigins for testing and admin UI
+export { app, allowedOrigins };

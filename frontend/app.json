@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Eduzzle",
-    "slug": "eduzzle",
+    "slug": "Eduzzle", 
     "version": "1.0.0",
     "runtimeVersion": "1.0.0",
     "scheme": "eduzzle",

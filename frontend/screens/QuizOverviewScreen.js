@@ -27,7 +27,7 @@ export default function QuizOverviewScreen() {
         <TouchableOpacity
           style={styles.prevAttemptBtn}
           onPress={() => {
-            console.log('Navigating to PreviousAttemptsScreen', quiz?._id, userId);
+            if (__DEV__) console.log('Navigating to PreviousAttemptsScreen', quiz?._id, userId);
             navigation.navigate('PreviousAttemptsScreen', { quizId: quiz?._id, userId });
           }}
         >

@@ -91,10 +91,14 @@ export default function ResetPasswordScreen() {
     }
     if (!userId) {
       setModal({ visible: true, message: "User ID missing. Please restart the password reset process from Forgot Password.", type: 'error' });
-      console.log("[ResetPasswordScreen] userId is missing! route.params:", route.params);
+      if (__DEV__) {
+        console.log("[ResetPasswordScreen] userId is missing! route.params:", route.params);
+      }
       return;
     }
-    console.log("[ResetPasswordScreen] userId:", userId);
+    if (__DEV__) {
+      console.log("[ResetPasswordScreen] userId:", userId);
+    }
     setLoading(true);
     try {
       const data = await resetPassword(userId, otp, newPassword);

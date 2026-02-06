@@ -75,21 +75,49 @@ export default function QuizScreen({ navigation }) {
   const [attemptedQuizIds, setAttemptedQuizIds] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Helper for retrying API calls on 429
+  const retryOn429 = async (fn, maxRetries = 3, delay = 1500) => {
+    let attempt = 0;
+    while (attempt < maxRetries) {
+      try {
+        return await fn();
+      } catch (err) {
+        if (err.response?.status === 429) {
+          if (attempt === maxRetries - 1) throw err;
+          await new Promise(res => setTimeout(res, delay * (attempt + 1)));
+          attempt++;
+        } else {
+          throw err;
+        }
+      }
+    }
+  };
+
   const fetchQuizzes = async () => {
     try {
-      const res = await axios.get("https://eduzzleapp-react-native.onrender.com/api/fetch-puzzles/all-free-quizzes");
+      const res = await retryOn429(() => axios.get("https://eduzzleapp-react-native.onrender.com/api/fetch-puzzles/all-free-quizzes"));
       setQuizzes(res.data);
     } catch (err) {
-      console.error(err);
-      Alert.alert("Error", "Could not load quizzes");
+      if (err.response?.status === 429) {
+        Alert.alert('Too Many Requests', 'You are making requests too quickly. Please wait and try again.');
+      } else {
+        console.error(err);
+        Alert.alert("Error", "Could not load quizzes");
+      }
     } finally { setLoading(false); }
   };
 
   const fetchAttemptedQuizzes = async () => {
     try {
-      const res = await axios.get(`https://eduzzleapp-react-native.onrender.com/api/attempts/attempted-puzzles/${user._id}`);
+      const res = await retryOn429(() => axios.get(`https://eduzzleapp-react-native.onrender.com/api/attempts/attempted-puzzles/${user._id}`));
       if (res.data.success) setAttemptedQuizIds(res.data.attemptedPuzzleIds || []);
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      if (err.response?.status === 429) {
+        Alert.alert('Too Many Requests', 'You are making requests too quickly. Please wait and try again.');
+      } else {
+        console.error(err);
+      }
+    }
   };
 
   useEffect(() => {
@@ -144,7 +172,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
   scrollContent: { paddingHorizontal: PADDING_HORIZONTAL, paddingTop: 24, paddingBottom: 40 },
   headerSection: { marginBottom: 25, paddingLeft: 4 },
-  mainTitle: { fontSize: 28, fontWeight: "900", color: THEME_DARK, letterSpacing: -0.5,marginTop: 4 },
+  mainTitle: { fontSize: 28, fontWeight: "900", color: THEME_DARK, letterSpacing: -0.5,marginTop: 8 },
   subTitle: { fontSize: 14, color: "#6b7280", fontWeight: "500", marginTop: 2 },
   grid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "flex-start" },
   

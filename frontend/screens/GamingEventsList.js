@@ -34,14 +34,32 @@ export default function GamingEventsList({ navigation }) {
   const [events, setEvents] = useState([]);
   const [completedMap, setCompletedMap] = useState({}); // 🔹 Completion status store karne ke liye
 
+  // Helper for retrying API calls on 429
+  const retryOn429 = async (fn, maxRetries = 3, delay = 1500) => {
+    let attempt = 0;
+    while (attempt < maxRetries) {
+      try {
+        return await fn();
+      } catch (err) {
+        if (err.response?.status === 429) {
+          if (attempt === maxRetries - 1) throw err;
+          await new Promise(res => setTimeout(res, delay * (attempt + 1)));
+          attempt++;
+        } else {
+          throw err;
+        }
+      }
+    }
+  };
+
   const fetchAll = async () => {
     setLoading(true);
     try {
       const axiosConfig = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
       const [live, upcoming, past] = await Promise.all([
-        axios.get(`${API_BASE}/gaming-events?scope=live`, axiosConfig),
-        axios.get(`${API_BASE}/gaming-events?scope=upcoming`, axiosConfig),
-        axios.get(`${API_BASE}/gaming-events?scope=past`, axiosConfig),
+        retryOn429(() => axios.get(`${API_BASE}/gaming-events?scope=live`, axiosConfig)),
+        retryOn429(() => axios.get(`${API_BASE}/gaming-events?scope=upcoming`, axiosConfig)),
+        retryOn429(() => axios.get(`${API_BASE}/gaming-events?scope=past`, axiosConfig)),
       ]);
 
       const rows = [
@@ -55,7 +73,7 @@ export default function GamingEventsList({ navigation }) {
       if (user && user._id) {
         const checks = await Promise.all(
           rows.map(ev =>
-            axios.get(`${API_BASE}/gaming-events/check-completed/${ev._id}/${user._id}`, axiosConfig)
+            retryOn429(() => axios.get(`${API_BASE}/gaming-events/check-completed/${ev._id}/${user._id}`, axiosConfig))
               .then(res => ({ id: ev._id, completed: res.data.completed }))
               .catch(() => ({ id: ev._id, completed: false }))
           )
@@ -65,7 +83,11 @@ export default function GamingEventsList({ navigation }) {
         setCompletedMap(map);
       }
     } catch (e) {
-      console.error("events list fetch", e?.message);
+      if (e.response?.status === 429) {
+        Alert.alert('Too Many Requests', 'You are making requests too quickly. Please wait and try again.');
+      } else {
+        console.error("events list fetch", e?.message);
+      }
     } finally {
       setLoading(false);
     }

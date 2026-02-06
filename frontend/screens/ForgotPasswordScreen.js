@@ -43,7 +43,9 @@ export default function ForgotPasswordScreen() {
     setLoading(true);
     try {
       const data = await forgotPassword(email);
-      console.log("[ForgotPasswordScreen] forgotPassword response:", data);
+      if (__DEV__) {
+        console.log("[ForgotPasswordScreen] forgotPassword response:", data);
+      }
       if (data?.message) {
         alert(data.message);
         if (!data.userId) {

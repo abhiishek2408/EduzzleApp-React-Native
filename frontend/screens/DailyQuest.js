@@ -26,13 +26,31 @@ export default function DailyQuest({ navigation }) {
   const [prevCompleted, setPrevCompleted] = useState(false);
   const [prevStreak, setPrevStreak] = useState(0);
 
+  // Helper for retrying API calls on 429
+  const retryOn429 = async (fn, maxRetries = 3, delay = 1500) => {
+    let attempt = 0;
+    while (attempt < maxRetries) {
+      try {
+        return await fn();
+      } catch (err) {
+        if (err.response?.status === 429) {
+          if (attempt === maxRetries - 1) throw err;
+          await new Promise(res => setTimeout(res, delay * (attempt + 1)));
+          attempt++;
+        } else {
+          throw err;
+        }
+      }
+    }
+  };
+
   const fetchData = async () => {
     if (!user?._id || !token) return;
     setLoading(true);
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const questRes = await axios.get(`${API_BASE}/daily-quests/${user._id}`, config);
-      const streakRes = await axios.get(`${API_BASE}/streaks/${user._id}`, config);
+      const questRes = await retryOn429(() => axios.get(`${API_BASE}/daily-quests/${user._id}`, config));
+      const streakRes = await retryOn429(() => axios.get(`${API_BASE}/streaks/${user._id}`, config));
       setQuest(questRes.data || { quizzesAttemptedToday: 0, completedToday: false });
       setStreak(streakRes.data?.streak || { currentStreak: 0 });
 
@@ -44,7 +62,11 @@ export default function DailyQuest({ navigation }) {
         useNativeDriver: false,
       }).start();
     } catch (err) {
-      console.error("DailyQuest error:", err.message);
+      if (err.response?.status === 429) {
+        Alert.alert('Too Many Requests', 'You are making requests too quickly. Please wait and try again.');
+      } else {
+        console.error("DailyQuest error:", err.message);
+      }
     } finally {
       setLoading(false);
     }

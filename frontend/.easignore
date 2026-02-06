@@ -1,0 +1,36 @@
+# Dependencies
+node_modules
+
+# Git
+.git
+.gitignore
+
+# Local build artifacts
+android/build
+ios/build
+build
+dist
+
+# Expo / cache
+.expo
+.expo-shared
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode
+.idea
+
+# Tests / docs (optional)
+coverage
+__tests__
+
+# Large assets you don't need at build time (optional)
+*.zip
+*.mp4
+*.mov

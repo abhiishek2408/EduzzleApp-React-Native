@@ -29,7 +29,6 @@ export default function PlayScreen({ navigation }) {
       >
         {/* --- Simple Header --- */}
         <View style={styles.headerSection}>
-          <Text style={styles.headerLabel}>LEARNING PATH</Text>
           <Text style={styles.headerTitle}>Puzzle Arcade</Text>
         </View>
 
@@ -72,8 +71,8 @@ export default function PlayScreen({ navigation }) {
           style={styles.promoCard}
         >
           <View>
-            <Text style={styles.promoTitle}>Daily Challenge</Text>
-            <Text style={styles.promoText}>Earn +50 XP today!</Text>
+            <Text style={styles.promoTitle}>DSA based Puzzles</Text>
+            <Text style={styles.promoText}>Play puzzles, boost your skills!</Text>
           </View>
           <MaterialCommunityIcons name="lightning-bolt" size={40} color="#fbbf24" />
         </LinearGradient>

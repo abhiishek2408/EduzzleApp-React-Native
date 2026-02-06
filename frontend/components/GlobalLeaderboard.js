@@ -18,16 +18,38 @@ const GlobalLeaderboard = ({ navigation }) => {
     fetchLeaderboard();
   }, []);
 
+  // Helper for retrying API calls on 429
+  const retryOn429 = async (fn, maxRetries = 3, delay = 1500) => {
+    let attempt = 0;
+    while (attempt < maxRetries) {
+      try {
+        return await fn();
+      } catch (err) {
+        if (err.response?.status === 429) {
+          if (attempt === maxRetries - 1) throw err;
+          await new Promise(res => setTimeout(res, delay * (attempt + 1)));
+          attempt++;
+        } else {
+          throw err;
+        }
+      }
+    }
+  };
+
   const fetchLeaderboard = async () => {
     try {
       setLoading(true);
       const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-      const res = await axios.get(`${API_URL}/api/leaderboard/global?limit=100`, config);
+      const res = await retryOn429(() => axios.get(`${API_URL}/api/leaderboard/global?limit=100`, config));
       if (res.data.success) {
         setLeaderboard(res.data.leaderboard);
       }
     } catch (err) {
-      console.error('Error fetching global leaderboard:', err?.message);
+      if (err.response?.status === 429) {
+        Alert.alert('Too Many Requests', 'You are making requests too quickly. Please wait and try again.');
+      } else {
+        console.error('Error fetching global leaderboard:', err?.message);
+      }
     } finally {
       setLoading(false);
     }

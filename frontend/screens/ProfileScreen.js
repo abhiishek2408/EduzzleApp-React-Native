@@ -32,6 +32,10 @@ export default function ProfileScreen() {
   const [uploading, setUploading] = useState(false);
   const [badges, setBadges] = useState([]);
   const [loadingBadges, setLoadingBadges] = useState(true);
+  
+  // Master sync state to ensure uniform loading
+  const [isSyncingStats, setIsSyncingStats] = useState(true);
+
   const [showConfetti, setShowConfetti] = useState(false);
   const [showAchievement, setShowAchievement] = useState(false);
   const [achievementText, setAchievementText] = useState("");
@@ -43,14 +47,30 @@ export default function ProfileScreen() {
 
   const handleLogout = () => logout();
 
+  const retryOn429 = async (fn, maxRetries = 3, delay = 1500) => {
+    let attempt = 0;
+    while (attempt < maxRetries) {
+      try {
+        return await fn();
+      } catch (err) {
+        if (err.response?.status === 429) {
+          if (attempt === maxRetries - 1) throw err;
+          await new Promise(res => setTimeout(res, delay * (attempt + 1)));
+          attempt++;
+        } else {
+          throw err;
+        }
+      }
+    }
+  };
+
   const fetchStats = async () => {
     if (!user?._id) return;
     try {
-      const res = await axios.get(`${API_URL}/api/attempts/stats/${user._id}`, {
+      const res = await retryOn429(() => axios.get(`${API_URL}/api/attempts/stats/${user._id}`, {
         headers: { Authorization: `Bearer ${token}` },
-      });
+      }));
       setStats(res.data);
-      // Merge stats into user for instant display
       if (res.data) {
         setUser((prev) => ({
           ...prev,
@@ -58,45 +78,60 @@ export default function ProfileScreen() {
           totalPoints: res.data.totalPoints,
         }));
       }
+      return res.data;
     } catch (err) {
       console.error('Error fetching stats:', err);
+      return null;
     } finally {
       setLoading(false);
     }
   };
 
+  const fetchBadges = async () => {
+    if (!user?._id) return;
+    setLoadingBadges(true);
+    try {
+      const res = await retryOn429(() => axios.get(`${API_URL}/api/badges/${user._id}`));
+      const badgeArr = Array.isArray(res.data) ? res.data : [];
+      setBadges(badgeArr);
+      
+      if (prevBadgeCount !== 0 && badgeArr.length > prevBadgeCount) {
+        setShowConfetti(true);
+        const latestBadge = badgeArr[badgeArr.length - 1];
+        setAchievementText(`${latestBadge.name} Badge Unlocked!`);
+        setAchievementCoins(latestBadge.rewardCoins || 0);
+        setShowAchievement(true);
+        setTimeout(() => setShowAchievement(false), 1800);
+      }
+      setPrevBadgeCount(badgeArr.length);
+      return badgeArr;
+    } catch (err) {
+      console.error(err);
+      return [];
+    } finally { 
+      setLoadingBadges(false); 
+    }
+  };
+
   useFocusEffect(
     React.useCallback(() => {
-      (async () => {
-        try { await refreshUser?.(); } catch {}
-        await fetchStats();
-      })();
+      const loadProfileData = async () => {
+        setIsSyncingStats(true); 
+        try {
+          await Promise.all([
+            refreshUser?.(),
+            fetchStats(),
+            fetchBadges()
+          ]);
+        } catch (error) {
+          console.error("Critical load error:", error);
+        } finally {
+          setIsSyncingStats(false); 
+        }
+      };
+      loadProfileData();
     }, [token])
   );
-
-  useEffect(() => {
-    const fetchBadges = async () => {
-      if (!user?._id) return;
-      setLoadingBadges(true);
-      try {
-        const res = await axios.get(`${API_URL}/api/badges/${user._id}`);
-        const badgeArr = Array.isArray(res.data) ? res.data : [];
-        setBadges(badgeArr);
-        // Show confetti and achievement modal if new badge unlocked
-        if (prevBadgeCount !== 0 && badgeArr.length > prevBadgeCount) {
-          setShowConfetti(true);
-          // Find latest badge
-          const latestBadge = badgeArr[badgeArr.length - 1];
-          setAchievementText(`${latestBadge.name} Badge Unlocked!`);
-          setAchievementCoins(latestBadge.rewardCoins || 0);
-          setShowAchievement(true);
-          setTimeout(() => setShowAchievement(false), 1800);
-        }
-        setPrevBadgeCount(badgeArr.length);
-      } catch (err) { console.error(err); } finally { setLoadingBadges(false); }
-    };
-    fetchBadges();
-  }, [user]);
 
   const handleImagePick = async () => {
     try {
@@ -133,7 +168,6 @@ export default function ProfileScreen() {
       <AchievementModal visible={showAchievement} achievement={achievementText} coins={achievementCoins} onClose={() => setShowAchievement(false)} />
       <StatusBar barStyle="light-content" />
       
-      {/* Drawer Overlay Menu */}
       {drawerOpen && (
         <TouchableOpacity style={styles.drawerOverlay} activeOpacity={1} onPress={() => setDrawerOpen(false)}>
           <LinearGradient colors={['#fff', '#f3e8ff']} style={styles.drawerContainer}>
@@ -158,7 +192,6 @@ export default function ProfileScreen() {
       )}
 
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Profile Header Gradient */}
         <LinearGradient colors={[THEME_DARK, "#701a75"]} style={styles.headerArea}>
           <TouchableOpacity style={styles.menuTrigger} onPress={() => setDrawerOpen(true)}>
             <Ionicons name="grid-outline" size={24} color="#fff" />
@@ -175,37 +208,31 @@ export default function ProfileScreen() {
             <Text style={styles.emailText}>{user?.email}</Text>
             
             <View style={styles.levelBadge}>
-               <MaterialCommunityIcons name="lightning-bolt" size={16} color={THEME_ACCENT} />
-               <Text style={styles.levelText}>Master Level {stats?.highestLevel || 1}</Text>
+                <MaterialCommunityIcons name="lightning-bolt" size={16} color={THEME_ACCENT} />
+                {isSyncingStats ? (
+                  <View style={{ width: 80, height: 16, backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 8 }} />
+                ) : (
+                  <Text style={styles.levelText}>Master Level: {stats?.highestLevel || 1}</Text>
+                )}
             </View>
           </View>
         </LinearGradient>
 
-        {/* Interaction Hub (Requests Buttons) */}
         <View style={styles.hubContainer}>
-          <TouchableOpacity 
-            style={[styles.hubBtn, {backgroundColor: '#f0fdf4'}]} 
-            onPress={() => navigation.navigate('PendingRequests')}>
+          <TouchableOpacity style={[styles.hubBtn, {backgroundColor: '#f0fdf4'}]} onPress={() => navigation.navigate('PendingRequests')}>
             <MaterialCommunityIcons name="account-arrow-left" size={24} color="#16a34a" />
             <Text style={styles.hubBtnText}>Pending</Text>
           </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={[styles.hubBtn, {backgroundColor: '#eff6ff'}]} 
-            onPress={() => navigation.navigate('SentRequests')}>
+          <TouchableOpacity style={[styles.hubBtn, {backgroundColor: '#eff6ff'}]} onPress={() => navigation.navigate('SentRequests')}>
             <MaterialCommunityIcons name="account-arrow-right" size={24} color="#2563eb" />
             <Text style={styles.hubBtnText}>Sent</Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={[styles.hubBtn, {backgroundColor: '#fff7ed'}]} 
-            onPress={() => navigation.navigate('StackFriends')}>
+          <TouchableOpacity style={[styles.hubBtn, {backgroundColor: '#fff7ed'}]} onPress={() => navigation.navigate('StackFriends')}>
             <MaterialCommunityIcons name="account-multiple" size={24} color="#ea580c" />
             <Text style={styles.hubBtnText}>Friends</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Coins & Stats */}
         <View style={styles.contentPadding}>
           <LinearGradient colors={['#fbbf24', '#f59e0b']} style={styles.coinCard}>
             <View>
@@ -217,31 +244,42 @@ export default function ProfileScreen() {
 
           <View style={styles.statsRow}>
             <View style={styles.statMiniCard}>
-              <Text style={styles.statVal}>{
-                (user?.attemptCount ?? stats?.attemptCount) != null
-                  ? (user?.attemptCount ?? stats?.attemptCount)
-                  : '-'
-              }</Text>
+              {isSyncingStats ? (
+                <View style={{ width: 30, height: 20, backgroundColor: '#f3f4f6', borderRadius: 6 }} />
+              ) : (
+                <Text style={styles.statVal}>{(user?.attemptCount ?? stats?.attemptCount) ?? 0}</Text>
+              )}
               <Text style={styles.statLab}>Games</Text>
             </View>
             <View style={styles.statMiniCard}>
-              <Text style={styles.statVal}>{
-                (user?.totalPoints ?? stats?.totalPoints) != null
-                  ? (user?.totalPoints ?? stats?.totalPoints)
-                  : '-'
-              }</Text>
+              {isSyncingStats ? (
+                <View style={{ width: 30, height: 20, backgroundColor: '#f3f4f6', borderRadius: 6 }} />
+              ) : (
+                <Text style={styles.statVal}>{(user?.totalPoints ?? stats?.totalPoints) ?? 0}</Text>
+              )}
               <Text style={styles.statLab}>Score</Text>
             </View>
             <View style={styles.statMiniCard}>
-              <Text style={styles.statVal}>{loadingBadges ? '-' : badges.length}</Text>
+              {isSyncingStats ? (
+                <View style={{ width: 30, height: 20, backgroundColor: '#f3f4f6', borderRadius: 6 }} />
+              ) : (
+                <Text style={styles.statVal}>{badges.length}</Text>
+              )}
               <Text style={styles.statLab}>Badges</Text>
             </View>
           </View>
 
-          {/* Badges Section */}
           <Text style={styles.sectionTitle}>Hall of Fame</Text>
-          {loadingBadges ? (
-            <ActivityIndicator color={THEME_DARK} />
+          {isSyncingStats ? (
+            /* Hall of Fame Skeleton Row */
+            <View style={{ flexDirection: 'row' }}>
+              {[1, 2, 3].map((key) => (
+                <View key={key} style={styles.badgeItem}>
+                  <View style={[styles.badgeCircle, { backgroundColor: '#f1f5f9', elevation: 0 }]} />
+                  <View style={{ width: 50, height: 10, backgroundColor: '#f1f5f9', borderRadius: 5 }} />
+                </View>
+              ))}
+            </View>
           ) : badges.length === 0 ? (
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
               <View style={[styles.badgeItem, { borderStyle: 'dotted', borderWidth: 2, borderColor: '#d1d5db', backgroundColor: '#fff', borderRadius: 20 }]}> 
