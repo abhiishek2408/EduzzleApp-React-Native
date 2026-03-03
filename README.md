@@ -1,10 +1,13 @@
-# 🚀 Educational Puzzle App (Eduzzle)
+# Educational Puzzle App (Eduzzle)
+
+## APK Download
+https://expo.dev/artifacts/eas/6bFtF4gaTiu4nVMmL68DDc.apk
 
 <img src="./readme/splashscreen.jpg" alt="App Banner" width="400" />
 *A fun and engaging **Educational Puzzle App** built with React Native and Node.js backend to help students learn through solving puzzles!*
 
 
-## 📸 Screenshots
+## Screenshots
 
 ### Global Screens
 
@@ -72,7 +75,7 @@
 
 
 
-## ✨ Purpose of the App
+## Purpose of the App
 
 > Eduzzle is designed to make learning interactive and fun by offering a variety of educational puzzles and quizzes.  
 > It helps students and learners of all ages improve their problem-solving, critical thinking, and subject knowledge in an engaging way.  
@@ -80,9 +83,9 @@
 
 ---
 
-## 🎯 Key Features
+## Key Features
 
-### 🔐 User Authentication & Security
+### User Authentication & Security
 - **Secure Registration & Login** - Email-based authentication with password hashing (bcrypt)
 - **OTP Verification** - Email verification system for account security
 - **Password Recovery** - Forgot password with secure OTP-based reset
@@ -91,7 +94,7 @@
 - **Rate Limiting** - API rate limiting to prevent abuse (200 requests per 15 minutes)
 - **Profile Management** - Update profile information and profile pictures
 
-### 🧩 Quiz & Puzzle System
+### Quiz & Puzzle System
 - **Quick Quizzes**
   - General Trivia
   - Logic Challenges
@@ -104,14 +107,14 @@
 **Question Bank** - Vast collection of educational questions
 **Result Analysis** - Detailed performance analytics after each quiz
 
-### 🎮 Gaming Events
+### Gaming Events
 - **Live Gaming Quiz Events** - Participate in scheduled quiz competitions
 - **Event Status Tracking** - Real-time status updates (upcoming, live, completed)
 - **Event Leaderboards** - Compete with other players in live events
 - **Event Rewards** - Earn special rewards for participating and winning
 - **Automatic Status Updates** - Cron jobs automatically update event status
 
-### 🏆 Gamification & Rewards
+### Gamification & Rewards
 - **Coins System** - Earn coins by completing quizzes and challenges
 - **Badge System** - Unlock achievement badges (Bronze, Silver, Gold, Diamond)
 - **Daily Quests** - Complete daily challenges to earn rewards
@@ -121,14 +124,14 @@
   - Friends Leaderboard - Compare scores with friends
   - Event-specific Leaderboards
 
-### 👥 Social Features
+### Social Features
 - **Friend System** - Send and receive friend requests
 - **Friend Requests Management** - View pending and sent friend requests
 - **Friends List** - View all your connected friends
 - **Friends Leaderboard** - Compete with your friends
 - **Real-time Notifications** - Socket.IO powered instant notifications
 
-### 💳 Subscription & Premium Features
+### Subscription & Premium Features
 - **Subscription Plans** - Multiple premium subscription options
 - **Payment Integration** - Razorpay payment gateway integration
 - **Premium User Dashboard** - Exclusive features for premium users
@@ -136,33 +139,33 @@
 - **Subscription Management** - Easy plan upgrades and renewals
 - **Auto-expiration Handling** - Automatic subscription status updates via cron jobs
 
-### 📊 Analytics & Statistics
+### Analytics & Statistics
 - **User Dashboard** - Comprehensive overview of your progress
 - **Attempt Statistics** - Detailed stats on all quiz attempts
 - **Performance Tracking** - Track improvement over time
 - **Achievement History** - View all earned badges and rewards
 - **Streak Tracking** - Monitor your daily learning streak
 
-### 🔔 Notifications System
+### Notifications System
 - **Real-time Push Notifications** - Instant updates via Socket.IO
 - **Email Notifications** - Subscription reminders and important updates
 - **In-app Notifications** - View notification history
 - **Friend Request Notifications** - Get notified when someone sends you a friend request
 - **Badge Unlock Notifications** - Celebrate achievement unlocks
 
-### 👨‍💼 Admin Features
+### Admin Features
 - **Admin Dashboard** - Complete admin control panel
 - **User Management** - Manage user accounts and permissions
 - **Content Management** - Create and manage quizzes, questions, and events
 - **Event Management** - Schedule and manage gaming events
 - **Analytics Overview** - View platform-wide statistics
 
-### 📝 Review & Feedback System
+### Review & Feedback System
 - **Rate the App** - Users can submit reviews and ratings
 - **Review Management** - Admin can view and moderate reviews
 - **Help Desk** - User support and FAQ system
 
-### 🔒 Security Features
+### Security Features
 - **Helmet.js** - Security headers for Express application
 - **CORS Protection** - Controlled cross-origin resource sharing
 - **Input Validation** - Zod schema validation for API inputs
@@ -171,13 +174,13 @@
 - **Session Management** - Secure session handling
 - **Rate Limiting** - Prevents API abuse and DDoS attacks
 
-### ☁️ Cloud Integration
+### Cloud Integration
 - **Cloudinary Integration** - Image upload and management
 - **Email Service** - SendGrid/Mailgun/Resend for transactional emails
 - **MongoDB Atlas** - Cloud database hosting
 - **Real-time Updates** - Socket.IO for live features
 
-### 📱 Mobile Features
+### Mobile Features
 - **React Native** - Cross-platform mobile app (iOS & Android)
 - **Expo Framework** - Easy development and deployment
 - **Responsive Design** - Optimized for all screen sizes
@@ -187,14 +190,14 @@
 - **Image Picker** - Upload profile pictures from camera or gallery
 - **Document Picker** - File upload capabilities
 
-### 🔄 Background Jobs (Cron)
+### Background Jobs (Cron)
 - **Auto-expire Subscriptions** - Daily check at midnight
 - **Subscription Renewal Reminders** - Daily at 9 AM for expiring plans
 - **Gaming Event Status Updates** - Every minute to keep events current
 
 ---
 
-## 🛠 Tech Stack
+## Tech Stack
 
 ### Frontend
 - **Framework:** React Native with Expo
@@ -232,7 +235,7 @@
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```
 EduzzleApp/
@@ -260,7 +263,7 @@ EduzzleApp/
 
 ---
 
-## 🚀 API Endpoints
+## API Endpoints
 
 ### Authentication
 - `POST /api/auth/register` - User registration
@@ -345,7 +348,7 @@ EduzzleApp/
 
 ---
 
-## 🤝 Collaborators
+## Collaborators
 
 | Name           | GitHub                                   | Email                  |
 |----------------|------------------------------------------|------------------------|
@@ -355,7 +358,7 @@ EduzzleApp/
 
 ---
 
-## 📚 What We Learned
+## What We Learned
 
 - How to break down complex problems into smaller, manageable components
 - Building a full-stack mobile application with React Native and Node.js
@@ -378,7 +381,7 @@ EduzzleApp/
 
 ---
 
-## 🚧 Installation & Running Locally
+## Installation & Running Locally
 
 ### Prerequisites
 - Node.js (v14 or higher)
@@ -441,7 +444,7 @@ npm run ios
 
 ---
 
-## 🎮 How to Use
+## How to Use
 
 1. **Register/Login** - Create an account or login with existing credentials
 2. **Verify Email** - Enter the OTP sent to your email
@@ -456,7 +459,7 @@ npm run ios
 
 ---
 
-## 🔐 Environment Variables
+## Environment Variables
 
 ### Backend (.env)
 ```env
@@ -495,23 +498,23 @@ RATE_LIMIT_MAX=200
 
 ---
 
-## 🌟 Premium Features
+## Premium Features
 
 Premium subscribers get access to:
-- ✨ Unlimited quiz attempts
-- 🎯 Exclusive premium quizzes
-- 📊 Advanced analytics and insights
-- 🏆 Premium-only gaming events
-- 💎 Bonus coins and rewards
-- 🎨 Custom profile themes
-- 📈 Priority leaderboard placement
-- 🔔 Priority support
-- 📱 Ad-free experience
-- ⚡ Early access to new features
+- Unlimited quiz attempts
+- Exclusive premium quizzes
+- Advanced analytics and insights
+- Premium-only gaming events
+- Bonus coins and rewards
+- Custom profile themes
+- Priority leaderboard placement
+- Priority support
+- Ad-free experience
+- Early access to new features
 
 ---
 
-## 🎯 Gaming Event System
+## Gaming Event System
 
 Gaming events are scheduled quiz competitions where users compete in real-time:
 
@@ -528,7 +531,7 @@ A cron job runs every minute to automatically:
 
 ---
 
-## 📊 Gamification System
+## Gamification System
 
 ### Coins
 - Earn coins by completing quizzes
@@ -553,7 +556,7 @@ A cron job runs every minute to automatically:
 
 ---
 
-## 🔧 Key Technologies Explained
+## Key Technologies Explained
 
 ### Socket.IO Integration
 Real-time bidirectional communication for:
@@ -584,7 +587,7 @@ Cloudinary integration for:
 
 ---
 
-## 🐛 Known Issues & Future Enhancements
+## Known Issues & Future Enhancements
 
 ### Future Features
 - [ ] Push notifications for mobile
@@ -600,7 +603,7 @@ Cloudinary integration for:
 
 ---
 
-## 🌟 Advantages of Eduzzle
+## Advantages of Eduzzle
 
 - **Engaging Learning:** Gamified quizzes and puzzles make learning fun and interactive.
 - **Comprehensive Features:** Covers authentication, analytics, social, gamification, and premium options.
@@ -613,7 +616,7 @@ Cloudinary integration for:
 
 ---
 
-## ✅ Pros & ❌ Cons
+## Pros & Cons
 
 ### Pros
 - Fun, interactive approach to education
@@ -634,7 +637,7 @@ Cloudinary integration for:
 - Dependent on third-party services (Cloudinary, Razorpay, etc.)
 
 
-## 📱 Mobile App Features
+## Mobile App Features
 
 - Cross-platform (iOS & Android)
 - Smooth animations and transitions
@@ -647,7 +650,7 @@ Cloudinary integration for:
 
 ---
 
-## 🔒 Security Measures
+## Security Measures
 
 - Password hashing with bcrypt/argon2
 - JWT token authentication
@@ -663,7 +666,7 @@ Cloudinary integration for:
 
 ---
 
-## 📈 Performance Optimizations
+## Performance Optimizations
 
 - Database indexing for faster queries
 - Lazy loading of images
@@ -676,7 +679,7 @@ Cloudinary integration for:
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please follow these steps:
 
@@ -688,13 +691,13 @@ Contributions are welcome! Please follow these steps:
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
 ---
 
-## 📞 Contact
+## Contact
 
 **Abhishek Yadav**
 - GitHub: [@abhiishek2408](https://github.com/abhiishek2408)
@@ -708,7 +711,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - React Native community for excellent documentation
 - Expo team for amazing development tools
@@ -723,4 +726,4 @@ If you like this project, please give it a ⭐ on GitHub!
 
 ---
 
-**Made with ❤️ by Abhishek & Vishesh**
+**Made with love by Abhishek & Vishesh**
